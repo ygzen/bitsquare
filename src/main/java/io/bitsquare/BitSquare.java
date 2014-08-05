@@ -1,6 +1,10 @@
 package io.bitsquare;
 
 import akka.actor.ActorSystem;
+import akka.actor.Props;
+import akka.actor.ActorRef;
+import static akka.pattern.Patterns.ask;
+
 import com.google.common.base.Throwables;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -11,6 +15,7 @@ import io.bitsquare.gui.NavigationItem;
 import io.bitsquare.gui.popups.Popups;
 import io.bitsquare.locale.Localisation;
 import io.bitsquare.msg.MessageFacade;
+import io.bitsquare.prototype.trade.actors.TradeManager;
 import io.bitsquare.settings.Settings;
 import io.bitsquare.storage.Persistence;
 import io.bitsquare.user.User;
@@ -34,6 +39,8 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import scala.concurrent.Future;
+
 public class BitSquare extends Application
 {
     private static final Logger log = LoggerFactory.getLogger(BitSquare.class);
@@ -44,7 +51,9 @@ public class BitSquare extends Application
     private static Stage primaryStage;
     private WalletFacade walletFacade;
     private MessageFacade messageFacade;
+
     private final ActorSystem system = ActorSystem.create(APP_NAME);
+    private final ActorRef tradeManager = system.actorOf(Props.create(TradeManager.class), "tradeManager");
 
     public static void main(String[] args)
     {
@@ -75,8 +84,8 @@ public class BitSquare extends Application
         log.trace("Startup: start");
         BitSquare.primaryStage = primaryStage;
 
-        //log.trace("Startup: setupAkka");
-        //setupAkka();
+        log.trace("Startup: send 'init' to tradeManager actor");
+        Future initResponse = ask(tradeManager,"init",1000);
 
         Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> Popups.handleUncaughtExceptions(Throwables.getRootCause(throwable)));
 
@@ -139,12 +148,6 @@ public class BitSquare extends Application
         });
     }
 
-    private void setupAkka()
-    {
-        log.trace("SetupAkka: create actors");
-
-    }
-
     private MenuBar getMenuBar()
     {
         MenuBar menuBar = new MenuBar();
@@ -175,6 +178,7 @@ public class BitSquare extends Application
     {
         walletFacade.shutDown();
         messageFacade.shutDown();
+        system.shutdown();
 
         super.stop();
         System.exit(0);
