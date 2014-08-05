@@ -1,12 +1,10 @@
 package io.bitsquare.prototype.trade.createbuyoffer.events;
 
-import io.bitsquare.prototype.DomainEvent;
-
 import java.math.BigInteger;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-public final class BuyOfferValidated implements DomainEvent {
+public final class BuyOfferValidated {
 
   public final String id;
 

@@ -1,6 +1,4 @@
 package io.bitsquare.prototype.trade.createbuyoffer.events;
 
-import io.bitsquare.prototype.DomainEvent;
-
-public final class BuyOfferFeePaid implements DomainEvent {
+public final class BuyOfferFeePaid {
 }
