@@ -5,7 +5,7 @@ import akka.actor.ActorSystem;
 import io.bitsquare.prototype.DomainEventActorBus;
 import io.bitsquare.prototype.trade.BuyTradeManagerActor;
 import io.bitsquare.prototype.trade.validatebuyoffer.BuyOfferActor;
-import io.bitsquare.prototype.trade.completebuyoffer.commands.PlaceBuyOffer;
+import io.bitsquare.prototype.trade.publishbuyoffer.commands.PlaceBuyOffer;
 import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
 
 import java.math.BigInteger;

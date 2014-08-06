@@ -6,8 +6,8 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
-import io.bitsquare.prototype.trade.completebuyoffer.BuyOfferFsm;
-import io.bitsquare.prototype.trade.completebuyoffer.events.BuyOfferPublished;
+import io.bitsquare.prototype.trade.publishbuyoffer.BuyOfferFsm;
+import io.bitsquare.prototype.trade.publishbuyoffer.events.BuyOfferPublished;
 import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
 
 public class BuyTradeCoordinatorActor extends AbstractActor {

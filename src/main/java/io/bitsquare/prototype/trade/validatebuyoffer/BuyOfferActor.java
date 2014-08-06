@@ -6,7 +6,7 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
 import io.bitsquare.prototype.DomainEventActorBus;
-import io.bitsquare.prototype.trade.completebuyoffer.commands.PlaceBuyOffer;
+import io.bitsquare.prototype.trade.publishbuyoffer.commands.PlaceBuyOffer;
 import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
 
 import java.util.Optional;

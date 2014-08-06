@@ -1,8 +1,8 @@
-package io.bitsquare.prototype.trade.completebuyoffer;
+package io.bitsquare.prototype.trade.publishbuyoffer;
 
 import akka.actor.AbstractLoggingFSM;
 import akka.actor.Props;
-import io.bitsquare.prototype.trade.completebuyoffer.events.BuyOfferFeePaid;
+import io.bitsquare.prototype.trade.publishbuyoffer.events.BuyOfferFeePaid;
 import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
 
 
