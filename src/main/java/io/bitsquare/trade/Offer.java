@@ -1,11 +1,11 @@
 package io.bitsquare.trade;
 
+import com.google.bitcoin.core.Coin;
 import io.bitsquare.bank.BankAccountType;
-import io.bitsquare.btc.BtcFormatter;
 import io.bitsquare.locale.Country;
 import io.bitsquare.user.Arbitrator;
 import java.io.Serializable;
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.util.*;
 
@@ -22,13 +22,14 @@ public class Offer implements Serializable
     private final Date creationDate;
 
     private final double price;
-    private final BigInteger amount;
-    private final BigInteger minAmount;
+    private final Coin amount;
+    private final Coin minAmount;
+    //TODO use hex string
     private final PublicKey messagePublicKey;
     private final BankAccountType bankAccountType;
     private final Country bankAccountCountry;
 
-    private final int collateral;
+    private final double collateral;
     private final List<Country> acceptedCountries;
     private final List<Locale> acceptedLanguageLocales;
     private final String bankAccountUID;
@@ -43,14 +44,14 @@ public class Offer implements Serializable
     public Offer(PublicKey messagePublicKey,
                  Direction direction,
                  double price,
-                 BigInteger amount,
-                 BigInteger minAmount,
+                 Coin amount,
+                 Coin minAmount,
                  BankAccountType bankAccountType,
                  Currency currency,
                  Country bankAccountCountry,
                  String bankAccountUID,
                  Arbitrator arbitrator,
-                 int collateral,
+                 double collateral,
                  List<Country> acceptedCountries,
                  List<Locale> acceptedLanguageLocales)
     {
@@ -98,12 +99,12 @@ public class Offer implements Serializable
         return price;
     }
 
-    public BigInteger getAmount()
+    public Coin getAmount()
     {
         return amount;
     }
 
-    public BigInteger getMinAmount()
+    public Coin getMinAmount()
     {
         return minAmount;
     }
@@ -138,14 +139,21 @@ public class Offer implements Serializable
         return acceptedLanguageLocales;
     }
 
-    public double getVolume()
+    public double getVolumeForCoin(Coin coin)
     {
-        return price * BtcFormatter.satoshiToBTC(amount);
+        BigDecimal amountBD = BigDecimal.valueOf(coin.longValue());
+        BigDecimal volumeBD = amountBD.multiply(BigDecimal.valueOf(price));
+        return volumeBD.divide(BigDecimal.valueOf(Coin.COIN.value)).doubleValue();
     }
 
-    public double getMinVolume()
+    public double getOfferVolume()
     {
-        return price * BtcFormatter.satoshiToBTC(minAmount);
+        return getVolumeForCoin(amount);
+    }
+
+    public double getMinOfferVolume()
+    {
+        return getVolumeForCoin(minAmount);
     }
 
     public String getOfferFeePaymentTxID()
@@ -163,7 +171,7 @@ public class Offer implements Serializable
         return arbitrator;
     }
 
-    public int getCollateral()
+    public double getCollateral()
     {
         return collateral;
     }

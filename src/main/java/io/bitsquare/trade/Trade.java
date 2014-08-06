@@ -1,8 +1,8 @@
 package io.bitsquare.trade;
 
+import com.google.bitcoin.core.Coin;
 import com.google.bitcoin.core.Transaction;
 import java.io.Serializable;
-import java.math.BigInteger;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 
@@ -12,7 +12,7 @@ public class Trade implements Serializable
 
     private final Offer offer;
     private String takeOfferFeeTxID;
-    private BigInteger tradeAmount;
+    private Coin tradeAmount;
     private Contract contract;
     private String contractAsJson;
     private String takerSignature;
@@ -38,6 +38,10 @@ public class Trade implements Serializable
         _stateChangedProperty = new SimpleStringProperty();
     }
 
+    public double getTradeVolume()
+    {
+        return offer.getVolumeForCoin(tradeAmount);
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Setters
@@ -53,12 +57,12 @@ public class Trade implements Serializable
         this.takeOfferFeeTxID = takeOfferFeeTxID;
     }
 
-    public BigInteger getTradeAmount()
+    public Coin getTradeAmount()
     {
         return tradeAmount;
     }
 
-    public void setTradeAmount(BigInteger tradeAmount)
+    public void setTradeAmount(Coin tradeAmount)
     {
         this.tradeAmount = tradeAmount;
     }
@@ -172,9 +176,9 @@ public class Trade implements Serializable
         return _stateChangedProperty;
     }
 
-    public BigInteger getCollateralAmount()
+    public Coin getCollateralAmount()
     {
-        return getTradeAmount().multiply(BigInteger.valueOf(getOffer().getCollateral())).divide(BigInteger.valueOf(100));
+        return tradeAmount.divide((long) (1d / offer.getCollateral()));
     }
 
 
