@@ -1,9 +1,9 @@
-package io.bitsquare.prototype.trade.createbuyoffer;
+package io.bitsquare.prototype.trade.completebuyoffer;
 
 import akka.actor.AbstractLoggingFSM;
 import akka.actor.Props;
-import io.bitsquare.prototype.trade.createbuyoffer.events.BuyOfferFeePaid;
-import io.bitsquare.prototype.trade.createbuyoffer.events.BuyOfferValidated;
+import io.bitsquare.prototype.trade.completebuyoffer.events.BuyOfferFeePaid;
+import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
 
 
 public class BuyOfferFsm extends AbstractLoggingFSM<BuyOfferFsm.State, BuyOfferFsm.Data> {

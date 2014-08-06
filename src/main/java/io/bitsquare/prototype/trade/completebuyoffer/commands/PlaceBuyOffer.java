@@ -1,4 +1,4 @@
-package io.bitsquare.prototype.trade.createbuyoffer.commands;
+package io.bitsquare.prototype.trade.completebuyoffer.commands;
 
 import java.math.BigInteger;
 import java.time.ZonedDateTime;

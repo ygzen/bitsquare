@@ -1,4 +1,4 @@
-package io.bitsquare.prototype.trade.createbuyoffer;
+package io.bitsquare.prototype.trade.validatebuyoffer;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
@@ -6,8 +6,8 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
 import io.bitsquare.prototype.DomainEventActorBus;
-import io.bitsquare.prototype.trade.createbuyoffer.commands.PlaceBuyOffer;
-import io.bitsquare.prototype.trade.createbuyoffer.events.BuyOfferValidated;
+import io.bitsquare.prototype.trade.completebuyoffer.commands.PlaceBuyOffer;
+import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
 
 import java.util.Optional;
 
@@ -20,7 +20,6 @@ public class BuyOfferActor extends AbstractActor {
   private final DomainEventActorBus eventBus;
 
   private final LoggingAdapter log = Logging.getLogger(context().system(), this);
-
 
   public BuyOfferActor(DomainEventActorBus eventBus) {
     this.eventBus = eventBus;
