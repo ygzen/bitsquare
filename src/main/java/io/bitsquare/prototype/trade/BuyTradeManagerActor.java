@@ -6,7 +6,7 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
-import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
+import io.bitsquare.prototype.trade.placebuyoffer.events.BuyOfferPlaced;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,10 +27,12 @@ public class BuyTradeManagerActor extends AbstractActor {
       ReceiveBuilder
         //entry event
         .match(
-          BuyOfferValidated.class,
+          BuyOfferPlaced.class,
           e -> {
             log.info("Message received {}", e);
-            ActorRef child = getContext().actorOf(BuyTradeCoordinatorActor.props(), e.id);
+            ActorRef child = getContext().actorOf(
+              BuyTradeCoordinatorActor.props(),
+              BuyTradeCoordinatorActor.class.getSimpleName() + '-' + e.id);
             buyTradeActors.put(e.id, child);
             child.tell(e, self());
           }

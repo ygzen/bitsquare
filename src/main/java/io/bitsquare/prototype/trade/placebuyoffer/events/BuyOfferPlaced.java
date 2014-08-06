@@ -1,10 +1,10 @@
-package io.bitsquare.prototype.trade.publishbuyoffer.commands;
+package io.bitsquare.prototype.trade.placebuyoffer.events;
 
 import java.math.BigInteger;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-public final class PlaceBuyOffer {
+public final class BuyOfferPlaced {
 
   public final String id;
 
@@ -29,22 +29,22 @@ public final class PlaceBuyOffer {
   public final List<String> acceptedLanguageCodes;
   public final List<String> acceptedArbitratorIds;
 
-  public PlaceBuyOffer(String id,
-                       ZonedDateTime creatingDateTime,
-                       String currencyCode,
-                       double price,
-                       BigInteger amount,
-                       BigInteger minAmount,
-                       float collateral,
-                       String bankAccountId,
-                       String bankAccountTypeCode,
-                       String bankAccountCountryCode,
-                       String messagePublicKey,
-                       BigInteger bidFee,
-                       String bidFeePaymentTransactionId,
-                       List<String> acceptedCountryCodes,
-                       List<String> acceptedLanguageCodes,
-                       List<String> acceptedArbitratorIds) {
+  public BuyOfferPlaced(String id,
+                        ZonedDateTime creatingDateTime,
+                        String currencyCode,
+                        double price,
+                        BigInteger amount,
+                        BigInteger minAmount,
+                        float collateral,
+                        String bankAccountId,
+                        String bankAccountTypeCode,
+                        String bankAccountCountryCode,
+                        String messagePublicKey,
+                        BigInteger bidFee,
+                        String bidFeePaymentTransactionId,
+                        List<String> acceptedCountryCodes,
+                        List<String> acceptedLanguageCodes,
+                        List<String> acceptedArbitratorIds) {
     this.id = id;
     this.creatingDateTime = creatingDateTime;
     this.currencyCode = currencyCode;
@@ -62,4 +62,5 @@ public final class PlaceBuyOffer {
     this.acceptedLanguageCodes = acceptedLanguageCodes;
     this.acceptedArbitratorIds = acceptedArbitratorIds;
   }
+
 }

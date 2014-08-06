@@ -4,9 +4,9 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import io.bitsquare.prototype.DomainEventActorBus;
 import io.bitsquare.prototype.trade.BuyTradeManagerActor;
-import io.bitsquare.prototype.trade.validatebuyoffer.BuyOfferActor;
-import io.bitsquare.prototype.trade.publishbuyoffer.commands.PlaceBuyOffer;
-import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
+import io.bitsquare.prototype.trade.placebuyoffer.PlaceBuyOfferActor;
+import io.bitsquare.prototype.trade.placebuyoffer.commands.PlaceBuyOffer;
+import io.bitsquare.prototype.trade.placebuyoffer.events.BuyOfferPlaced;
 
 import java.math.BigInteger;
 import java.time.ZoneId;
@@ -25,11 +25,15 @@ public class ActorTestRunner {
 
   private ActorTestRunner() {
     final ActorRef buyOfferActor =
-      system.actorOf(BuyOfferActor.props(eventBus), "buyOfferActor");
+      system.actorOf(
+        PlaceBuyOfferActor.props(eventBus),
+        PlaceBuyOfferActor.class.getSimpleName());
     final ActorRef buyTradeManager =
-      system.actorOf(BuyTradeManagerActor.props(), "buyTradeManager");
+      system.actorOf(
+        BuyTradeManagerActor.props(),
+        BuyTradeManagerActor.class.getSimpleName());
 
-    eventBus.subscribe(buyTradeManager, BuyOfferValidated.class.getCanonicalName());
+    eventBus.subscribe(buyTradeManager, BuyOfferPlaced.class.getCanonicalName());
 
     PlaceBuyOffer pbo = new PlaceBuyOffer(
       UUID.randomUUID().toString(),

@@ -1,4 +1,4 @@
-package io.bitsquare.prototype.trade.validatebuyoffer;
+package io.bitsquare.prototype.trade.placebuyoffer;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
@@ -6,22 +6,22 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
 import io.bitsquare.prototype.DomainEventActorBus;
-import io.bitsquare.prototype.trade.publishbuyoffer.commands.PlaceBuyOffer;
-import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
+import io.bitsquare.prototype.trade.placebuyoffer.commands.PlaceBuyOffer;
+import io.bitsquare.prototype.trade.placebuyoffer.events.BuyOfferPlaced;
 
 import java.util.Optional;
 
-public class BuyOfferActor extends AbstractActor {
+public class PlaceBuyOfferActor extends AbstractActor {
 
   public static Props props(DomainEventActorBus eventBus) {
-    return Props.create(BuyOfferActor.class, () -> new BuyOfferActor(eventBus));
+    return Props.create(PlaceBuyOfferActor.class, () -> new PlaceBuyOfferActor(eventBus));
   }
 
   private final DomainEventActorBus eventBus;
 
   private final LoggingAdapter log = Logging.getLogger(context().system(), this);
 
-  public BuyOfferActor(DomainEventActorBus eventBus) {
+  public PlaceBuyOfferActor(DomainEventActorBus eventBus) {
     this.eventBus = eventBus;
     receive(
       ReceiveBuilder
@@ -29,7 +29,7 @@ public class BuyOfferActor extends AbstractActor {
           PlaceBuyOffer.class,
           c -> {
             log.info("Received PlaceBuyOffer msg: {}", c);
-            Optional<BuyOfferValidated> bov = handle(c);
+            Optional<BuyOfferPlaced> bov = handle(c);
             if(bov.isPresent()) {
               eventBus.publish(bov.get());
             } else {
@@ -43,12 +43,12 @@ public class BuyOfferActor extends AbstractActor {
 
   }
 
-  public Optional<BuyOfferValidated> handle(PlaceBuyOffer command) {
+  public Optional<BuyOfferPlaced> handle(PlaceBuyOffer command) {
     if (command.minAmount.compareTo(command.amount) > 0) {
       return Optional.empty();
     }
 
-    return Optional.of(new BuyOfferValidated(
+    return Optional.of(new BuyOfferPlaced(
       command.id,
       command.creatingDateTime,
       command.currencyCode,

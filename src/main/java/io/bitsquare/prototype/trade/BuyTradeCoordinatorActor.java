@@ -6,9 +6,9 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
-import io.bitsquare.prototype.trade.publishbuyoffer.BuyOfferFsm;
-import io.bitsquare.prototype.trade.publishbuyoffer.events.BuyOfferPublished;
-import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
+import io.bitsquare.prototype.trade.createbuyoffer.CreateBuyOfferActor;
+import io.bitsquare.prototype.trade.createbuyoffer.events.BuyOfferCreated;
+import io.bitsquare.prototype.trade.placebuyoffer.events.BuyOfferPlaced;
 
 public class BuyTradeCoordinatorActor extends AbstractActor {
 
@@ -24,17 +24,19 @@ public class BuyTradeCoordinatorActor extends AbstractActor {
     receive(
       ReceiveBuilder
         .match(
-          BuyOfferValidated.class,
+          BuyOfferPlaced.class,
           e -> {
             log.info("Message received {}", e);
-            buyOfferFsm = context().actorOf(BuyOfferFsm.props(), "buyOfferFsm");
+            buyOfferFsm = context().actorOf(
+              CreateBuyOfferActor.props(),
+              CreateBuyOfferActor.class.getSimpleName());
             buyOfferFsm.tell(e, self());
           })
         .match(
-          BuyOfferPublished.class,
+          BuyOfferCreated.class,
           e -> {
             //next...
-            log.info("Received PlaceBuyOffer msg: {}", e);
+            log.info("Message received {}", e);
           }
         )
         .matchAny(
