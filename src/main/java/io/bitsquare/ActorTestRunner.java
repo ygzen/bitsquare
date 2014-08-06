@@ -3,9 +3,8 @@ package io.bitsquare;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import io.bitsquare.prototype.DomainEventActorBus;
-import io.bitsquare.prototype.trade.BuyTradeCoordinatorActor;
+import io.bitsquare.prototype.trade.BuyTradeManagerActor;
 import io.bitsquare.prototype.trade.validatebuyoffer.BuyOfferActor;
-import io.bitsquare.prototype.trade.completebuyoffer.BuyOfferFsm;
 import io.bitsquare.prototype.trade.completebuyoffer.commands.PlaceBuyOffer;
 import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
 
@@ -27,10 +26,10 @@ public class ActorTestRunner {
   private ActorTestRunner() {
     final ActorRef buyOfferActor =
       system.actorOf(BuyOfferActor.props(eventBus), "buyOfferActor");
-    final ActorRef buyTradeCoordinator =
-      system.actorOf(BuyTradeCoordinatorActor.props(), "buyTradeCoordinator");
+    final ActorRef buyTradeManager =
+      system.actorOf(BuyTradeManagerActor.props(), "buyTradeManager");
 
-    eventBus.subscribe(buyTradeCoordinator, BuyOfferValidated.class.getCanonicalName());
+    eventBus.subscribe(buyTradeManager, BuyOfferValidated.class.getCanonicalName());
 
     PlaceBuyOffer pbo = new PlaceBuyOffer(
       UUID.randomUUID().toString(),

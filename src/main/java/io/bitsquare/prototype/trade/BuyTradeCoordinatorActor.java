@@ -6,39 +6,42 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
+import io.bitsquare.prototype.trade.completebuyoffer.BuyOfferFsm;
+import io.bitsquare.prototype.trade.completebuyoffer.events.BuyOfferPublished;
 import io.bitsquare.prototype.trade.validatebuyoffer.events.BuyOfferValidated;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class BuyTradeCoordinatorActor extends AbstractActor {
 
   public static Props props() {
-    return Props.create(
-      BuyTradeCoordinatorActor.class, () -> new BuyTradeCoordinatorActor());
+    return Props.create(BuyTradeCoordinatorActor.class, () -> new BuyTradeCoordinatorActor());
   }
 
   private final LoggingAdapter log = Logging.getLogger(context().system(), this);
 
-  private Map<String, ActorRef> buyTradeActors = new HashMap<>();
+  private ActorRef buyOfferFsm;
 
   public BuyTradeCoordinatorActor() {
     receive(
       ReceiveBuilder
-        //entry event
         .match(
           BuyOfferValidated.class,
           e -> {
             log.info("Message received {}", e);
-            ActorRef child = getContext().actorOf(BuyTradeActor.props(), e.id);
-            buyTradeActors.put(e.id, child);
-            child.tell(e, self());
+            buyOfferFsm = context().actorOf(BuyOfferFsm.props(), "buyOfferFsm");
+            buyOfferFsm.tell(e, self());
+          })
+        .match(
+          BuyOfferPublished.class,
+          e -> {
+            //next...
+            log.info("Received PlaceBuyOffer msg: {}", e);
           }
         )
         .matchAny(
-          o -> log.info("received unknown message")
-        )
+          o -> log.info("received unknown message"))
         .build()
     );
+
   }
+
 }
