@@ -3,7 +3,7 @@ package io.bitsquare.prototype;
 import akka.actor.ActorRef;
 import akka.event.japi.LookupEventBus;
 
-public class DomainEventActorBus extends LookupEventBus<Object, ActorRef, String> {
+public class MessageActorBus extends LookupEventBus<Object, ActorRef, String> {
 
   @Override
   public String classify(Object event) {

@@ -12,11 +12,14 @@ import io.bitsquare.prototype.trade.createbuyoffer.events.BuyOfferFeePaid;
 import io.bitsquare.prototype.trade.createbuyoffer.events.BuyOfferPublished;
 import io.bitsquare.prototype.trade.placebuyoffer.events.BuyOfferPlaced;
 
+import java.util.function.Supplier;
+
 
 public class CreateBuyOfferActor extends AbstractActor {
 
-  public static Props props() {
-    return Props.create(CreateBuyOfferActor.class, () -> new CreateBuyOfferActor());
+  public static Supplier<Props> props() {
+    return () -> Props.create(
+      CreateBuyOfferActor.class, () -> new CreateBuyOfferActor());
   }
 
   private final LoggingAdapter log = Logging.getLogger(context().system(), this);
