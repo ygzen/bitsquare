@@ -99,7 +99,7 @@ public class WalletFacade {
 
 
     private final NetworkParameters params;
-    private WalletAppKit walletAppKit;
+    //private WalletAppKit walletAppKit;
     private final FeePolicy feePolicy;
     private final CryptoFacade cryptoFacade;
     private final Persistence persistence;
@@ -140,50 +140,50 @@ public class WalletFacade {
         Threading.USER_THREAD = Platform::runLater;
 
         // If seed is non-null it means we are restoring from backup.
-        walletAppKit = new WalletAppKit(params, AppDirectory.dir().toFile(), WALLET_PREFIX) {
-            @Override
-            protected void onSetupCompleted() {
-                // Don't make the user wait for confirmations for now, as the intention is they're sending it
-                // their own money!
-                walletAppKit.wallet().allowSpendingUnconfirmedTransactions();
-                if (params != RegTestParams.get())
-                    walletAppKit.peerGroup().setMaxConnections(11);
-                walletAppKit.peerGroup().setBloomFilterFalsePositiveRate(0.00001);
-                initWallet();
-                Platform.runLater(startupListener::completed);
-            }
-        };
+//        walletAppKit = new WalletAppKit(params, AppDirectory.dir().toFile(), WALLET_PREFIX) {
+//            @Override
+//            protected void onSetupCompleted() {
+//                // Don't make the user wait for confirmations for now, as the intention is they're sending it
+//                // their own money!
+//                walletAppKit.wallet().allowSpendingUnconfirmedTransactions();
+//                if (params != RegTestParams.get())
+//                    walletAppKit.peerGroup().setMaxConnections(11);
+//                walletAppKit.peerGroup().setBloomFilterFalsePositiveRate(0.00001);
+//                initWallet();
+//                Platform.runLater(startupListener::completed);
+//            }
+//        };
         // Now configure and start the appkit. This will take a second or two - we could show a temporary splash screen
         // or progress widget to keep the user engaged whilst we initialise, but we don't.
-        if (params == RegTestParams.get()) {
-            walletAppKit.connectToLocalHost();   // You should run a regtest mode bitcoind locally.
-        }
-        else if (params == MainNetParams.get()) {
-            // Checkpoints are block headers that ship inside our app: for a new user, we pick the last header
-            // in the checkpoints file and then download the rest from the network. It makes things much faster.
-            // Checkpoint files are made using the BuildCheckpoints tool and usually we have to download the
-            // last months worth or more (takes a few seconds).
-            walletAppKit.setCheckpoints(getClass().getResourceAsStream("checkpoints"));
-            // As an example!
-            // walletAppKit.useTor();
-        }
-        walletAppKit.setDownloadListener(new BlockChainDownloadListener())
-                .setBlockingStartup(false)
-                .restoreWalletFromSeed(null)
-                .setUserAgent("BitSquare", "0.1");
-
-        walletAppKit.startAsync();
+//        if (params == RegTestParams.get()) {
+//            walletAppKit.connectToLocalHost();   // You should run a regtest mode bitcoind locally.
+//        }
+//        else if (params == MainNetParams.get()) {
+//            // Checkpoints are block headers that ship inside our app: for a new user, we pick the last header
+//            // in the checkpoints file and then download the rest from the network. It makes things much faster.
+//            // Checkpoint files are made using the BuildCheckpoints tool and usually we have to download the
+//            // last months worth or more (takes a few seconds).
+//            walletAppKit.setCheckpoints(getClass().getResourceAsStream("checkpoints"));
+//            // As an example!
+//            // walletAppKit.useTor();
+//        }
+//        walletAppKit.setDownloadListener(new BlockChainDownloadListener())
+//                .setBlockingStartup(false)
+//                .restoreWalletFromSeed(null)
+//                .setUserAgent("BitSquare", "0.1");
+//
+//        walletAppKit.startAsync();
     }
 
     private void initWallet() {
-        wallet = walletAppKit.wallet();
-
-        wallet.allowSpendingUnconfirmedTransactions();
-        //walletAppKit.peerGroup().setMaxConnections(11);
-
-        if (params == RegTestParams.get()) {
-            walletAppKit.peerGroup().setMinBroadcastConnections(1);
-        }
+//        wallet = walletAppKit.wallet();
+//
+//        wallet.allowSpendingUnconfirmedTransactions();
+//        //walletAppKit.peerGroup().setMaxConnections(11);
+//
+//        if (params == RegTestParams.get()) {
+//            walletAppKit.peerGroup().setMinBroadcastConnections(1);
+//        }
 
         walletEventListener = new WalletEventListener() {
             @Override
@@ -247,7 +247,7 @@ public class WalletFacade {
 
     public void shutDown() {
         wallet.removeEventListener(walletEventListener);
-        walletAppKit.stopAsync();
+//        walletAppKit.stopAsync();
     }
 
     public Wallet getWallet() {
@@ -550,8 +550,8 @@ public class WalletFacade {
     public void broadcastCreateOfferFeeTx(Transaction tx, FutureCallback<Transaction> callback) throws
             InsufficientMoneyException {
         log.trace("broadcast tx");
-        ListenableFuture<Transaction> future = walletAppKit.peerGroup().broadcastTransaction(tx);
-        Futures.addCallback(future, callback);
+//        ListenableFuture<Transaction> future = walletAppKit.peerGroup().broadcastTransaction(tx);
+//        Futures.addCallback(future, callback);
     }
 
     public String payTakeOfferFee(String offerId, FutureCallback<Transaction> callback) throws
@@ -914,11 +914,11 @@ public class WalletFacade {
 
         log.trace("Wallet balance before broadcastTransaction: " + wallet.getBalance());
         log.trace("Check if wallet is consistent before broadcastTransaction: result=" + wallet.isConsistent());
-        ListenableFuture<Transaction> broadcastComplete = walletAppKit.peerGroup().broadcastTransaction(tx);
+//        ListenableFuture<Transaction> broadcastComplete = walletAppKit.peerGroup().broadcastTransaction(tx);
         log.trace("Wallet balance after broadcastTransaction: " + wallet.getBalance());
         log.trace("Check if wallet is consistent: result=" + wallet.isConsistent());
 
-        Futures.addCallback(broadcastComplete, callback);
+//        Futures.addCallback(broadcastComplete, callback);
         printInputs("tx", tx);
         log.debug("tx = " + tx);
     }
@@ -1030,8 +1030,8 @@ public class WalletFacade {
         log.trace("verify multiSigOutput");
         tx.getInput(0).verify(multiSigOutput);
 
-        ListenableFuture<Transaction> broadcastComplete = walletAppKit.peerGroup().broadcastTransaction(tx);
-        Futures.addCallback(broadcastComplete, callback);
+//        ListenableFuture<Transaction> broadcastComplete = walletAppKit.peerGroup().broadcastTransaction(tx);
+//        Futures.addCallback(broadcastComplete, callback);
 
         log.trace("getTransactions.size=" + wallet.getTransactions(true).size());
         log.trace("Check if wallet is consistent: result=" + wallet.isConsistent());

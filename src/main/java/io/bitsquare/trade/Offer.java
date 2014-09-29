@@ -20,6 +20,8 @@ package io.bitsquare.trade;
 import io.bitsquare.arbitrator.Arbitrator;
 import io.bitsquare.bank.BankAccountType;
 import io.bitsquare.locale.Country;
+import io.bitsquare.util.JsonEntity;
+import io.bitsquare.util.JsonMapper;
 
 import com.google.bitcoin.core.Coin;
 import com.google.bitcoin.utils.ExchangeRate;
@@ -36,7 +38,7 @@ import java.util.Locale;
 
 //TODO flatten down?
 
-public class Offer implements Serializable {
+public class Offer extends JsonEntity implements Serializable {
     private static final long serialVersionUID = -971164804305475826L;
 
     // key attributes for lookup
@@ -190,6 +192,11 @@ public class Offer implements Serializable {
         return bankAccountUID;
     }
 
+
+    @Override
+    public JsonMapper getMapper() {
+        return new JsonMapper(Offer.class);
+    }
 
     @Override
     public String toString() {

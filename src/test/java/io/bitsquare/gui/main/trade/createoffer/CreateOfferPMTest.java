@@ -44,7 +44,7 @@ public class CreateOfferPMTest {
 
     @Before
     public void setup() {
-        model = new CreateOfferModel(null, null, null, null);
+        model = new CreateOfferModel(null, null, null, null, null, null);
 
         BSFormatter.setLocale(Locale.US);
         BSFormatter.setFiatCurrencyCode("USD");

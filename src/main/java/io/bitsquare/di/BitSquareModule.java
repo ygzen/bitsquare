@@ -18,12 +18,16 @@
 package io.bitsquare.di;
 
 
+import akka.actor.ActorSystem;
+import io.bitsquare.BitSquare;
 import io.bitsquare.btc.BlockChainFacade;
 import io.bitsquare.btc.FeePolicy;
 import io.bitsquare.btc.WalletFacade;
 import io.bitsquare.crypto.CryptoFacade;
 import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.OverlayManager;
+import io.bitsquare.gui.main.trade.BTCService;
+import io.bitsquare.gui.main.trade.TradeService;
 import io.bitsquare.gui.main.trade.orderbook.OrderBook;
 import io.bitsquare.gui.util.BSFormatter;
 import io.bitsquare.gui.util.validation.BankAccountNumberValidator;
@@ -37,7 +41,9 @@ import io.bitsquare.msg.P2PNode;
 import io.bitsquare.msg.SeedNodeAddress;
 import io.bitsquare.persistence.Persistence;
 import io.bitsquare.settings.Settings;
-import io.bitsquare.trade.TradeManager;
+//import io.bitsquare.trade.TradeManager;
+import io.bitsquare.trade.actor.BTCManager;
+import io.bitsquare.trade.actor.TradeManager;
 import io.bitsquare.user.User;
 
 import com.google.bitcoin.core.NetworkParameters;
@@ -69,7 +75,7 @@ public class BitSquareModule extends AbstractModule {
         bind(P2PNode.class).asEagerSingleton();
         bind(BootstrappedPeerFactory.class).asEagerSingleton();
 
-        bind(TradeManager.class).asEagerSingleton();
+        bind(io.bitsquare.trade.TradeManager.class).asEagerSingleton();
         bind(OrderBook.class).asEagerSingleton();
         bind(Navigation.class).asEagerSingleton();
         bind(OverlayManager.class).asEagerSingleton();
@@ -96,6 +102,11 @@ public class BitSquareModule extends AbstractModule {
                 Names.named("defaultSeedNode")).toInstance(SeedNodeAddress.StaticSeedNodeAddresses.LOCALHOST);
         // bind(SeedNodeAddress.StaticSeedNodeAddresses.class).annotatedWith(Names.named("defaultSeedNode"))
         // .toInstance(SeedNodeAddress.StaticSeedNodeAddresses.DIGITAL_OCEAN);
+
+        // Actor Related Singleton Objects
+        bind(ActorSystem.class).toProvider(ActorSystemProvider.class).asEagerSingleton();
+        bind(TradeService.class);
+        bind(BTCService.class);
     }
 }
 
@@ -106,7 +117,6 @@ class NetworkParametersProvider implements Provider<NetworkParameters> {
     public NetworkParametersProvider(@Named("networkType") String networkType) {
         this.networkType = networkType;
     }
-
 
     public NetworkParameters get() {
         NetworkParameters result = null;
@@ -123,5 +133,19 @@ class NetworkParametersProvider implements Provider<NetworkParameters> {
                 break;
         }
         return result;
+    }
+}
+
+class ActorSystemProvider implements Provider<ActorSystem> {
+
+    @Override
+    public ActorSystem get() {
+        ActorSystem system = ActorSystem.create(BitSquare.getAppName());
+
+        // create top level actors
+        system.actorOf(TradeManager.getProps(), TradeManager.NAME);
+        system.actorOf(BTCManager.getProps(), BTCManager.NAME);
+
+        return system;
     }
 }

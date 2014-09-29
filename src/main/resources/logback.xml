@@ -26,7 +26,7 @@
     <logger name="io.bitsquare" level="TRACE"/>
 
     <logger name="com.google.bitcoin" level="WARN"/>
-    <logger name="net.tomp2p" level="WARN"/>
+    <logger name="net.tomp2p" level="OFF"/>
 
     <logger name="io.netty.util" level="WARN"/>
     <logger name="io.netty.channel" level="WARN"/>
@@ -34,7 +34,7 @@
 
     <logger name="io.bitsquare.gui.ViewController" level="OFF"/>
     <logger name="io.bitsquare.gui.CachedViewController" level="OFF"/>
-    <logger name="io.bitsquare.gui.util.Profiler" level="TRACE"/>
+    <logger name="io.bitsquare.gui.util.Profiler" level="OFF"/>
 
     <!--
     <logger name="com.google.bitcoin.core.Wallet" level="OFF"/>

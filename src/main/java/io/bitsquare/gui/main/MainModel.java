@@ -21,6 +21,7 @@ import io.bitsquare.bank.BankAccount;
 import io.bitsquare.btc.WalletFacade;
 import io.bitsquare.btc.listeners.BalanceListener;
 import io.bitsquare.gui.UIModel;
+import io.bitsquare.gui.main.trade.BTCService;
 import io.bitsquare.gui.util.Profiler;
 import io.bitsquare.msg.MessageFacade;
 import io.bitsquare.msg.listeners.BootstrapListener;
@@ -51,6 +52,7 @@ class MainModel extends UIModel {
     private final MessageFacade messageFacade;
     private final TradeManager tradeManager;
     private final Persistence persistence;
+    private final BTCService btcService;
 
     private boolean messageFacadeInited;
     private boolean walletFacadeInited;
@@ -67,9 +69,12 @@ class MainModel extends UIModel {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     @Inject
-    private MainModel(User user, WalletFacade walletFacade, MessageFacade messageFacade,
+    private MainModel(User user, BTCService btcService,
+                      WalletFacade walletFacade,
+                      MessageFacade messageFacade,
                       TradeManager tradeManager, Persistence persistence) {
         this.user = user;
+        this.btcService = btcService;
         this.walletFacade = walletFacade;
         this.messageFacade = messageFacade;
         this.tradeManager = tradeManager;
@@ -100,6 +105,12 @@ class MainModel extends UIModel {
 
     void initBackend() {
         Profiler.printMsgWithTime("MainModel.initFacades");
+
+        btcService.setHandler(m -> {
+            log.debug("btc wallet initialized. "+m);
+        });
+        btcService.initializeBTCWallet();
+
         messageFacade.init(new BootstrapListener() {
             @Override
             public void onCompleted() {

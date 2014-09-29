@@ -24,6 +24,8 @@ import io.bitsquare.btc.FeePolicy;
 import io.bitsquare.btc.WalletFacade;
 import io.bitsquare.btc.listeners.BalanceListener;
 import io.bitsquare.gui.UIModel;
+import io.bitsquare.gui.main.trade.BTCService;
+import io.bitsquare.gui.main.trade.TradeService;
 import io.bitsquare.locale.Country;
 import io.bitsquare.settings.Settings;
 import io.bitsquare.trade.Direction;
@@ -68,6 +70,10 @@ public class CreateOfferModel extends UIModel {
     private static final Logger log = LoggerFactory.getLogger(CreateOfferModel.class);
 
     private final TradeManager tradeManager;
+
+    private final TradeService tradeService;
+    private final BTCService btcService;
+
     private final WalletFacade walletFacade;
     private final Settings settings;
     private final User user;
@@ -111,8 +117,14 @@ public class CreateOfferModel extends UIModel {
 
     // non private for testing
     @Inject
-    public CreateOfferModel(TradeManager tradeManager, WalletFacade walletFacade, Settings settings, User user) {
+    public CreateOfferModel(TradeManager tradeManager, TradeService tradeService,
+                            BTCService btcService,
+                            WalletFacade walletFacade,
+                            Settings settings, User user) {
+
         this.tradeManager = tradeManager;
+        this.tradeService = tradeService;
+        this.btcService = btcService;
         this.walletFacade = walletFacade;
         this.settings = settings;
         this.user = user;
