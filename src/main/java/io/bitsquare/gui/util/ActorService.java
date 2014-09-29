@@ -44,6 +44,7 @@ public abstract class ActorService extends Service<String> {
         this.inbox = Inbox.create(system);
         this.actor = system.actorSelection(actorPath);
         log.debug(actor.pathString());
+        this.start();
     }
 
     public void setHandler(MessageHandler handler) {
@@ -64,7 +65,7 @@ public abstract class ActorService extends Service<String> {
                 while (!isCancelled()) {
                     if (inbox != null) {
                         try {
-                            Object result = inbox.receive(FiniteDuration.create(24l, "hours"));
+                            Object result = inbox.receive(FiniteDuration.create(1l, "minute"));
                             if (result != null) {
                                 System.out.println(result.toString());
                                 if (handler != null) {
