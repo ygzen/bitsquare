@@ -1,9 +1,8 @@
-package io.bitsquare.trade.actor.Event;
-
-import io.bitsquare.trade.actor.command.SendCoins;
+package io.bitsquare.btc.actor.event;
 
 import com.google.bitcoin.core.Coin;
 import com.google.bitcoin.core.Sha256Hash;
+import io.bitsquare.btc.actor.command.SendCoins;
 
 /**
  * <p>Message to send or confirm sending Bitcoin transaction.</p>

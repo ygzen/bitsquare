@@ -19,9 +19,13 @@ package io.bitsquare.gui.main;
 
 import io.bitsquare.bank.BankAccount;
 import io.bitsquare.btc.WalletFacade;
+import io.bitsquare.btc.actor.event.DownloadDone;
+import io.bitsquare.btc.actor.event.DownloadProgress;
+import io.bitsquare.btc.actor.event.DownloadStarted;
+import io.bitsquare.btc.actor.event.WalletInitialized;
 import io.bitsquare.btc.listeners.BalanceListener;
 import io.bitsquare.gui.UIModel;
-import io.bitsquare.gui.main.trade.BTCService;
+import io.bitsquare.gui.main.funds.BTCService;
 import io.bitsquare.gui.util.Profiler;
 import io.bitsquare.msg.MessageFacade;
 import io.bitsquare.msg.listeners.BootstrapListener;
@@ -107,7 +111,21 @@ class MainModel extends UIModel {
         Profiler.printMsgWithTime("MainModel.initFacades");
 
         btcService.setHandler(m -> {
-            log.debug("btc wallet initialized. "+m);
+            if (m instanceof WalletInitialized) {
+                log.debug("btc wallet initialized. ");
+                walletFacadeInited = true;
+                if (messageFacadeInited)
+                    onFacadesInitialised();
+            } else if (m instanceof DownloadStarted) {
+                log.debug("btc download started. ");
+
+            } else if (m instanceof DownloadProgress) {
+                log.debug("btc download progress: "+ ((DownloadProgress)m).getPercent());
+                networkSyncProgress.set(((DownloadProgress)m).getPercent());
+            } else if (m instanceof DownloadDone) {
+                log.debug("btc download Done. ");
+                networkSyncComplete.set(true);
+            }
         });
         btcService.initializeBTCWallet();
 

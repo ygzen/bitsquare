@@ -1,31 +1,28 @@
-package io.bitsquare.trade.actor;
+package io.bitsquare.btc.actor;
 
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
-import com.google.bitcoin.core.*;
+import com.google.bitcoin.core.NetworkParameters;
+import com.google.bitcoin.core.Wallet;
 import com.google.bitcoin.kits.WalletAppKit;
 import com.google.bitcoin.params.MainNetParams;
 import com.google.bitcoin.params.RegTestParams;
-import com.google.bitcoin.script.Script;
 import io.bitsquare.BitSquare;
-import io.bitsquare.trade.actor.Event.BTCWalletInitialized;
-import io.bitsquare.trade.actor.command.InitializeBTCWallet;
+import io.bitsquare.btc.actor.command.InitializeWallet;
+import io.bitsquare.btc.actor.event.WalletInitialized;
 
-import javax.annotation.Nullable;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class BTCManager extends AbstractActor {
 
     private final LoggingAdapter log = Logging.getLogger(context().system(), this);
-    private final PeerWalletListener peerWalletListener;
+
+    private final ActorPeerWalletEventListener actorPeerWalletEventListener;
 
     public final static String NAME = "btcManager";
 
@@ -39,12 +36,11 @@ public class BTCManager extends AbstractActor {
 
     public BTCManager() {
 
-        peerWalletListener = new PeerWalletListener(context().system(), self());
+        actorPeerWalletEventListener = new ActorPeerWalletEventListener(context().system(), self());
 
         receive(ReceiveBuilder.
-                        match(InitializeBTCWallet.class, m -> {
+                        match(InitializeWallet.class, m -> {
                             log.debug("Received message: {}", m);
-
                             setupWallet(m.getNetworkId(), m.getWalletPrefix());
                         }).
 //                        match(SendCoins.class, sc -> {
@@ -80,6 +76,9 @@ public class BTCManager extends AbstractActor {
     private void setupWallet(String networkId, String walletPrefix) {
 
         log.debug("setupWallet");
+
+        actorPeerWalletEventListener.setNetworkId(networkId);
+        actorPeerWalletEventListener.addReceiver(sender());
         File dataDir = new File(System.getProperty("user.home") + "/Library/" + BitSquare.getAppName());
         NetworkParameters netParams = NetworkParameters.fromID(networkId);
 
@@ -94,7 +93,7 @@ public class BTCManager extends AbstractActor {
 
                 // setup wallet
                 wallet = walletAppKit.wallet();
-                wallet.addEventListener(peerWalletListener);
+                wallet.addEventListener(actorPeerWalletEventListener);
 
                 // Don't make the user wait for confirmations for now, as the intention is they're sending it
                 // their own money!
@@ -109,7 +108,8 @@ public class BTCManager extends AbstractActor {
 
                 // Send seed code back to sender of init message
                 List<String> seedCode = walletAppKit.wallet().getKeyChainSeed().getMnemonicCode();
-                sender.tell(new BTCWalletInitialized(params.getId(), seedCode), self());
+
+                sender.tell(new WalletInitialized(params.getId(), seedCode), self());
             }
 
         };
@@ -128,7 +128,7 @@ public class BTCManager extends AbstractActor {
             // walletAppKit.useTor();
         }
 
-        walletAppKit.setDownloadListener(peerWalletListener)
+        walletAppKit.setDownloadListener(actorPeerWalletEventListener)
                 .setBlockingStartup(false)
                 .restoreWalletFromSeed(null)
                 .setUserAgent("BitSquare", "0.1");
@@ -143,108 +143,5 @@ public class BTCManager extends AbstractActor {
         log.debug("postStop");
         walletAppKit.stopAsync();
         super.postStop();
-    }
-}
-
-class PeerWalletListener implements PeerEventListener, WalletEventListener {
-
-    private final ActorRef notifyActor;
-    private final LoggingAdapter log;
-
-    public PeerWalletListener(ActorSystem actorSystem, ActorRef notifyActor) {
-        this.notifyActor = notifyActor;
-        log = Logging.getLogger(actorSystem, notifyActor);
-    }
-
-    // PeerEventListener
-
-    @Override
-    public void onBlocksDownloaded(Peer peer, Block block, int blocksLeft) {
-
-        log.debug("onBlocksDownloaded");
-    }
-
-    @Override
-    public void onChainDownloadStarted(Peer peer, int blocksLeft) {
-
-        log.debug("onChainDownloadStarted");
-    }
-
-    @Override
-    public void onPeerConnected(Peer peer, int peerCount) {
-
-        log.debug("onPeerConnected");
-    }
-
-    @Override
-    public void onPeerDisconnected(Peer peer, int peerCount) {
-
-        log.debug("onPeerDisconnected");
-    }
-
-    @Override
-    public Message onPreMessageReceived(Peer peer, Message m) {
-
-        //log.debug("onPreMessageReceived");
-        //self().tell("MSG",self());
-        return m;
-    }
-
-    @Override
-    public void onTransaction(Peer peer, Transaction t) {
-
-        log.debug("onTransaction");
-    }
-
-    @Nullable
-    @Override
-    public List<Message> getData(Peer peer, GetDataMessage m) {
-
-        log.debug("getData");
-        return new ArrayList<Message>(Arrays.asList(m));
-    }
-
-    @Override
-    public void onKeysAdded(List<ECKey> keys) {
-
-        log.debug("onKeysAdded");
-    }
-
-    // WalletEventListener
-
-    @Override
-    public void onCoinsReceived(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
-
-        log.debug("onCoinsReceived");
-    }
-
-    @Override
-    public void onCoinsSent(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
-
-        log.debug("onCoinsSent");
-    }
-
-    @Override
-    public void onReorganize(Wallet wallet) {
-
-        log.debug("onReorganize");
-    }
-
-    @Override
-    public void onTransactionConfidenceChanged(Wallet wallet, Transaction tx) {
-
-        log.debug("onTransactionConfidenceChanged");
-    }
-
-    @Override
-    public void onWalletChanged(Wallet wallet) {
-
-        log.debug("onWalletChanged");
-    }
-
-    @Override
-    public void onScriptsAdded(Wallet wallet, List<Script> scripts) {
-
-        log.debug("onScriptsAdded");
     }
 }

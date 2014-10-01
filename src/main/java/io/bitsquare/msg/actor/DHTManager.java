@@ -1,36 +1,24 @@
-package io.bitsquare.trade.actor;
+package io.bitsquare.msg.actor;
 
+import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
+import akka.actor.Props;
+import akka.event.Logging;
+import akka.event.LoggingAdapter;
+import akka.japi.pf.ReceiveBuilder;
 import io.bitsquare.BitSquare;
 import io.bitsquare.bank.BankAccountType;
 import io.bitsquare.locale.Country;
 import io.bitsquare.trade.Offer;
-import io.bitsquare.trade.actor.Event.OfferAdded;
-import io.bitsquare.trade.actor.Event.OfferRemoved;
-import io.bitsquare.trade.actor.Event.OffersFound;
 import io.bitsquare.trade.actor.command.CreateOffer;
 import io.bitsquare.trade.actor.command.GetOffers;
 import io.bitsquare.trade.actor.command.RemoveOffer;
+import io.bitsquare.trade.actor.event.OfferAdded;
+import io.bitsquare.trade.actor.event.OfferRemoved;
+import io.bitsquare.trade.actor.event.OffersFound;
 import io.bitsquare.util.JsonMapper;
-
-import java.io.File;
-import java.io.IOException;
-
-import java.net.InetAddress;
-
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import net.tomp2p.connection.Ports;
-import net.tomp2p.dht.FutureGet;
-import net.tomp2p.dht.FuturePut;
-import net.tomp2p.dht.FutureRemove;
-import net.tomp2p.dht.PeerBuilderDHT;
-import net.tomp2p.dht.PeerDHT;
+import net.tomp2p.dht.*;
 import net.tomp2p.futures.BaseFutureAdapter;
 import net.tomp2p.futures.FutureBootstrap;
 import net.tomp2p.p2p.Peer;
@@ -40,12 +28,15 @@ import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
 import net.tomp2p.utils.Utils;
 
-import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
-import akka.actor.Props;
-import akka.event.Logging;
-import akka.event.LoggingAdapter;
-import akka.japi.pf.ReceiveBuilder;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 public class DHTManager extends AbstractActor {
 
@@ -108,8 +99,7 @@ public class DHTManager extends AbstractActor {
                                         public void operationComplete(FuturePut future) throws Exception {
                                             if (future.isSuccess()) {
                                                 sender().tell(new OfferAdded(o), self());
-                                            }
-                                            else {
+                                            } else {
                                                 log.error(future.toString());
                                                 // TODO handle non-success
                                             }
@@ -126,15 +116,14 @@ public class DHTManager extends AbstractActor {
                             log.debug("Received message: {}", ro);
                             Offer o = ro.getOffer();
 
-                            peerDHT.remove(Number160.createHash(createOfferLocationCode(o.getBankAccountCountry(),o.getBankAccountType())))
+                            peerDHT.remove(Number160.createHash(createOfferLocationCode(o.getBankAccountCountry(), o.getBankAccountType())))
                                     .contentKey(Number160.createHash(o.toString())).start()
                                     .addListener(new BaseFutureAdapter<FutureRemove>() {
                                         @Override
                                         public void operationComplete(FutureRemove future) throws Exception {
                                             if (future.isSuccess()) {
                                                 sender().tell(new OfferRemoved(o), self());
-                                            }
-                                            else {
+                                            } else {
                                                 log.error(future.toString());
                                                 // TODO handle non-success
                                             }
@@ -170,8 +159,7 @@ public class DHTManager extends AbstractActor {
                                                     }
                                                 });
                                                 sender.tell(new OffersFound(offers), self());
-                                            }
-                                            else {
+                                            } else {
                                                 log.error(future.toString());
                                                 // TODO handle non-success
                                             }

@@ -1,17 +1,15 @@
-package io.bitsquare.trade.actor.command;
+package io.bitsquare.btc.actor.command;
 
-
-import com.google.bitcoin.core.NetworkParameters;
 
 /**
- * <p>Message to get initialize Bitcoin HD wallet, if not already initialized return seed mnemonic code.</p>
+ * <p>Message to initialize Bitcoin HD wallet.</p>
  */
-public class InitializeBTCWallet {
+public class InitializeWallet {
 
     private final String networkId;
     private final String walletPrefix;
 
-    public InitializeBTCWallet(String networkId, String walletPrefix) {
+    public InitializeWallet(String networkId, String walletPrefix) {
 
         this.networkId = networkId;
         this.walletPrefix = walletPrefix;

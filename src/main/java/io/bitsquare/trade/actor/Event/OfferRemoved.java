@@ -1,4 +1,4 @@
-package io.bitsquare.trade.actor.Event;
+package io.bitsquare.trade.actor.event;
 
 
 import io.bitsquare.trade.Offer;

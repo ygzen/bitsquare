@@ -1,18 +1,16 @@
-package io.bitsquare.trade.actor.Event;
-
-import com.google.bitcoin.core.NetworkParameters;
+package io.bitsquare.btc.actor.event;
 
 import java.util.List;
 
 /**
  * <p>Message to return mnemonic code for Bitcoin HD wallet seed.</p>
  */
-public class BTCWalletInitialized {
+public class WalletInitialized {
 
     private final String networkId;
     private final List<String> mnemonicCode;
 
-    public BTCWalletInitialized(String networkId, List<String> mnemonicCode) {
+    public WalletInitialized(String networkId, List<String> mnemonicCode) {
 
         this.networkId = networkId;
         this.mnemonicCode = mnemonicCode;

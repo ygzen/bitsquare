@@ -26,7 +26,7 @@ import io.bitsquare.btc.WalletFacade;
 import io.bitsquare.crypto.CryptoFacade;
 import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.OverlayManager;
-import io.bitsquare.gui.main.trade.BTCService;
+import io.bitsquare.gui.main.funds.BTCService;
 import io.bitsquare.gui.main.trade.TradeService;
 import io.bitsquare.gui.main.trade.orderbook.OrderBook;
 import io.bitsquare.gui.util.BSFormatter;
@@ -42,7 +42,7 @@ import io.bitsquare.msg.SeedNodeAddress;
 import io.bitsquare.persistence.Persistence;
 import io.bitsquare.settings.Settings;
 //import io.bitsquare.trade.TradeManager;
-import io.bitsquare.trade.actor.BTCManager;
+import io.bitsquare.btc.actor.BTCManager;
 import io.bitsquare.trade.actor.TradeManager;
 import io.bitsquare.user.User;
 

@@ -1,4 +1,4 @@
-package io.bitsquare.trade.actor.Event;
+package io.bitsquare.trade.actor.event;
 
 public class OfferValidationFailed {
     private final String offerId;

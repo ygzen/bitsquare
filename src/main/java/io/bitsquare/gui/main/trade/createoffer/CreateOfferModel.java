@@ -24,7 +24,7 @@ import io.bitsquare.btc.FeePolicy;
 import io.bitsquare.btc.WalletFacade;
 import io.bitsquare.btc.listeners.BalanceListener;
 import io.bitsquare.gui.UIModel;
-import io.bitsquare.gui.main.trade.BTCService;
+import io.bitsquare.gui.main.funds.BTCService;
 import io.bitsquare.gui.main.trade.TradeService;
 import io.bitsquare.locale.Country;
 import io.bitsquare.settings.Settings;

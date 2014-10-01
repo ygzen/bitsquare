@@ -1,8 +1,8 @@
-package io.bitsquare.gui.main.trade;
+package io.bitsquare.gui.main.funds;
 
+import io.bitsquare.btc.actor.command.InitializeWallet;
 import io.bitsquare.gui.util.ActorService;
-import io.bitsquare.trade.actor.BTCManager;
-import io.bitsquare.trade.actor.command.InitializeBTCWallet;
+import io.bitsquare.btc.actor.BTCManager;
 
 import com.google.bitcoin.core.NetworkParameters;
 
@@ -19,6 +19,6 @@ public class BTCService extends ActorService {
 
     public void initializeBTCWallet() {
 
-        send(new InitializeBTCWallet(NetworkParameters.ID_REGTEST, "regtest"));
+        send(new InitializeWallet(NetworkParameters.ID_REGTEST, "regtest"));
     }
 }

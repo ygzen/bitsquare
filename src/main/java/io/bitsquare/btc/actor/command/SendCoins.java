@@ -1,4 +1,4 @@
-package io.bitsquare.trade.actor.command;
+package io.bitsquare.btc.actor.command;
 
 import com.google.bitcoin.core.Coin;
 import com.google.bitcoin.core.Sha256Hash;

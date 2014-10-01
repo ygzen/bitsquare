@@ -2,7 +2,7 @@ package io.bitsquare.trade.actor;
 
 import io.bitsquare.btc.Restrictions;
 import io.bitsquare.trade.Offer;
-import io.bitsquare.trade.actor.Event.OfferValidationFailed;
+import io.bitsquare.trade.actor.event.OfferValidationFailed;
 import io.bitsquare.trade.actor.command.PlaceOffer;
 
 import java.util.HashSet;
