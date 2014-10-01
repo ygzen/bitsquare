@@ -22,6 +22,7 @@ import io.bitsquare.di.BitSquareModule;
 import io.bitsquare.gui.AWTSystemTray;
 import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.components.Popups;
+import io.bitsquare.gui.util.ImageUtil;
 import io.bitsquare.gui.util.Profiler;
 import io.bitsquare.msg.MessageFacade;
 import io.bitsquare.persistence.Persistence;
@@ -40,6 +41,7 @@ import java.util.Arrays;
 
 import javafx.application.Application;
 import javafx.scene.*;
+import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.stage.Stage;
 
@@ -61,7 +63,9 @@ public class BitSquare extends Application {
     public static void main(String[] args) {
         Profiler.init();
         Profiler.printMsgWithTime("BitSquare.main called with args " + Arrays.asList(args).toString());
-        if (args.length > 0) APP_NAME = APP_NAME + "_" + args[0];
+
+        if (args.length > 0)
+            APP_NAME = APP_NAME + "_" + args[0];
 
         launch(args);
     }
@@ -105,11 +109,16 @@ public class BitSquare extends Application {
 
         User persistedUser = (User) persistence.read(user);
         user.applyPersistedUser(persistedUser);
-        //persistence.write(user);
 
         settings.applyPersistedSettings((Settings) persistence.read(settings.getClass().getName()));
 
         primaryStage.setTitle("BitSquare (" + APP_NAME + ")");
+        if (ImageUtil.isRetina())
+            primaryStage.getIcons().add(new Image(BitSquare.class.getResourceAsStream
+                    ("/images/window_icon@2x.png")));
+        else
+            primaryStage.getIcons().add(new Image(BitSquare.class.getResourceAsStream
+                    ("/images/window_icon.png")));
 
         ViewLoader.setInjector(injector);
 
@@ -118,18 +127,27 @@ public class BitSquare extends Application {
         try {
             final Parent view = loader.load();
 
-            final Scene scene = new Scene(view, 1000, 750);
+            final Scene scene = new Scene(view, 1000, 800);
             scene.getStylesheets().setAll(getClass().getResource("/io/bitsquare/gui/bitsquare.css").toExternalForm(),
                     getClass().getResource("/io/bitsquare/gui/images.css").toExternalForm());
 
             setupCloseHandlers(primaryStage, scene);
 
             primaryStage.setScene(scene);
-            primaryStage.setMinWidth(750);
-            primaryStage.setMinHeight(500);
+
+            // TODO resizing not fully supported yet
+
+            primaryStage.setMinWidth(75);
+            primaryStage.setMinHeight(50);
+
+          /*  primaryStage.setMinWidth(1000);
+            primaryStage.setMinHeight(750);*/
+
+            Profiler.initScene(primaryStage.getScene());
 
             primaryStage.show();
         } catch (IOException e) {
+            e.printStackTrace();
             log.error(e.getMessage());
         }
     }

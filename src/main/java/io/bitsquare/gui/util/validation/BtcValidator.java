@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
  */
 public final class BtcValidator extends NumberValidator {
     private static final Logger log = LoggerFactory.getLogger(BtcValidator.class);
-    private ValidationResult externalValidationResult;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -42,9 +41,6 @@ public final class BtcValidator extends NumberValidator {
 
     @Override
     public ValidationResult validate(String input) {
-        if (externalValidationResult != null)
-            return externalValidationResult;
-
         ValidationResult result = validateIfNotEmpty(input);
         if (result.isValid) {
             input = cleanInput(input);
@@ -59,16 +55,6 @@ public final class BtcValidator extends NumberValidator {
         }
 
         return result;
-    }
-
-    /**
-     * Used to integrate external validation (e.g. for MinAmount/Amount)
-     * TODO To be improved but does the job for now...
-     *
-     * @param externalValidationResult
-     */
-    public void overrideResult(ValidationResult externalValidationResult) {
-        this.externalValidationResult = externalValidationResult;
     }
 
 

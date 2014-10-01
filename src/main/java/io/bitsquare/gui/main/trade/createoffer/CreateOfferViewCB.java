@@ -21,18 +21,20 @@ import io.bitsquare.gui.CachedViewCB;
 import io.bitsquare.gui.CloseListener;
 import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.OverlayManager;
+import io.bitsquare.gui.components.AddressTextField;
+import io.bitsquare.gui.components.BalanceTextField;
 import io.bitsquare.gui.components.InfoDisplay;
 import io.bitsquare.gui.components.InputTextField;
 import io.bitsquare.gui.components.Popups;
 import io.bitsquare.gui.components.TitledGroupBg;
-import io.bitsquare.gui.components.btc.AddressTextField;
-import io.bitsquare.gui.components.btc.BalanceTextField;
 import io.bitsquare.gui.main.help.Help;
 import io.bitsquare.gui.main.help.HelpId;
-import io.bitsquare.gui.main.trade.OrderBookInfo;
 import io.bitsquare.gui.util.ImageUtil;
 import io.bitsquare.locale.BSResources;
 import io.bitsquare.trade.Direction;
+
+import com.google.bitcoin.core.Coin;
+import com.google.bitcoin.utils.Fiat;
 
 import java.net.URL;
 
@@ -75,8 +77,8 @@ public class CreateOfferViewCB extends CachedViewCB<CreateOfferPM> {
     private static final Logger log = LoggerFactory.getLogger(CreateOfferViewCB.class);
 
 
-    private Navigation navigation;
-    private OverlayManager overlayManager;
+    private final Navigation navigation;
+    private final OverlayManager overlayManager;
     private CloseListener closeListener;
 
     private boolean detailsVisible;
@@ -129,7 +131,8 @@ public class CreateOfferViewCB extends CachedViewCB<CreateOfferPM> {
 
         setupListeners();
         setupBindings();
-        balanceTextField.setup(presentationModel.getWalletFacade(), presentationModel.address.get());
+        balanceTextField.setup(presentationModel.getWalletFacade(), presentationModel.address.get(),
+                presentationModel.getFormatter());
         volumeTextField.setPromptText(BSResources.get("createOffer.volume.prompt", presentationModel.fiatCode.get()));
     }
 
@@ -147,7 +150,7 @@ public class CreateOfferViewCB extends CachedViewCB<CreateOfferPM> {
     public void terminate() {
         super.terminate();
 
-        // Inform parent that we gor removed.
+        // Inform parent that we got removed.
         // Needed to reset disable state of createOfferButton in OrderBookController
         if (closeListener != null)
             closeListener.onClosed();
@@ -158,10 +161,10 @@ public class CreateOfferViewCB extends CachedViewCB<CreateOfferPM> {
     // Public methods (called form other views/CB)
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    public void initWithOrderBookInfo(OrderBookInfo orderBookInfo) {
-        presentationModel.setOrderBookFilter(orderBookInfo);
+    public void initWithData(Direction direction, Coin amount, Fiat price) {
+        presentationModel.initWithData(direction, amount, price);
 
-        if (orderBookInfo.getDirection() == Direction.BUY)
+        if (direction == Direction.BUY)
             imageView.setId("image-buy-large");
         else
             imageView.setId("image-sell-large");
@@ -177,11 +180,22 @@ public class CreateOfferViewCB extends CachedViewCB<CreateOfferPM> {
 
     @FXML
     void onPlaceOffer() {
-        presentationModel.onPlaceOffer();
+        presentationModel.placeOffer();
     }
 
     @FXML
     void onShowPayFundsScreen() {
+        Popups.openInfo("To ensure that both traders are behaving fair you need to put in a security deposit to an " +
+                "offer. That will be refunded to you after the trade has successful completed.");
+        /*
+          Popups.openInfo("To ensure that both traders are behaving fair you need to put in a security deposit to an " +
+                "offer. That will be refunded to you after the trade has successful completed. In case of a " +
+                "dispute and the arbitrator will take the security deposit from the dishonest trader as his payment " +
+                "for the dispute resolution. The security deposit will be included in the deposit transaction at the " +
+                "moment when a trader accept your offer. As long as your offer is not taken by another trader, " +
+                "the security deposit will not leave your trading wallet, and will be refunded when you cancel your " +
+                "offer.");
+         */
         priceAmountPane.setInactive();
 
         showPaymentInfoScreenButton.setVisible(false);
@@ -360,8 +374,6 @@ public class CreateOfferViewCB extends CachedViewCB<CreateOfferPM> {
         priceFiatLabel.textProperty().bind(presentationModel.fiatCode);
         volumeFiatLabel.textProperty().bind(presentationModel.fiatCode);
         minAmountBtcLabel.textProperty().bind(presentationModel.btcCode);
-        priceDescriptionLabel.textProperty().bind(presentationModel.fiatCode);
-        volumeDescriptionLabel.textProperty().bind(presentationModel.fiatCode);//Price per Bitcoin in EUR
 
         priceDescriptionLabel.textProperty().bind(createStringBinding(() ->
                         BSResources.get("createOffer.amountPriceBox.priceDescription",
@@ -402,7 +414,6 @@ public class CreateOfferViewCB extends CachedViewCB<CreateOfferPM> {
         // buttons
         placeOfferButton.visibleProperty().bind(presentationModel.isPlaceOfferButtonVisible);
         placeOfferButton.disableProperty().bind(presentationModel.isPlaceOfferButtonDisabled);
-        //  closeButton.visibleProperty().bind(presentationModel.isCloseButtonVisible);
     }
 
     private void showDetailsScreen() {
@@ -459,7 +470,6 @@ public class CreateOfferViewCB extends CachedViewCB<CreateOfferPM> {
     }
 
     private void initEditIcons() {
-        advancedScreenInited = true;
         acceptedCountriesLabelIcon.setId("clickable-icon");
         AwesomeDude.setIcon(acceptedCountriesLabelIcon, AwesomeIcon.EDIT_SIGN);
         Tooltip.install(acceptedCountriesLabelIcon, new Tooltip(BSResources.get("shared.openSettings")));

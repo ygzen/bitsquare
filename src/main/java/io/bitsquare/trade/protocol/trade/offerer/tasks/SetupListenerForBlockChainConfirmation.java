@@ -17,7 +17,6 @@
 
 package io.bitsquare.trade.protocol.trade.offerer.tasks;
 
-import io.bitsquare.trade.handlers.ExceptionHandler;
 import io.bitsquare.trade.handlers.ResultHandler;
 import io.bitsquare.trade.protocol.trade.offerer.BuyerAcceptsOfferProtocolListener;
 
@@ -30,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class SetupListenerForBlockChainConfirmation {
     private static final Logger log = LoggerFactory.getLogger(SetupListenerForBlockChainConfirmation.class);
 
-    public static void run(ResultHandler resultHandler, ExceptionHandler exceptionHandler,
+    public static void run(ResultHandler resultHandler,
                            Transaction depositTransaction, BuyerAcceptsOfferProtocolListener listener) {
         log.trace("Run task");
         //TODO
@@ -40,9 +39,6 @@ public class SetupListenerForBlockChainConfirmation {
             @Override
             public void onConfidenceChanged(Transaction tx, ChangeReason reason) {
                 log.trace("onConfidenceChanged " + tx.getConfidence());
-                if (reason == ChangeReason.SEEN_PEERS) {
-                    listener.onDepositTxConfirmedUpdate(tx.getConfidence());
-                }
                 if (reason == ChangeReason.TYPE &&
                         tx.getConfidence().getConfidenceType() == TransactionConfidence.ConfidenceType.BUILDING) {
                     listener.onDepositTxConfirmedInBlockchain();

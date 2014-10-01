@@ -20,9 +20,10 @@ package io.bitsquare.gui.util;
 import javafx.scene.paint.*;
 
 public class Colors {
-    public static final Paint YELLOW = Color.valueOf("#edc035");
-    public static final Paint BLUE = Color.valueOf("#0096c9");
-    public static final Paint LIGHT_GREY = Color.valueOf("#f4f4f4");
+    public static final Paint BLUE = Color.valueOf("#0f87c3");
+    public static final Paint LIGHT_GREY = Color.valueOf("#CCCCCC");
+    public static final Paint MID_GREY = Color.valueOf("#666666");
     public static final Paint DARK_GREY = Color.valueOf("#333333");
+    public static final Paint GREEN = Color.valueOf("#008800");
 
 }

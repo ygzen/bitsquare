@@ -1,4 +1,6 @@
-![Bitsquare Logo](http://bitsquare.io/images/logo_with_title_border_240_240.png)
+![Bitsquare Logo](http://bitsquare.io/images/logo_240.png)
+
+[![Build Status](https://travis-ci.org/bitsquare/bitsquare.svg?branch=master)](https://travis-ci.org/bitsquare/bitsquare)
 
 ## About
 Bitsquare is a **P2P Fiat-BTC Exchange**.   
@@ -6,23 +8,19 @@ It allows to trade fiat money (USD, EURO, ...) for Bitcoins without relying on a
 Instead, all participants form a peer to peer market.
 
 ## Dependencies
-The project use **Java 8** and **Maven**.  
-We use the **BitcoinJ** library and **TomP2P** for DHT and direct messaging.
+
+ - [JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+
+For installing Java 8 on Linux user that:  
+sudo apt-get purge openjdk*  
+sudo add-apt-repository -y ppa:webupd8team/java  
+sudo apt-get update  
+sudo apt-get install oracle-java8-installer  
 
 ## Development setup
 
-### Build the 2 master branches of the external libraries:
-
-We use [that fork](https://github.com/bitsquare/TomP2P) from the actual TomP2P master branch.  
-You need to check that branch out and deploy it to the local maven repository.  
-Build the project with:  
-**mvn clean install -DskipTests**  (DskipTests because some unit tests are failing in the master branch)
-
-We use also [that fork](https://github.com/bitsquare/bitcoinj) of the latest BitcoinJ master branch.  
-You need to check that branch out as well and deploy it to the local maven repository.  
-Build the project with:  
-**mvn clean install**
-
+    git clone https://github.com/bitsquare/bitsquare.git
+    ./gradlew build
 
 ### Regtest mode for local testing  
 For local testing it is best to use the **regtest** mode from the Bitcoin QT client.  
@@ -50,7 +48,7 @@ You can generate coins on demand with the Bitcoin QT client with the following c
 **setgenerate true 101**  
 101 is used only for the first start because of the coin maturity of 100 blocks. Later for mining of a single block you can use 1 as number of blocks to be created.
 
-More information about the regtest mode can be found [here](https://bitcoinj.github.io/testing).  
+More information about the regtest mode can be found [here](https://bitcoinj.github.io/testing) or [here](https://bitcoin.org/en/developer-examples#regtest-mode).  
 
 The network mode is defined in the guice module (BitSquareModule) and is default set to regtest.  
 Testnet should also work, but was not tested for a while as for developing regtest is much more convenient.  
@@ -66,7 +64,7 @@ Please don't use main net with real money, as the software is under heavy develo
 
 ## Communication channels:
 * [Mailing list](https://groups.google.com/forum/#!forum/bitsquare)
-* [IRC](https://webchat.freenode.net/?channels=bitsquare.io)
+* [IRC](https://webchat.freenode.net/?channels=bitsquare)
 * [Bitcoin forum](https://bitcointalk.org/index.php?topic=647457)
 * [Twitter](https://twitter.com/bitsquare_)
 * [Email](mailto:team@bitsquare.io)

@@ -30,19 +30,20 @@ import io.bitsquare.gui.util.Profiler;
 import io.bitsquare.msg.MessageFacade;
 import io.bitsquare.msg.listeners.BootstrapListener;
 import io.bitsquare.persistence.Persistence;
+import io.bitsquare.trade.Trade;
 import io.bitsquare.trade.TradeManager;
 import io.bitsquare.user.User;
-
-import com.google.bitcoin.core.Coin;
 
 import com.google.inject.Inject;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 
 import org.slf4j.Logger;
@@ -64,9 +65,8 @@ class MainModel extends UIModel {
     final BooleanProperty backendInited = new SimpleBooleanProperty();
     final DoubleProperty networkSyncProgress = new SimpleDoubleProperty();
     final BooleanProperty networkSyncComplete = new SimpleBooleanProperty();
-    final BooleanProperty takeOfferRequested = new SimpleBooleanProperty();
-    final ObjectProperty<Coin> balance = new SimpleObjectProperty<>();
-
+    //  final ObjectProperty<Coin> balance = new SimpleObjectProperty<>();
+    final IntegerProperty numPendingTrades = new SimpleIntegerProperty(0);
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Constructor
@@ -148,13 +148,13 @@ class MainModel extends UIModel {
                 onFacadesInitialised();
 
 
-            walletFacade.addBalanceListener(new BalanceListener() {
+          /*  walletFacade.addBalanceListener(new BalanceListener() {
                 @Override
                 public void onBalanceChanged(Coin balance) {
                     updateBalance(balance);
                 }
             });
-            updateBalance(walletFacade.getWalletBalance());
+            updateBalance(walletFacade.getWalletBalance());*/
         });
     }
 
@@ -187,7 +187,7 @@ class MainModel extends UIModel {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     private void onFacadesInitialised() {
-        // TODO Consider to use version from Mike Hearn
+        // TODO Consider to use version sync notification pane from Mike Hearn
         walletFacade.addDownloadListener(new WalletFacade.DownloadListener() {
             @Override
             public void progress(double percent) {
@@ -200,12 +200,18 @@ class MainModel extends UIModel {
             }
         });
 
-        tradeManager.addTakeOfferRequestListener((offerId, sender) -> takeOfferRequested.set(true));
+        tradeManager.getPendingTrades().addListener((MapChangeListener<String,
+                Trade>) change -> updateNumPendingTrades());
+        updateNumPendingTrades();
 
         backendInited.set(true);
     }
 
-    private void updateBalance(Coin balance) {
-        this.balance.set(balance);
+    private void updateNumPendingTrades() {
+        numPendingTrades.set(tradeManager.getPendingTrades().size());
     }
+
+   /* private void updateBalance(Coin balance) {
+        this.balance.set(balance);
+    }*/
 }

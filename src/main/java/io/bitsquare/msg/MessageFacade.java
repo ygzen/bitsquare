@@ -135,25 +135,20 @@ public class MessageFacade implements MessageBroker {
 
     public void getPeerAddress(PublicKey publicKey, GetPeerAddressListener listener) {
         final Number160 locationKey = Utils.makeSHAHash(publicKey.getEncoded());
-        try {
-            FutureGet futureGet = p2pNode.getDomainProtectedData(locationKey, publicKey);
+        FutureGet futureGet = p2pNode.getDomainProtectedData(locationKey, publicKey);
 
-            futureGet.addListener(new BaseFutureAdapter<BaseFuture>() {
-                @Override
-                public void operationComplete(BaseFuture baseFuture) throws Exception {
-                    if (baseFuture.isSuccess() && futureGet.data() != null) {
-                        final PeerAddress peerAddress = (PeerAddress) futureGet.data().object();
-                        Platform.runLater(() -> listener.onResult(peerAddress));
-                    }
-                    else {
-                        Platform.runLater(listener::onFailed);
-                    }
+        futureGet.addListener(new BaseFutureAdapter<BaseFuture>() {
+            @Override
+            public void operationComplete(BaseFuture baseFuture) throws Exception {
+                if (baseFuture.isSuccess() && futureGet.data() != null) {
+                    final PeerAddress peerAddress = (PeerAddress) futureGet.data().object();
+                    Platform.runLater(() -> listener.onResult(peerAddress));
                 }
-            });
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            log.error(e.toString());
-        }
+                else {
+                    Platform.runLater(listener::onFailed);
+                }
+            }
+        });
     }
 
 
@@ -191,7 +186,7 @@ public class MessageFacade implements MessageBroker {
                             });
 
                             // TODO will be removed when we don't use polling anymore
-                            updateInvalidationTimestamp(locationKey);
+                            writeInvalidationTimestampToDHT(locationKey);
                             log.trace("Add offer to DHT was successful. Added data: [locationKey: " + locationKey +
                                     ", value: " + offerData + "]");
                         });
@@ -213,7 +208,7 @@ public class MessageFacade implements MessageBroker {
                     });
                 }
             });
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             Platform.runLater(() -> {
                 addOfferListener.onFailed("Add offer to DHT failed with an exception.", e);
                 log.error("Add offer to DHT failed with an exception: " + e.getMessage());
@@ -246,7 +241,7 @@ public class MessageFacade implements MessageBroker {
                                     log.error("Remove offer from DHT failed. Error: " + e.getMessage());
                                 }
                             });
-                            updateInvalidationTimestamp(locationKey);
+                            writeInvalidationTimestampToDHT(locationKey);
                         });
 
                         log.trace("Remove offer from DHT was successful. Removed data: [key: " + locationKey + ", " +
@@ -263,7 +258,7 @@ public class MessageFacade implements MessageBroker {
                     log.error("Remove offer from DHT failed. Error: " + t.getMessage());
                 }
             });
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             log.error("Remove offer from DHT failed. Error: " + e.getMessage());
         }
@@ -354,7 +349,18 @@ public class MessageFacade implements MessageBroker {
                 @Override
                 public void operationComplete(BaseFuture future) throws Exception {
                     Platform.runLater(() -> arbitratorListeners.stream().forEach(listener ->
-                            listener.onArbitratorAdded(arbitratorData, addFuture.isSuccess())));
+                    {
+                        try {
+                            Object arbitratorDataObject = arbitratorData.object();
+                            if (arbitratorDataObject instanceof Arbitrator) {
+                                listener.onArbitratorAdded((Arbitrator) arbitratorDataObject);
+                            }
+                        } catch (ClassNotFoundException | IOException e) {
+                            e.printStackTrace();
+                            log.error(e.toString());
+                        }
+                    }));
+
                     if (addFuture.isSuccess()) {
                         log.trace("Add arbitrator to DHT was successful. Stored data: [key: " + locationKey + ", " +
                                 "values: " + arbitratorData + "]");
@@ -364,12 +370,12 @@ public class MessageFacade implements MessageBroker {
                     }
                 }
             });
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void removeArbitrator(Arbitrator arbitrator) throws IOException, ClassNotFoundException {
+    public void removeArbitrator(Arbitrator arbitrator) throws IOException {
         Number160 locationKey = Number160.createHash(ARBITRATORS_ROOT);
         final Data arbitratorData = new Data(arbitrator);
         FutureRemove removeFuture = p2pNode.removeFromDataMap(locationKey, arbitratorData);
@@ -377,7 +383,19 @@ public class MessageFacade implements MessageBroker {
             @Override
             public void operationComplete(BaseFuture future) throws Exception {
                 Platform.runLater(() -> arbitratorListeners.stream().forEach(listener ->
-                        listener.onArbitratorRemoved(arbitratorData, removeFuture.isSuccess())));
+                {
+                    for (Data arbitratorData : removeFuture.dataMap().values()) {
+                        try {
+                            Object arbitratorDataObject = arbitratorData.object();
+                            if (arbitratorDataObject instanceof Arbitrator) {
+                                Arbitrator arbitrator = (Arbitrator) arbitratorDataObject;
+                                listener.onArbitratorRemoved(arbitrator);
+                            }
+                        } catch (ClassNotFoundException | IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }));
                 if (removeFuture.isSuccess()) {
                     log.trace("Remove arbitrator from DHT was successful. Stored data: [key: " + locationKey + ", " +
                             "values: " + arbitratorData + "]");
@@ -395,8 +413,23 @@ public class MessageFacade implements MessageBroker {
         futureGet.addListener(new BaseFutureAdapter<BaseFuture>() {
             @Override
             public void operationComplete(BaseFuture baseFuture) throws Exception {
-                Platform.runLater(() -> arbitratorListeners.stream().forEach(listener -> listener
-                        .onArbitratorsReceived(futureGet.dataMap(), baseFuture.isSuccess())));
+                Platform.runLater(() -> arbitratorListeners.stream().forEach(listener ->
+                {
+                    List<Arbitrator> arbitrators = new ArrayList<>();
+                    for (Data arbitratorData : futureGet.dataMap().values()) {
+                        try {
+                            Object arbitratorDataObject = arbitratorData.object();
+                            if (arbitratorDataObject instanceof Arbitrator) {
+                                arbitrators.add((Arbitrator) arbitratorDataObject);
+                            }
+                        } catch (ClassNotFoundException | IOException e) {
+                            e.printStackTrace();
+                            log.error("Get arbitrators from DHT failed with exception:" + e.getMessage());
+                        }
+                    }
+
+                    listener.onArbitratorsReceived(arbitrators);
+                }));
                 if (baseFuture.isSuccess()) {
                     log.trace("Get arbitrators from DHT was successful. Stored data: [key: " + locationKey + ", " +
                             "values: " + futureGet.dataMap() + "]");
@@ -448,7 +481,7 @@ public class MessageFacade implements MessageBroker {
     // Polling
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    private void updateInvalidationTimestamp(Number160 locationKey) {
+    private void writeInvalidationTimestampToDHT(Number160 locationKey) {
         invalidationTimestamp.set(System.currentTimeMillis());
         try {
             FuturePut putFuture = p2pNode.putData(getInvalidatedLocationKey(locationKey),
@@ -468,7 +501,7 @@ public class MessageFacade implements MessageBroker {
                     log.error("Update invalidationTimestamp to DHT failed with exception:" + t.getMessage());
                 }
             });
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             log.error("Update invalidationTimestamp to DHT failed with exception:" + e.getMessage());
         }
     }
@@ -477,43 +510,41 @@ public class MessageFacade implements MessageBroker {
         return invalidationTimestamp;
     }
 
-    public void requestInvalidationTimeStamp(String currencyCode) {
+    public void requestInvalidationTimeStampFromDHT(String currencyCode) {
         Number160 locationKey = Number160.createHash(currencyCode);
-        try {
-            FutureGet getFuture = p2pNode.getData(getInvalidatedLocationKey(locationKey));
-            getFuture.addListener(new BaseFutureListener<BaseFuture>() {
-                @Override
-                public void operationComplete(BaseFuture future) throws Exception {
-                    if (getFuture.isSuccess()) {
-                        Data data = getFuture.data();
-                        if (data != null && data.object() instanceof Long) {
-                            final Object object = data.object();
-                            Platform.runLater(() -> {
-                                Long timeStamp = (Long) object;
-                                // log.trace("Get invalidationTimestamp from DHT was successful. TimeStamp=" + 
-                                // timeStamp);
-                                invalidationTimestamp.set(timeStamp);
-                            });
-                        }
-                        else {
-                            log.error("Get invalidationTimestamp from DHT failed. Data = " + data);
-                        }
+        FutureGet getFuture = p2pNode.getData(getInvalidatedLocationKey(locationKey));
+        getFuture.addListener(new BaseFutureListener<BaseFuture>() {
+            @Override
+            public void operationComplete(BaseFuture future) throws Exception {
+                if (getFuture.isSuccess()) {
+                    Data data = getFuture.data();
+                    if (data != null && data.object() instanceof Long) {
+                        final Object object = data.object();
+                        Platform.runLater(() -> {
+                            Long timeStamp = (Long) object;
+                            //log.trace("Get invalidationTimestamp from DHT was successful. TimeStamp=" + timeStamp);
+                            invalidationTimestamp.set(timeStamp);
+                        });
                     }
                     else {
-                        log.error("Get invalidationTimestamp from DHT failed with reason:" + getFuture.failedReason());
+                        log.error("Get invalidationTimestamp from DHT failed. Data = " + data);
                     }
                 }
-
-                @Override
-                public void exceptionCaught(Throwable t) throws Exception {
-                    log.error("Get invalidationTimestamp from DHT failed with exception:" + t.getMessage());
-                    t.printStackTrace();
+                else if (getFuture.data() == null) {
+                    // OK as nothing is set at the moment
+                    // log.trace("Get invalidationTimestamp from DHT returns null. That is ok for the startup.");
                 }
-            });
-        } catch (IOException | ClassNotFoundException e) {
-            log.error("Get invalidationTimestamp from DHT failed with exception:" + e.getMessage());
-            e.printStackTrace();
-        }
+                else {
+                    log.error("Get invalidationTimestamp from DHT failed with reason:" + getFuture.failedReason());
+                }
+            }
+
+            @Override
+            public void exceptionCaught(Throwable t) throws Exception {
+                log.error("Get invalidationTimestamp from DHT failed with exception:" + t.getMessage());
+                t.printStackTrace();
+            }
+        });
     }
 
     private Number160 getInvalidatedLocationKey(Number160 locationKey) {

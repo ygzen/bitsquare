@@ -137,6 +137,10 @@ public class Offer extends JsonEntity implements Serializable {
         return direction;
     }
 
+    public Direction getMirroredDirection() {
+        return direction == Direction.BUY ? Direction.SELL : Direction.BUY;
+    }
+
     public BankAccountType getBankAccountType() {
         return bankAccountType;
     }

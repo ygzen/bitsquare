@@ -22,7 +22,7 @@ import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.OverlayManager;
 import io.bitsquare.gui.components.InputTextField;
 import io.bitsquare.gui.components.Popups;
-import io.bitsquare.gui.main.trade.OrderBookInfo;
+import io.bitsquare.gui.main.trade.TradeNavigator;
 import io.bitsquare.gui.util.ImageUtil;
 import io.bitsquare.gui.util.validation.OptionalBtcValidator;
 import io.bitsquare.gui.util.validation.OptionalFiatValidator;
@@ -70,19 +70,18 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
     private final OptionalBtcValidator optionalBtcValidator;
     private final OptionalFiatValidator optionalFiatValidator;
 
-    private Navigation.Item navigationItem;
     private boolean detailsVisible;
     private boolean advancedScreenInited;
 
     private ImageView expand;
     private ImageView collapse;
 
-    @FXML CheckBox extendedCheckBox;
+    @FXML CheckBox showOnlyMatchingCheckBox;
     @FXML Label amountBtcLabel, priceDescriptionLabel, priceFiatLabel, volumeDescriptionLabel,
             volumeFiatLabel, extendedButton1Label, extendedButton2Label, extendedCheckBoxLabel;
     @FXML InputTextField volumeTextField, amountTextField, priceTextField;
-    @FXML TableView<OrderBookListItem> orderBookTable;
-    @FXML Button createOfferButton, showAdvancedSettingsButton, extendedButton1, extendedButton2;
+    @FXML TableView<OrderBookListItem> table;
+    @FXML Button createOfferButton, showAdvancedSettingsButton, openCountryFilterButton, openPaymentMethodsFilterButton;
     @FXML TableColumn<OrderBookListItem, OrderBookListItem> priceColumn, amountColumn, volumeColumn,
             directionColumn, countryColumn, bankAccountTypeColumn;
 
@@ -119,8 +118,11 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
         setBankAccountTypeColumnCellFactory();
         setDirectionColumnCellFactory();
 
-        orderBookTable.getSortOrder().add(priceColumn);
-        orderBookTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.getSortOrder().add(priceColumn);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        Label placeholder = new Label("No offers available.\nTry to change your filter or account settings.");
+        placeholder.setWrapText(true);
+        table.setPlaceholder(placeholder);
 
         setupBindings();
         setupValidators();
@@ -139,13 +141,11 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
 
         // setOrderBookInfo has been called before
         SortedList<OrderBookListItem> offerList = presentationModel.getOfferList();
-        orderBookTable.setItems(offerList);
-        offerList.comparatorProperty().bind(orderBookTable.comparatorProperty());
-
-
-        priceColumn.setSortType((presentationModel.getOrderBookInfo().getDirection() == Direction.BUY) ?
+        table.setItems(offerList);
+        offerList.comparatorProperty().bind(table.comparatorProperty());
+        priceColumn.setSortType((presentationModel.getDirection() == Direction.BUY) ?
                 TableColumn.SortType.ASCENDING : TableColumn.SortType.DESCENDING);
-        orderBookTable.sort();
+        table.sort();
     }
 
     @SuppressWarnings("EmptyMethod")
@@ -175,11 +175,8 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
     // Setter
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    public void setOrderBookInfo(OrderBookInfo orderBookInfo) {
-        presentationModel.setOrderBookInfo(orderBookInfo);
-        navigationItem = (orderBookInfo.getDirection() == Direction.BUY) ?
-                Navigation.Item.BUY : Navigation.Item.SELL;
-
+    public void setDirection(Direction direction) {
+        presentationModel.setDirection(direction);
     }
 
 
@@ -190,9 +187,15 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
     @FXML
     void createOffer() {
         if (presentationModel.isRegistered()) {
-            createOfferButton.setDisable(true);
-            navigation.navigationTo(Navigation.Item.MAIN, navigationItem,
-                    Navigation.Item.CREATE_OFFER);
+            if (presentationModel.getDirection() == Direction.BUY) {
+                createOfferButton.setDisable(true);
+                ((TradeNavigator) parent).createOffer(presentationModel.getAmountAsCoin(),
+                        presentationModel.getPriceAsCoin());
+            }
+            else {
+                Popups.openWarningPopup("Under construction", "At the moment only the creation of buy offers is " +
+                        "implemented.");
+            }
         }
         else {
             openSetupScreen();
@@ -214,6 +217,21 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
         }
     }
 
+    @FXML
+    void onShowOnlyMatching() {
+        Popups.openWarningPopup("Under construction", "This feature is not implemented yet.");
+    }
+
+    @FXML
+    void onOpenCountryFilter() {
+        Popups.openWarningPopup("Under construction", "This feature is not implemented yet.");
+    }
+
+    @FXML
+    void onOpenPaymentMethodsFilter() {
+        Popups.openWarningPopup("Under construction", "This feature is not implemented yet.");
+    }
+    
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Private methods
@@ -236,12 +254,10 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
                 "You don't have a trading account.", actions);
     }
 
-    //TODO not updated yet
     private void takeOffer(Offer offer) {
         if (presentationModel.isRegistered()) {
-            presentationModel.getOrderBookInfo().setOffer(offer);
-            navigation.navigationTo(Navigation.Item.MAIN, navigationItem,
-                    Navigation.Item.TAKE_OFFER);
+            ((TradeNavigator) parent).takeOffer(presentationModel.getAmountAsCoin(),
+                    presentationModel.getPriceAsCoin(), offer);
         }
         else {
             openSetupScreen();
@@ -263,7 +279,7 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
                     Navigation.Item.ACCOUNT_SETTINGS,
                     Navigation.Item.RESTRICTIONS);
         else
-            orderBookTable.getSelectionModel().clearSelection();
+            table.getSelectionModel().clearSelection();
     }
 
     private void showDetailsScreen() {
@@ -290,14 +306,14 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
         extendedCheckBoxLabel.setVisible(visible);
         extendedCheckBoxLabel.setManaged(visible);
 
-        extendedButton1.setVisible(visible);
-        extendedButton1.setManaged(visible);
+        openCountryFilterButton.setVisible(visible);
+        openCountryFilterButton.setManaged(visible);
 
-        extendedButton2.setVisible(visible);
-        extendedButton2.setManaged(visible);
+        openPaymentMethodsFilterButton.setVisible(visible);
+        openPaymentMethodsFilterButton.setManaged(visible);
 
-        extendedCheckBox.setVisible(visible);
-        extendedCheckBox.setManaged(visible);
+        showOnlyMatchingCheckBox.setVisible(visible);
+        showOnlyMatchingCheckBox.setManaged(visible);
     }
 
 
@@ -354,7 +370,7 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
                         OrderBookListItem>>() {
                     @Override
                     public TableCell<OrderBookListItem, OrderBookListItem> call(
-                            TableColumn<OrderBookListItem, OrderBookListItem> directionColumn) {
+                            TableColumn<OrderBookListItem, OrderBookListItem> column) {
                         return new TableCell<OrderBookListItem, OrderBookListItem>() {
                             @Override
                             public void updateItem(final OrderBookListItem item, boolean empty) {
@@ -373,7 +389,7 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
                         OrderBookListItem>>() {
                     @Override
                     public TableCell<OrderBookListItem, OrderBookListItem> call(
-                            TableColumn<OrderBookListItem, OrderBookListItem> directionColumn) {
+                            TableColumn<OrderBookListItem, OrderBookListItem> column) {
                         return new TableCell<OrderBookListItem, OrderBookListItem>() {
                             @Override
                             public void updateItem(final OrderBookListItem item, boolean empty) {
@@ -392,7 +408,7 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
                         OrderBookListItem>>() {
                     @Override
                     public TableCell<OrderBookListItem, OrderBookListItem> call(
-                            TableColumn<OrderBookListItem, OrderBookListItem> directionColumn) {
+                            TableColumn<OrderBookListItem, OrderBookListItem> column) {
                         return new TableCell<OrderBookListItem, OrderBookListItem>() {
                             @Override
                             public void updateItem(final OrderBookListItem item, boolean empty) {
@@ -412,7 +428,7 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
 
                     @Override
                     public TableCell<OrderBookListItem, OrderBookListItem> call(
-                            TableColumn<OrderBookListItem, OrderBookListItem> directionColumn) {
+                            TableColumn<OrderBookListItem, OrderBookListItem> column) {
                         return new TableCell<OrderBookListItem, OrderBookListItem>() {
                             final ImageView iconView = new ImageView();
                             final Button button = new Button();
@@ -496,7 +512,7 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
 
                     @Override
                     public TableCell<OrderBookListItem, OrderBookListItem> call(
-                            TableColumn<OrderBookListItem, OrderBookListItem> directionColumn) {
+                            TableColumn<OrderBookListItem, OrderBookListItem> column) {
                         return new TableCell<OrderBookListItem, OrderBookListItem>() {
                             final HBox hBox = new HBox();
 
@@ -530,7 +546,7 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
                         OrderBookListItem>>() {
                     @Override
                     public TableCell<OrderBookListItem, OrderBookListItem> call(
-                            TableColumn<OrderBookListItem, OrderBookListItem> directionColumn) {
+                            TableColumn<OrderBookListItem, OrderBookListItem> column) {
                         return new TableCell<OrderBookListItem, OrderBookListItem>() {
                             @Override
                             public void updateItem(final OrderBookListItem orderBookListItem, boolean empty) {
@@ -541,6 +557,5 @@ public class OrderBookViewCB extends CachedViewCB<OrderBookPM> {
                     }
                 });
     }
-
 }
 

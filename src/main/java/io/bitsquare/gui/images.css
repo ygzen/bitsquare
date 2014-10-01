@@ -3,6 +3,10 @@
     -fx-image: url("../../../images/logo_splash.png");
 }
 
+/* notification */
+#notification-logo {
+    -fx-image: url("../../../images/notification_logo.png");
+}
 
 /* shared*/
 #image-info {
@@ -42,7 +46,7 @@
 
 
 
-/* naviagtion buttons */
+/* navigation buttons */
 #image-nav-home {
     -fx-image: url("../../../images/nav/home.png");
 }

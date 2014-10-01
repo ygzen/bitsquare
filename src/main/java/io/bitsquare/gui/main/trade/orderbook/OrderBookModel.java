@@ -19,7 +19,6 @@ package io.bitsquare.gui.main.trade.orderbook;
 
 import io.bitsquare.bank.BankAccount;
 import io.bitsquare.gui.UIModel;
-import io.bitsquare.gui.main.trade.OrderBookInfo;
 import io.bitsquare.gui.util.BSFormatter;
 import io.bitsquare.locale.Country;
 import io.bitsquare.locale.CurrencyUtil;
@@ -48,7 +47,6 @@ import javafx.collections.transformation.SortedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.bitsquare.gui.util.BSFormatter.reduceTo4Decimals;
 
 /**
  * It holds the scope specific domain data for either a buy or sell UI screen.
@@ -59,11 +57,12 @@ class OrderBookModel extends UIModel {
     private final User user;
     private final OrderBook orderBook;
     private final Settings settings;
+    private BSFormatter formatter;
     private final TradeManager tradeManager;
 
     private final FilteredList<OrderBookListItem> filteredItems;
     private final SortedList<OrderBookListItem> sortedItems;
-    private OrderBookInfo orderBookInfo;
+    // private OrderBookInfo orderBookInfo;
     private ChangeListener<BankAccount> bankAccountChangeListener;
 
     private final ObjectProperty<Coin> amountAsCoin = new SimpleObjectProperty<>();
@@ -75,6 +74,7 @@ class OrderBookModel extends UIModel {
     final StringProperty btcCode = new SimpleStringProperty();
     final ObjectProperty<Country> bankAccountCountry = new SimpleObjectProperty<>();
     final ObjectProperty<Comparator<OrderBookListItem>> comparator = new SimpleObjectProperty<>();
+    private Direction direction;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -85,11 +85,13 @@ class OrderBookModel extends UIModel {
     OrderBookModel(User user,
                    TradeManager tradeManager,
                    OrderBook orderBook,
-                   Settings settings) {
+                   Settings settings,
+                   BSFormatter formatter) {
         this.tradeManager = tradeManager;
         this.user = user;
         this.orderBook = orderBook;
         this.settings = settings;
+        this.formatter = formatter;
 
         filteredItems = new FilteredList<>(orderBook.getOrderBookListItems());
         sortedItems = new SortedList<>(filteredItems);
@@ -139,10 +141,6 @@ class OrderBookModel extends UIModel {
     // Public methods
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    void setOrderBookInfo(OrderBookInfo orderBookInfo) {
-        this.orderBookInfo = orderBookInfo;
-    }
-
     void removeOffer(Offer offer) {
         tradeManager.removeOffer(offer);
     }
@@ -168,7 +166,8 @@ class OrderBookModel extends UIModel {
                     !volumeAsFiat.get().isZero() &&
                     !priceAsFiat.get().isZero()) {
                 // If we got a btc value with more then 4 decimals we convert it to max 4 decimals
-                amountAsCoin.set(reduceTo4Decimals(new ExchangeRate(priceAsFiat.get()).fiatToCoin(volumeAsFiat.get())));
+                amountAsCoin.set(formatter.reduceTo4Decimals(new ExchangeRate(priceAsFiat.get()).fiatToCoin
+                        (volumeAsFiat.get())));
             }
         } catch (Throwable t) {
             // Should be never reached
@@ -184,11 +183,11 @@ class OrderBookModel extends UIModel {
         boolean countryResult = offer.getAcceptedCountries().contains(user.getCurrentBankAccount().getCountry());
         if (!countryResult)
             restrictionsInfo.set("This offer requires that the payments account resides in one of those countries:\n" +
-                    BSFormatter.countryLocalesToString(offer.getAcceptedCountries()) +
+                    formatter.countryLocalesToString(offer.getAcceptedCountries()) +
                     "\n\nThe country of your payments account (" + user.getCurrentBankAccount().getCountry().getName() +
                     ") is not included in that list.");
 
-        // TODO Leave that for now as it is not so clear how the restrictions will be handled
+        // TODO Not so clear how the restrictions will be handled
         // we might get rid of languages (handles viy arbitrators)
         /*
         // disjoint returns true if the two specified collections have no elements in common.
@@ -211,21 +210,22 @@ class OrderBookModel extends UIModel {
     // Setters
     ///////////////////////////////////////////////////////////////////////////////////////////
 
+    void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
     void setAmount(Coin amount) {
         amountAsCoin.set(amount);
-        orderBookInfo.setAmount(amount);
         applyFilter();
     }
 
     void setPrice(Fiat price) {
         priceAsFiat.set(price);
-        orderBookInfo.setPrice(price);
         applyFilter();
     }
 
     void setVolume(Fiat volume) {
         volumeAsFiat.set(volume);
-        orderBookInfo.setVolume(volume);
         applyFilter();
     }
 
@@ -270,10 +270,9 @@ class OrderBookModel extends UIModel {
         return volumeAsFiat;
     }
 
-    OrderBookInfo getOrderBookInfo() {
-        return orderBookInfo;
+    Direction getDirection() {
+        return direction;
     }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Private methods
@@ -294,21 +293,23 @@ class OrderBookModel extends UIModel {
         filteredItems.setPredicate(orderBookListItem -> {
             Offer offer = orderBookListItem.getOffer();
 
-            boolean directionResult = offer.getDirection() != orderBookInfo.getDirection();
+            boolean directionResult = offer.getDirection() != direction;
 
             boolean amountResult = true;
-            if (orderBookInfo.getAmount() != null && orderBookInfo.getAmount().isPositive())
-                amountResult = orderBookInfo.getAmount().compareTo(offer.getAmount()) <= 0;
+            if (amountAsCoin.get() != null && amountAsCoin.get().isPositive())
+                amountResult = amountAsCoin.get().compareTo(offer.getAmount()) <= 0 &&
+                        amountAsCoin.get().compareTo(offer.getMinAmount()) >= 0;
 
             boolean priceResult = true;
-            if (orderBookInfo.getPrice() != null && orderBookInfo.getPrice().isPositive()) {
+            if (priceAsFiat.get() != null && priceAsFiat.get().isPositive()) {
                 if (offer.getDirection() == Direction.SELL)
-                    priceResult = orderBookInfo.getPrice().compareTo(offer.getPrice()) >= 0;
+                    priceResult = priceAsFiat.get().compareTo(offer.getPrice()) >= 0;
                 else
-                    priceResult = orderBookInfo.getPrice().compareTo(offer.getPrice()) <= 0;
+                    priceResult = priceAsFiat.get().compareTo(offer.getPrice()) <= 0;
             }
 
             return directionResult && amountResult && priceResult;
         });
     }
+
 }

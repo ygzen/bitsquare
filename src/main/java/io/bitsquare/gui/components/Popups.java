@@ -34,7 +34,6 @@ import javafx.event.ActionEvent;
 import org.controlsfx.control.action.AbstractAction;
 import org.controlsfx.control.action.Action;
 import org.controlsfx.dialog.Dialog;
-import org.controlsfx.dialog.DialogStyle;
 import org.controlsfx.dialog.Dialogs;
 
 import org.slf4j.Logger;
@@ -59,7 +58,7 @@ public class Popups {
 
     // Information
     public static void openInfo(String message) {
-        openInfo(message, null, null);
+        openInfo(message, null);
     }
 
     // Supports blurring the content background
@@ -86,7 +85,6 @@ public class Popups {
                 .message(message)
                 .masthead(masthead)
                 .actions(actions)
-                .style(DialogStyle.UNDECORATED)
                 .showInformation();
     }
 
@@ -169,6 +167,8 @@ public class Popups {
     // Support handling of uncaught exception from any thread (also non gui thread)
     public static void handleUncaughtExceptions(Throwable throwable) {
         // while dev
+        log.error(throwable.getMessage());
+        log.error(throwable.toString());
         throwable.printStackTrace();
 
         Runnable runnable = () -> {

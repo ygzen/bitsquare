@@ -22,9 +22,13 @@ import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.components.InputTextField;
 import io.bitsquare.gui.main.trade.createoffer.CreateOfferViewCB;
 import io.bitsquare.gui.main.trade.orderbook.OrderBookViewCB;
-import io.bitsquare.gui.main.trade.takeoffer.TakeOfferController;
+import io.bitsquare.gui.main.trade.takeoffer.TakeOfferViewCB;
 import io.bitsquare.trade.Direction;
+import io.bitsquare.trade.Offer;
 import io.bitsquare.util.ViewLoader;
+
+import com.google.bitcoin.core.Coin;
+import com.google.bitcoin.utils.Fiat;
 
 import java.io.IOException;
 
@@ -42,17 +46,22 @@ import javafx.scene.control.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TradeViewCB extends CachedViewCB {
+public class TradeViewCB extends CachedViewCB implements TradeNavigator {
     private static final Logger log = LoggerFactory.getLogger(TradeViewCB.class);
 
-    private final OrderBookInfo orderBookInfo = new OrderBookInfo();
+    // private final OrderBookInfo orderBookInfo = new OrderBookInfo();
     private OrderBookViewCB orderBookViewCB;
     private CreateOfferViewCB createOfferViewCB;
-    private TakeOfferController takeOfferController;
+    private TakeOfferViewCB takeOfferViewCB;
     private Node createOfferView;
-    private Navigation navigation;
+    private Node takeOfferView;
+    private final Navigation navigation;
     private Navigation.Listener listener;
     private Navigation.Item navigationItem;
+    private Direction direction;
+    private Coin amount;
+    private Fiat price;
+    private Offer offer;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -72,15 +81,14 @@ public class TradeViewCB extends CachedViewCB {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        direction = (this instanceof BuyViewCB) ? Direction.BUY : Direction.SELL;
+        navigationItem = (direction == Direction.BUY) ? Navigation.Item.BUY : Navigation.Item.SELL;
+
         listener = navigationItems -> {
             if (navigationItems != null && navigationItems.length == 3 && navigationItems[1] == navigationItem) {
                 loadView(navigationItems[2]);
             }
         };
-
-        Direction direction = (this instanceof BuyViewCB) ? Direction.BUY : Direction.SELL;
-        orderBookInfo.setDirection(direction);
-        navigationItem = (direction == Direction.BUY) ? Navigation.Item.BUY : Navigation.Item.SELL;
 
         super.initialize(url, rb);
     }
@@ -101,8 +109,11 @@ public class TradeViewCB extends CachedViewCB {
         tabPane.getTabs().addListener((ListChangeListener<Tab>) change -> {
             change.next();
             List<? extends Tab> removedTabs = change.getRemoved();
-            if (removedTabs.size() == 1 && removedTabs.get(0).getContent().equals(createOfferView)) {
-                onCreateOfferViewRemoved();
+            if (removedTabs.size() == 1) {
+                if (removedTabs.get(0).getContent().equals(createOfferView))
+                    onCreateOfferViewRemoved();
+                else if (removedTabs.get(0).getContent().equals(takeOfferView))
+                    onTakeOfferViewRemoved();
             }
         });
 
@@ -114,12 +125,36 @@ public class TradeViewCB extends CachedViewCB {
     @Override
     public void deactivate() {
         super.deactivate();
+
+        navigation.removeListener(listener);
     }
 
     @SuppressWarnings("EmptyMethod")
     @Override
     public void terminate() {
         super.terminate();
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // TradeNavigator implementation
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public void createOffer(Coin amount, Fiat price) {
+        this.amount = amount;
+        this.price = price;
+        navigation.navigationTo(Navigation.Item.MAIN, navigationItem,
+                Navigation.Item.CREATE_OFFER);
+    }
+
+    @Override
+    public void takeOffer(Coin amount, Fiat price, Offer offer) {
+        this.amount = amount;
+        this.price = price;
+        this.offer = offer;
+        navigation.navigationTo(Navigation.Item.MAIN, navigationItem,
+                Navigation.Item.TAKE_OFFER);
     }
 
 
@@ -137,13 +172,14 @@ public class TradeViewCB extends CachedViewCB {
                     new ViewLoader(getClass().getResource(navigationItem.getFxmlUrl()), false);
             try {
                 final Parent view = orderBookLoader.load();
-                final Tab tab = new Tab("Orderbook");
+                final Tab tab = new Tab(direction == Direction.BUY ? "Buy Bitcoin" : "Sell Bitcoin");
                 tab.setClosable(false);
                 tab.setContent(view);
                 tabPane.getTabs().add(tab);
                 orderBookViewCB = orderBookLoader.getController();
                 orderBookViewCB.setParent(this);
-                orderBookViewCB.setOrderBookInfo(orderBookInfo);
+
+                orderBookViewCB.setDirection(direction);
                 // orderBookViewCB.setNavigationListener(n -> loadView(n));
 
                 return orderBookViewCB;
@@ -159,7 +195,7 @@ public class TradeViewCB extends CachedViewCB {
                 createOfferView = loader.load();
                 createOfferViewCB = loader.getController();
                 createOfferViewCB.setParent(this);
-                createOfferViewCB.initWithOrderBookInfo(orderBookInfo);
+                createOfferViewCB.initWithData(direction, amount, price);
                 createOfferViewCB.setCloseListener(this::onCreateOfferViewRemoved);
                 final Tab tab = new Tab("Create offer");
                 tab.setContent(createOfferView);
@@ -170,27 +206,25 @@ public class TradeViewCB extends CachedViewCB {
                 log.error(e.getMessage());
             }
         }
-        else if (navigationItem == Navigation.Item.TAKE_OFFER && takeOfferController == null) {
+        else if (navigationItem == Navigation.Item.TAKE_OFFER && takeOfferViewCB == null &&
+                offer != null) {
             // CreateOffer and TakeOffer must not be cached by ViewLoader as we cannot use a view multiple times
             // in different graphs
-            ViewLoader loader = new ViewLoader(getClass().getResource(navigationItem.getFxmlUrl()), false);
+            ViewLoader loader = new ViewLoader(getClass().getResource(Navigation.Item.TAKE_OFFER.getFxmlUrl()), false);
             try {
-                final Parent view = loader.load();
-                takeOfferController = loader.getController();
-                takeOfferController.setParentController(this);
-                takeOfferController.initWithData(orderBookInfo);
+                takeOfferView = loader.load();
+                takeOfferViewCB = loader.getController();
+                takeOfferViewCB.setParent(this);
+                takeOfferViewCB.initWithData(direction, amount, offer);
+                takeOfferViewCB.setCloseListener(this::onCreateOfferViewRemoved);
                 final Tab tab = new Tab("Take offer");
-                tab.setContent(view);
+                tab.setContent(takeOfferView);
                 tabPane.getTabs().add(tab);
                 tabPane.getSelectionModel().select(tab);
-
-                return takeOfferController;
+                return takeOfferViewCB;
             } catch (IOException e) {
                 log.error(e.getMessage());
             }
-        }
-        else {
-            log.error("navigationItem not supported: " + navigationItem);
         }
         return null;
     }
@@ -200,23 +234,25 @@ public class TradeViewCB extends CachedViewCB {
     // Public
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    //TODO takeOfferController is not updated yet to new UI pattern
-    public void onTakeOfferViewRemoved() {
-        takeOfferController = null;
-    }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Private
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     private void onCreateOfferViewRemoved() {
-        if (createOfferViewCB != null)
-            createOfferViewCB = null;
+        createOfferViewCB = null;
         orderBookViewCB.enableCreateOfferButton();
 
         // update the navigation state
         navigation.navigationTo(Navigation.Item.MAIN, navigationItem, Navigation.Item.ORDER_BOOK);
     }
+
+    private void onTakeOfferViewRemoved() {
+        takeOfferViewCB = null;
+
+        // update the navigation state
+        navigation.navigationTo(Navigation.Item.MAIN, navigationItem, Navigation.Item.ORDER_BOOK);
+    }
+
 }
 

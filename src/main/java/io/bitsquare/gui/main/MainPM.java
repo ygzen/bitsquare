@@ -24,8 +24,10 @@ import io.bitsquare.gui.util.BSFormatter;
 import com.google.inject.Inject;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ListChangeListener;
@@ -39,12 +41,13 @@ class MainPM extends PresentationModel<MainModel> {
     private static final Logger log = LoggerFactory.getLogger(MainPM.class);
 
     final BooleanProperty backendInited = new SimpleBooleanProperty();
-    final StringProperty balance = new SimpleStringProperty();
+    // final StringProperty balance = new SimpleStringProperty();
     final StringProperty bankAccountsComboBoxPrompt = new SimpleStringProperty();
     final BooleanProperty bankAccountsComboBoxDisable = new SimpleBooleanProperty();
     final StringProperty splashScreenInfoText = new SimpleStringProperty();
     final BooleanProperty networkSyncComplete = new SimpleBooleanProperty();
-    final BooleanProperty takeOfferRequested = new SimpleBooleanProperty();
+    final IntegerProperty numPendingTrades = new SimpleIntegerProperty();
+    private BSFormatter formatter;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -52,8 +55,9 @@ class MainPM extends PresentationModel<MainModel> {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     @Inject
-    private MainPM(MainModel model) {
+    private MainPM(MainModel model, BSFormatter formatter) {
         super(model);
+        this.formatter = formatter;
     }
 
 
@@ -68,11 +72,11 @@ class MainPM extends PresentationModel<MainModel> {
 
         backendInited.bind(model.backendInited);
         networkSyncComplete.bind(model.networkSyncComplete);
-        takeOfferRequested.bind(model.takeOfferRequested);
+        numPendingTrades.bind(model.numPendingTrades);
 
         model.networkSyncProgress.addListener((ov, oldValue, newValue) -> {
             if ((double) newValue > 0)
-                splashScreenInfoText.set("Synchronise with network " + BSFormatter.formatToPercent((double) newValue));
+                splashScreenInfoText.set("Synchronise with network " + formatter.formatToPercent((double) newValue));
             else if ((double) newValue == 1)
                 splashScreenInfoText.set("Synchronise with network completed.");
             else
@@ -80,8 +84,8 @@ class MainPM extends PresentationModel<MainModel> {
 
         });
 
-        model.balance.addListener((ov, oldValue, newValue) -> balance.set(BSFormatter.formatCoinWithCode
-                (newValue)));
+        /*model.balance.addListener((ov, oldValue, newValue) -> balance.set(formatter.formatCoinWithCode
+                (newValue)));*/
 
         model.getBankAccounts().addListener((ListChangeListener<BankAccount>) change -> {
             bankAccountsComboBoxDisable.set(change.getList().isEmpty());
@@ -132,7 +136,7 @@ class MainPM extends PresentationModel<MainModel> {
         return new StringConverter<BankAccount>() {
             @Override
             public String toString(BankAccount bankAccount) {
-                return bankAccount.getAccountTitle();
+                return bankAccount.getNameOfBank();
             }
 
             @Override

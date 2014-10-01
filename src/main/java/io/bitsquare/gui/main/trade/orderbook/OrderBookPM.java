@@ -18,7 +18,6 @@
 package io.bitsquare.gui.main.trade.orderbook;
 
 import io.bitsquare.gui.PresentationModel;
-import io.bitsquare.gui.main.trade.OrderBookInfo;
 import io.bitsquare.gui.util.BSFormatter;
 import io.bitsquare.gui.util.validation.InputValidator;
 import io.bitsquare.gui.util.validation.OptionalBtcValidator;
@@ -26,6 +25,9 @@ import io.bitsquare.gui.util.validation.OptionalFiatValidator;
 import io.bitsquare.locale.BSResources;
 import io.bitsquare.trade.Direction;
 import io.bitsquare.trade.Offer;
+
+import com.google.bitcoin.core.Coin;
+import com.google.bitcoin.utils.Fiat;
 
 import com.google.inject.Inject;
 
@@ -36,12 +38,11 @@ import javafx.collections.transformation.SortedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static io.bitsquare.gui.util.BSFormatter.*;
-
 class OrderBookPM extends PresentationModel<OrderBookModel> {
     private static final Logger log = LoggerFactory.getLogger(OrderBookPM.class);
 
     private final OptionalBtcValidator optionalBtcValidator;
+    private BSFormatter formatter;
     private final OptionalFiatValidator optionalFiatValidator;
 
     final StringProperty amount = new SimpleStringProperty();
@@ -59,11 +60,13 @@ class OrderBookPM extends PresentationModel<OrderBookModel> {
     @Inject
     OrderBookPM(OrderBookModel model,
                 OptionalFiatValidator optionalFiatValidator,
-                OptionalBtcValidator optionalBtcValidator) {
+                OptionalBtcValidator optionalBtcValidator,
+                BSFormatter formatter) {
         super(model);
 
         this.optionalFiatValidator = optionalFiatValidator;
         this.optionalBtcValidator = optionalBtcValidator;
+        this.formatter = formatter;
     }
 
 
@@ -106,9 +109,11 @@ class OrderBookPM extends PresentationModel<OrderBookModel> {
         });
 
         // Binding with Bindings.createObjectBinding does not work because of bi-directional binding
-        model.amountAsCoinProperty().addListener((ov, oldValue, newValue) -> amount.set(formatCoin(newValue)));
-        model.priceAsFiatProperty().addListener((ov, oldValue, newValue) -> price.set(formatFiat(newValue)));
-        model.volumeAsFiatProperty().addListener((ov, oldValue, newValue) -> volume.set(formatFiat(newValue)));
+        model.amountAsCoinProperty().addListener((ov, oldValue, newValue) -> amount.set(formatter.formatCoin
+                (newValue)));
+        model.priceAsFiatProperty().addListener((ov, oldValue, newValue) -> price.set(formatter.formatFiat(newValue)));
+        model.volumeAsFiatProperty().addListener((ov, oldValue, newValue) -> volume.set(formatter.formatFiat
+                (newValue)));
     }
 
     @SuppressWarnings("EmptyMethod")
@@ -134,16 +139,21 @@ class OrderBookPM extends PresentationModel<OrderBookModel> {
     // Public methods
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    void setOrderBookInfo(OrderBookInfo orderBookInfo) {
-        model.setOrderBookInfo(orderBookInfo);
-    }
-
     void removeOffer(Offer offer) {
         model.removeOffer(offer);
     }
 
     boolean isTradable(Offer offer) {
         return model.isTradable(offer);
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Setters
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    void setDirection(Direction direction) {
+        model.setDirection(direction);
     }
 
 
@@ -176,15 +186,17 @@ class OrderBookPM extends PresentationModel<OrderBookModel> {
     }
 
     String getAmount(OrderBookListItem item) {
-        return (item != null) ? BSFormatter.formatCoin(item.getOffer().getAmount()) : "";
+        return (item != null) ? formatter.formatCoin(item.getOffer().getAmount()) +
+                " (" + formatter.formatCoin(item.getOffer().getMinAmount()) + ")" : "";
     }
 
     String getPrice(OrderBookListItem item) {
-        return (item != null) ? BSFormatter.formatFiat(item.getOffer().getPrice()) : "";
+        return (item != null) ? formatter.formatFiat(item.getOffer().getPrice()) : "";
     }
 
     String getVolume(OrderBookListItem item) {
-        return (item != null) ? BSFormatter.formatFiat(item.getOffer().getOfferVolume()) : "";
+        return (item != null) ? formatter.formatFiat(item.getOffer().getOfferVolume()) +
+                " (" + formatter.formatFiat(item.getOffer().getMinOfferVolume()) + ")" : "";
     }
 
     String getBankAccountType(OrderBookListItem item) {
@@ -192,15 +204,20 @@ class OrderBookPM extends PresentationModel<OrderBookModel> {
     }
 
     String getDirectionLabel(Offer offer) {
-        // mirror direction!
-        Direction direction = offer.getDirection() == Direction.BUY ? Direction.SELL : Direction.BUY;
-        return BSFormatter.formatDirection(direction, true);
+        return formatter.formatDirection(offer.getMirroredDirection());
     }
 
-    OrderBookInfo getOrderBookInfo() {
-        return model.getOrderBookInfo();
+    Direction getDirection() {
+        return model.getDirection();
     }
 
+    Coin getAmountAsCoin() {
+        return model.getAmountAsCoin();
+    }
+
+    Fiat getPriceAsCoin() {
+        return model.getPriceAsFiat();
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Private methods
@@ -215,16 +232,15 @@ class OrderBookPM extends PresentationModel<OrderBookModel> {
     }
 
     private void setAmountToModel() {
-        model.setAmount(parseToCoinWith4Decimals(amount.get()));
+        model.setAmount(formatter.parseToCoinWith4Decimals(amount.get()));
     }
 
     private void setPriceToModel() {
-        model.setPrice(parseToFiatWith2Decimals(price.get()));
+        model.setPrice(formatter.parseToFiatWith2Decimals(price.get()));
     }
 
     private void setVolumeToModel() {
-        model.setVolume(parseToFiatWith2Decimals(volume.get()));
+        model.setVolume(formatter.parseToFiatWith2Decimals(volume.get()));
     }
-
 
 }

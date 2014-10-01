@@ -19,9 +19,9 @@ package io.bitsquare.gui.main.account.content.registration;
 
 import io.bitsquare.gui.CachedViewCB;
 import io.bitsquare.gui.OverlayManager;
+import io.bitsquare.gui.components.AddressTextField;
+import io.bitsquare.gui.components.BalanceTextField;
 import io.bitsquare.gui.components.Popups;
-import io.bitsquare.gui.components.btc.AddressTextField;
-import io.bitsquare.gui.components.btc.BalanceTextField;
 import io.bitsquare.gui.main.account.MultiStepNavigation;
 import io.bitsquare.gui.main.account.content.ContextAware;
 import io.bitsquare.gui.main.help.Help;
@@ -53,12 +53,12 @@ public class RegistrationViewCB extends CachedViewCB<RegistrationPM> implements 
 
     private static final Logger log = LoggerFactory.getLogger(RegistrationViewCB.class);
 
-    private OverlayManager overlayManager;
+    private final OverlayManager overlayManager;
 
-    @FXML private TextField feeTextField;
-    @FXML private AddressTextField addressTextField;
-    @FXML private BalanceTextField balanceTextField;
-    @FXML private Button payButton;
+    @FXML TextField feeTextField;
+    @FXML AddressTextField addressTextField;
+    @FXML BalanceTextField balanceTextField;
+    @FXML Button payButton;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -88,7 +88,8 @@ public class RegistrationViewCB extends CachedViewCB<RegistrationPM> implements 
         // TODO find better solution
         addressTextField.setOverlayManager(overlayManager);
 
-        balanceTextField.setup(presentationModel.getWalletFacade(), presentationModel.address.get());
+        balanceTextField.setup(presentationModel.getWalletFacade(), presentationModel.address.get(),
+                presentationModel.getFormatter());
 
         payButton.disableProperty().bind(presentationModel.isPayButtonDisabled);
 

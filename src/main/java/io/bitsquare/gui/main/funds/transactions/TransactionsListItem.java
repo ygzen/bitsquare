@@ -18,7 +18,7 @@
 package io.bitsquare.gui.main.funds.transactions;
 
 import io.bitsquare.btc.WalletFacade;
-import io.bitsquare.btc.listeners.ConfidenceListener;
+import io.bitsquare.btc.listeners.AddressConfidenceListener;
 import io.bitsquare.gui.components.confidence.ConfidenceProgressIndicator;
 import io.bitsquare.gui.util.BSFormatter;
 
@@ -47,17 +47,16 @@ public class TransactionsListItem {
 
     private final Tooltip tooltip;
     private String addressString;
-    private ConfidenceListener confidenceListener;
+    private AddressConfidenceListener confidenceListener;
 
-    public TransactionsListItem(Transaction transaction, WalletFacade walletFacade) {
+    public TransactionsListItem(Transaction transaction, WalletFacade walletFacade, BSFormatter formatter) {
         this.walletFacade = walletFacade;
 
         Coin valueSentToMe = transaction.getValueSentToMe(walletFacade.getWallet());
         Coin valueSentFromMe = transaction.getValueSentFromMe(walletFacade.getWallet());
         Address address = null;
         if (valueSentToMe.isZero()) {
-            //TODO use BSFormatter
-            amount.set("-" + valueSentFromMe.toFriendlyString());
+            amount.set("-" + formatter.formatCoin(valueSentFromMe));
 
             for (TransactionOutput transactionOutput : transaction.getOutputs()) {
                 if (!transactionOutput.isMine(walletFacade.getWallet())) {
@@ -76,8 +75,7 @@ public class TransactionsListItem {
             }
         }
         else if (valueSentFromMe.isZero()) {
-            //TODO use BSFormatter
-            amount.set(valueSentToMe.toFriendlyString());
+            amount.set(formatter.formatCoin(valueSentToMe));
             type.set("Received with");
 
             for (TransactionOutput transactionOutput : transaction.getOutputs()) {
@@ -95,9 +93,7 @@ public class TransactionsListItem {
             }
         }
         else {
-            //TODO use BSFormatter
-            amount.set(valueSentToMe.subtract(valueSentFromMe).toFriendlyString());
-
+            amount.set(formatter.formatCoin(valueSentToMe.subtract(valueSentFromMe)));
             boolean outgoing = false;
             for (TransactionOutput transactionOutput : transaction.getOutputs()) {
                 if (!transactionOutput.isMine(walletFacade.getWallet())) {
@@ -123,7 +119,7 @@ public class TransactionsListItem {
             }
         }
 
-        date.set(BSFormatter.formatDateTime(transaction.getUpdateTime()));
+        date.set(formatter.formatDateTime(transaction.getUpdateTime()));
 
         // confidence
         progressIndicator = new ConfidenceProgressIndicator();
@@ -135,7 +131,7 @@ public class TransactionsListItem {
         Tooltip.install(progressIndicator, tooltip);
 
         if (address != null) {
-            confidenceListener = walletFacade.addConfidenceListener(new ConfidenceListener(address) {
+            confidenceListener = walletFacade.addAddressConfidenceListener(new AddressConfidenceListener(address) {
                 @Override
                 public void onTransactionConfidenceChanged(TransactionConfidence confidence) {
                     updateConfidence(confidence);
@@ -148,7 +144,7 @@ public class TransactionsListItem {
 
 
     public void cleanup() {
-        walletFacade.removeConfidenceListener(confidenceListener);
+        walletFacade.removeAddressConfidenceListener(confidenceListener);
     }
 
     private void updateConfidence(TransactionConfidence confidence) {

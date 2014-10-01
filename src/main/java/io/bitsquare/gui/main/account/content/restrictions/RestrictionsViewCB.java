@@ -57,11 +57,13 @@ public class RestrictionsViewCB extends CachedViewCB<RestrictionsPM> implements 
 
     private static final Logger log = LoggerFactory.getLogger(RestrictionsViewCB.class);
 
-    @FXML private ListView languagesListView, countriesListView, arbitratorsListView;
-    @FXML private ComboBox<Locale> languageComboBox;
-    @FXML private ComboBox<Region> regionComboBox;
-    @FXML private ComboBox<Country> countryComboBox;
-    @FXML private Button completedButton, addAllEuroCountriesButton;
+    @FXML ListView<Locale> languagesListView;
+    @FXML ListView<Country> countriesListView;
+    @FXML ListView<Arbitrator> arbitratorsListView;
+    @FXML ComboBox<Locale> languageComboBox;
+    @FXML ComboBox<Region> regionComboBox;
+    @FXML ComboBox<Country> countryComboBox;
+    @FXML Button completedButton, addAllEuroCountriesButton;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -241,6 +243,7 @@ public class RestrictionsViewCB extends CachedViewCB<RestrictionsPM> implements 
                     final AnchorPane pane = new AnchorPane(label, removeButton);
 
                     {
+                        label.setLayoutY(5);
                         removeButton.setId("icon-button");
                         AnchorPane.setRightAnchor(removeButton, 0d);
                     }
@@ -299,6 +302,7 @@ public class RestrictionsViewCB extends CachedViewCB<RestrictionsPM> implements 
                     final AnchorPane pane = new AnchorPane(label, removeButton);
 
                     {
+                        label.setLayoutY(5);
                         removeButton.setId("icon-button");
                         AnchorPane.setRightAnchor(removeButton, 0d);
                     }
@@ -343,10 +347,10 @@ public class RestrictionsViewCB extends CachedViewCB<RestrictionsPM> implements 
                     final AnchorPane pane = new AnchorPane(label, removeButton);
 
                     {
+                        label.setLayoutY(5);
                         removeButton.setId("icon-button");
                         AnchorPane.setRightAnchor(removeButton, 0d);
                     }
-
 
                     @Override
                     public void updateItem(final Arbitrator item, boolean empty) {

@@ -22,7 +22,6 @@ import io.bitsquare.persistence.Persistence;
 import com.google.inject.Inject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -35,8 +34,8 @@ public class Navigation {
 
     // New listeners can be added during iteration so we use CopyOnWriteArrayList to prevent invalid array 
     // modification 
-    private List<Listener> listeners = new CopyOnWriteArrayList<>();
-    private Persistence persistence;
+    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    private final Persistence persistence;
     private Item[] currentItems;
 
     // Used for returning to the last important view
@@ -58,40 +57,39 @@ public class Navigation {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     public void navigationTo(Item... items) {
-        if (items != null)
-            log.trace("navigationTo " + Arrays.asList(items).toString());
         List<Item> temp = new ArrayList<>();
-        for (int i = 0; i < items.length; i++) {
-            Item item = items[i];
-            temp.add(item);
-            if (currentItems == null ||
-                    (currentItems != null &&
-                            currentItems.length > i &&
-                            item != currentItems[i] &&
-                            i != items.length - 1)) {
-                List<Item> temp2 = new ArrayList<>(temp);
-                for (int n = i + 1; n < items.length; n++) {
-                    Item[] newTemp = new Item[i + 1];
-                    currentItems = temp2.toArray(newTemp);
-                    navigationTo(currentItems);
-                    item = items[n];
-                    temp2.add(item);
+        if (items != null) {
+            for (int i = 0; i < items.length; i++) {
+                Item item = items[i];
+                temp.add(item);
+                if (currentItems == null ||
+                        (currentItems != null &&
+                                currentItems.length > i &&
+                                item != currentItems[i] &&
+                                i != items.length - 1)) {
+                    List<Item> temp2 = new ArrayList<>(temp);
+                    for (int n = i + 1; n < items.length; n++) {
+                        Item[] newTemp = new Item[i + 1];
+                        currentItems = temp2.toArray(newTemp);
+                        navigationTo(currentItems);
+                        item = items[n];
+                        temp2.add(item);
+                    }
                 }
             }
-        }
-        currentItems = items;
 
-        persistence.write(this, "navigationItems", items);
-        if (items != null)
-            log.trace("navigationTo notify listeners " + Arrays.asList(items).toString() + " / " + listeners
-                    .size());
-        listeners.stream().forEach((e) -> e.onNavigationRequested(items));
+            currentItems = items;
+
+            persistence.write(this, "navigationItems", items);
+            listeners.stream().forEach((e) -> e.onNavigationRequested(items));
+        }
     }
 
     public void navigateToLastStoredItem() {
         Item[] items = (Item[]) persistence.read(this, "navigationItems");
+        // TODO we set BUY as default yet, should be HOME later
         if (items == null || items.length == 0)
-            items = new Item[]{Item.MAIN, Item.HOME};
+            items = new Item[]{Item.MAIN, Item.BUY};
 
         navigationTo(items);
     }
@@ -178,18 +176,18 @@ public class Navigation {
         TAKE_OFFER("/io/bitsquare/gui/main/trade/takeoffer/TakeOfferView.fxml"),
 
         // orders
-        OFFER("/io/bitsquare/gui/main/orders/offer/OfferView.fxml"),
-        PENDING_TRADE("/io/bitsquare/gui/main/orders/pending/PendingTradeView.fxml"),
-        CLOSED_TRADE("/io/bitsquare/gui/main/orders/closed/ClosedTradeView.fxml"),
+        OFFERS("/io/bitsquare/gui/main/orders/offer/OffersView.fxml"),
+        PENDING_TRADES("/io/bitsquare/gui/main/orders/pending/PendingTradesView.fxml"),
+        CLOSED_TRADES("/io/bitsquare/gui/main/orders/closed/ClosedTradesView.fxml"),
 
         // funds
-        DEPOSIT("/io/bitsquare/gui/main/funds/deposit/DepositView.fxml"),
         WITHDRAWAL("/io/bitsquare/gui/main/funds/withdrawal/WithdrawalView.fxml"),
         TRANSACTIONS("/io/bitsquare/gui/main/funds/transactions/TransactionsView.fxml"),
 
         // account
         ACCOUNT_SETUP("/io/bitsquare/gui/main/account/setup/AccountSetupView.fxml"),
         ACCOUNT_SETTINGS("/io/bitsquare/gui/main/account/settings/AccountSettingsView.fxml"),
+        ARBITRATOR_SETTINGS("/io/bitsquare/gui/main/account/arbitrator/ArbitratorSettingsView.fxml"),
 
 
         ///////////////////////////////////////////////////////////////////////////////////////////
@@ -210,9 +208,11 @@ public class Navigation {
         ///////////////////////////////////////////////////////////////////////////////////////////
 
         // arbitrator
-        ARBITRATOR_PROFILE("/io/bitsquare/gui/main/arbitrators/profile/ArbitratorProfileView.fxml"),
-        ARBITRATOR_BROWSER("/io/bitsquare/gui/main/arbitrators/browser/ArbitratorBrowserView.fxml"),
-        ARBITRATOR_REGISTRATION("/io/bitsquare/gui/main/arbitrators/registration/ArbitratorRegistrationView.fxml");
+
+        ARBITRATOR_PROFILE("/io/bitsquare/gui/main/account/arbitrator/profile/ArbitratorProfileView.fxml"),
+        ARBITRATOR_BROWSER("/io/bitsquare/gui/main/account/arbitrator/browser/ArbitratorBrowserView.fxml"),
+        ARBITRATOR_REGISTRATION("/io/bitsquare/gui/main/account/arbitrator/registration/ArbitratorRegistrationView" +
+                ".fxml");
 
 
         private final String fxmlUrl;

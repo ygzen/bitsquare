@@ -19,24 +19,20 @@ package io.bitsquare.trade.protocol.trade.offerer;
 
 import io.bitsquare.trade.Offer;
 
-import com.google.bitcoin.core.TransactionConfidence;
+import com.google.bitcoin.core.Transaction;
 
 public interface BuyerAcceptsOfferProtocolListener {
     void onOfferAccepted(Offer offer);
 
-    void onDepositTxPublished(String depositTxID);
+    void onDepositTxPublished(Transaction depositTx);
 
     void onDepositTxConfirmedInBlockchain();
 
-    void onDepositTxConfirmedUpdate(TransactionConfidence confidence);
-
-    void onPayoutTxPublished(String payoutTxID);
+    void onPayoutTxPublished(Transaction payoutTx);
 
     void onFault(Throwable throwable, BuyerAcceptsOfferProtocol.State state);
 
     void onWaitingForPeerResponse(BuyerAcceptsOfferProtocol.State state);
-
-    void onCompleted(BuyerAcceptsOfferProtocol.State state);
 
     void onWaitingForUserInteraction(BuyerAcceptsOfferProtocol.State state);
 }

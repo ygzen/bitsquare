@@ -24,6 +24,7 @@ import io.bitsquare.btc.FeePolicy;
 import io.bitsquare.btc.WalletFacade;
 import io.bitsquare.btc.listeners.BalanceListener;
 import io.bitsquare.gui.UIModel;
+import io.bitsquare.gui.util.BSFormatter;
 import io.bitsquare.gui.main.funds.BTCService;
 import io.bitsquare.gui.main.trade.TradeService;
 import io.bitsquare.locale.Country;
@@ -59,14 +60,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static io.bitsquare.gui.util.BSFormatter.reduceTo4Decimals;
 
 /**
  * Domain for that UI element.
  * Note that the create offer domain has a deeper scope in the application domain (TradeManager).
  * That model is just responsible for the domain specific parts displayed needed in that UI element.
  */
-public class CreateOfferModel extends UIModel {
+class CreateOfferModel extends UIModel {
     private static final Logger log = LoggerFactory.getLogger(CreateOfferModel.class);
 
     private final TradeManager tradeManager;
@@ -77,6 +77,7 @@ public class CreateOfferModel extends UIModel {
     private final WalletFacade walletFacade;
     private final Settings settings;
     private final User user;
+    private BSFormatter formatter;
 
     private final String offerId;
 
@@ -120,7 +121,8 @@ public class CreateOfferModel extends UIModel {
     public CreateOfferModel(TradeManager tradeManager, TradeService tradeService,
                             BTCService btcService,
                             WalletFacade walletFacade,
-                            Settings settings, User user) {
+                            Settings settings, User user,
+                            BSFormatter formatter) {
 
         this.tradeManager = tradeManager;
         this.tradeService = tradeService;
@@ -128,6 +130,7 @@ public class CreateOfferModel extends UIModel {
         this.walletFacade = walletFacade;
         this.settings = settings;
         this.user = user;
+        this.formatter = formatter;
 
         offerId = UUID.randomUUID().toString();
     }
@@ -139,8 +142,7 @@ public class CreateOfferModel extends UIModel {
 
     @Override
     public void initialize() {
-        super.initialize();
-
+        
         // static data
         offerFeeAsCoin.set(FeePolicy.CREATE_OFFER_FEE);
         networkFeeAsCoin.set(FeePolicy.TX_FEE);
@@ -165,6 +167,12 @@ public class CreateOfferModel extends UIModel {
 
         if (settings != null)
             btcCode.bind(settings.btcDenominationProperty());
+
+        // we need to set it here already as initWithData is called before activate
+        if (settings != null)
+            collateralAsLong.set(settings.getCollateral());
+
+        super.initialize();
     }
 
     @Override
@@ -173,7 +181,10 @@ public class CreateOfferModel extends UIModel {
 
         // might be changed after screen change
         if (settings != null) {
-            collateralAsLong.set(settings.getCollateral());
+            // set it here again to cover the case of an collateral change after a screen change
+            if (settings != null)
+                collateralAsLong.set(settings.getCollateral());
+
             acceptedCountries.setAll(settings.getAcceptedCountries());
             acceptedLanguages.setAll(settings.getAcceptedLanguageLocales());
             acceptedArbitrators.setAll(settings.getAcceptedArbitrators());
@@ -233,7 +244,8 @@ public class CreateOfferModel extends UIModel {
                     !volumeAsFiat.get().isZero() &&
                     !priceAsFiat.get().isZero()) {
                 // If we got a btc value with more then 4 decimals we convert it to max 4 decimals
-                amountAsCoin.set(reduceTo4Decimals(new ExchangeRate(priceAsFiat.get()).fiatToCoin(volumeAsFiat.get())));
+                amountAsCoin.set(formatter.reduceTo4Decimals(new ExchangeRate(priceAsFiat.get()).fiatToCoin
+                        (volumeAsFiat.get())));
 
                 calculateTotalToPay();
                 calculateCollateral();
@@ -267,6 +279,7 @@ public class CreateOfferModel extends UIModel {
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean isMinAmountLessOrEqualAmount() {
         //noinspection SimplifiableIfStatement
         if (minAmountAsCoin.get() != null && amountAsCoin.get() != null)

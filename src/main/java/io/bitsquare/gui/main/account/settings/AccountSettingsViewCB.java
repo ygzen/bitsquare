@@ -22,6 +22,7 @@ import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.PresentationModel;
 import io.bitsquare.gui.ViewCB;
 import io.bitsquare.gui.main.account.content.ContextAware;
+import io.bitsquare.gui.util.Colors;
 import io.bitsquare.util.ViewLoader;
 
 import java.io.IOException;
@@ -45,12 +46,12 @@ import de.jensd.fx.fontawesome.AwesomeIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class AccountSettingsViewCB extends CachedViewCB<AccountSettingsPM> {
+public class AccountSettingsViewCB extends CachedViewCB {
 
     private static final Logger log = LoggerFactory.getLogger(AccountSettingsViewCB.class);
 
     private MenuItem seedWords, password, restrictions, fiatAccount, registration;
-    private Navigation navigation;
+    private final Navigation navigation;
     private Navigation.Listener listener;
 
     @FXML VBox leftVBox;
@@ -62,8 +63,8 @@ class AccountSettingsViewCB extends CachedViewCB<AccountSettingsPM> {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     @Inject
-    private AccountSettingsViewCB(AccountSettingsPM presentationModel, Navigation navigation) {
-        super(presentationModel);
+    private AccountSettingsViewCB(Navigation navigation) {
+        super();
 
         this.navigation = navigation;
     }
@@ -116,8 +117,7 @@ class AccountSettingsViewCB extends CachedViewCB<AccountSettingsPM> {
                     Navigation.Item.ACCOUNT_SETTINGS, Navigation.Item.SEED_WORDS);
         }
         else {
-            if (items != null &&
-                    items.length == 4 &&
+            if (items.length == 4 &&
                     items[2] == Navigation.Item.ACCOUNT_SETTINGS) {
                 loadView(items[3]);
                 selectMainMenuButton(items[3]);
@@ -155,7 +155,7 @@ class AccountSettingsViewCB extends CachedViewCB<AccountSettingsPM> {
             return childController;
         } catch (IOException e) {
             log.error("Loading view failed. FxmlUrl = " + navigationItem.getFxmlUrl());
-            e.getStackTrace();
+            e.printStackTrace();
         }
         return null;
     }
@@ -219,7 +219,7 @@ class MenuItem extends ToggleButton {
         selectedProperty().addListener((ov, oldValue, newValue) -> {
             if (newValue) {
                 setId("account-settings-item-background-selected");
-                icon.setTextFill(Paint.valueOf("#0096c9"));
+                icon.setTextFill(Colors.BLUE);
             }
             else {
                 setId("account-settings-item-background-active");

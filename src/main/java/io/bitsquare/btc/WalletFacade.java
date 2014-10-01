@@ -18,8 +18,9 @@
 package io.bitsquare.btc;
 
 import io.bitsquare.BitSquare;
+import io.bitsquare.btc.listeners.AddressConfidenceListener;
 import io.bitsquare.btc.listeners.BalanceListener;
-import io.bitsquare.btc.listeners.ConfidenceListener;
+import io.bitsquare.btc.listeners.TxConfidenceListener;
 import io.bitsquare.crypto.CryptoFacade;
 import io.bitsquare.persistence.Persistence;
 
@@ -64,6 +65,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -87,25 +89,23 @@ import static com.google.bitcoin.script.ScriptOpCodes.OP_RETURN;
  * Wait until steve's akka version to see how to continue here
  */
 public class WalletFacade {
-    public static final String MAIN_NET = "MAIN_NET";
-    public static final String TEST_NET = "TEST_NET";
-    public static final String REG_TEST_NET = "REG_TEST_NET";
-
-    public static final String WALLET_PREFIX = BitSquare.getAppName();
-
     private static final Logger log = LoggerFactory.getLogger(WalletFacade.class);
 
+    public static final String MAIN_NET = "mainnet";
+    public static final String TEST_NET = "testnet";
+    public static final String REG_TEST_NET = "regtest";
+    public static final String WALLET_PREFIX = BitSquare.getAppName();
+
     private final ReentrantLock lock = Threading.lock("lock");
-
-
     private final NetworkParameters params;
-    //private WalletAppKit walletAppKit;
+    // private WalletAppKit walletAppKit;
     private final FeePolicy feePolicy;
     private final CryptoFacade cryptoFacade;
     private final Persistence persistence;
-    private final List<DownloadListener> downloadListeners = new ArrayList<>();
-    private final List<ConfidenceListener> confidenceListeners = new ArrayList<>();
-    private final List<BalanceListener> balanceListeners = new ArrayList<>();
+    private final List<DownloadListener> downloadListeners = new CopyOnWriteArrayList<>();
+    private final List<AddressConfidenceListener> addressConfidenceListeners = new CopyOnWriteArrayList<>();
+    private final List<TxConfidenceListener> txConfidenceListeners = new CopyOnWriteArrayList<>();
+    private final List<BalanceListener> balanceListeners = new CopyOnWriteArrayList<>();
     private Wallet wallet;
     private WalletEventListener walletEventListener;
     private AddressEntry registrationAddressEntry;
@@ -157,13 +157,18 @@ public class WalletFacade {
         // or progress widget to keep the user engaged whilst we initialise, but we don't.
 //        if (params == RegTestParams.get()) {
 //            walletAppKit.connectToLocalHost();   // You should run a regtest mode bitcoind locally.
-//        }
+//    }
 //        else if (params == MainNetParams.get()) {
 //            // Checkpoints are block headers that ship inside our app: for a new user, we pick the last header
 //            // in the checkpoints file and then download the rest from the network. It makes things much faster.
 //            // Checkpoint files are made using the BuildCheckpoints tool and usually we have to download the
 //            // last months worth or more (takes a few seconds).
-//            walletAppKit.setCheckpoints(getClass().getResourceAsStream("checkpoints"));
+//            try {
+//                walletAppKit.setCheckpoints(getClass().getClassLoader().getResourceAsStream("wallet/checkpoints"));
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                log.error(e.toString());
+//            }
 //            // As an example!
 //            // walletAppKit.useTor();
 //        }
@@ -181,9 +186,11 @@ public class WalletFacade {
 //        wallet.allowSpendingUnconfirmedTransactions();
 //        //walletAppKit.peerGroup().setMaxConnections(11);
 //
-//        if (params == RegTestParams.get()) {
+//        if (params == RegTestParams.get())
 //            walletAppKit.peerGroup().setMinBroadcastConnections(1);
-//        }
+//        else
+//            walletAppKit.peerGroup().setMinBroadcastConnections(3);
+
 
         walletEventListener = new WalletEventListener() {
             @Override
@@ -246,7 +253,7 @@ public class WalletFacade {
     }
 
     public void shutDown() {
-        wallet.removeEventListener(walletEventListener);
+//        wallet.removeEventListener(walletEventListener);
 //        walletAppKit.stopAsync();
     }
 
@@ -268,13 +275,22 @@ public class WalletFacade {
         downloadListeners.remove(listener);
     }
 
-    public ConfidenceListener addConfidenceListener(ConfidenceListener listener) {
-        confidenceListeners.add(listener);
+    public AddressConfidenceListener addAddressConfidenceListener(AddressConfidenceListener listener) {
+        addressConfidenceListeners.add(listener);
         return listener;
     }
 
-    public void removeConfidenceListener(ConfidenceListener listener) {
-        confidenceListeners.remove(listener);
+    public void removeAddressConfidenceListener(AddressConfidenceListener listener) {
+        addressConfidenceListeners.remove(listener);
+    }
+
+    public TxConfidenceListener addTxConfidenceListener(TxConfidenceListener listener) {
+        txConfidenceListeners.add(listener);
+        return listener;
+    }
+
+    public void removeTxConfidenceListener(TxConfidenceListener listener) {
+        txConfidenceListeners.remove(listener);
     }
 
     public BalanceListener addBalanceListener(BalanceListener listener) {
@@ -354,16 +370,30 @@ public class WalletFacade {
         return getMostRecentConfidence(transactionConfidenceList);
     }
 
-    private void notifyConfidenceListeners(Transaction tx) {
-        for (ConfidenceListener confidenceListener : confidenceListeners) {
-            List<TransactionConfidence> transactionConfidenceList = new ArrayList<>();
-            transactionConfidenceList.add(getTransactionConfidence(tx, confidenceListener.getAddress()));
-
-            TransactionConfidence transactionConfidence = getMostRecentConfidence(transactionConfidenceList);
-            confidenceListener.onTransactionConfidenceChanged(transactionConfidence);
+    public TransactionConfidence getConfidenceForTxId(String txId) {
+        if (wallet != null) {
+            Set<Transaction> transactions = wallet.getTransactions(true);
+            for (Transaction tx : transactions) {
+                if (tx.getHashAsString().equals(txId))
+                    return tx.getConfidence();
+            }
         }
+        return null;
     }
 
+    private void notifyConfidenceListeners(Transaction tx) {
+        for (AddressConfidenceListener addressConfidenceListener : addressConfidenceListeners) {
+            List<TransactionConfidence> transactionConfidenceList = new ArrayList<>();
+            transactionConfidenceList.add(getTransactionConfidence(tx, addressConfidenceListener.getAddress()));
+
+            TransactionConfidence transactionConfidence = getMostRecentConfidence(transactionConfidenceList);
+            addressConfidenceListener.onTransactionConfidenceChanged(transactionConfidence);
+        }
+
+        txConfidenceListeners.stream().filter(txConfidenceListener -> tx.getHashAsString().equals
+                (txConfidenceListener.getTxID())).forEach(txConfidenceListener -> txConfidenceListener
+                .onTransactionConfidenceChanged(tx.getConfidence()));
+    }
 
     private TransactionConfidence getTransactionConfidence(Transaction tx, Address address) {
         List<TransactionOutput> mergedOutputs = getOutputsWithConnectedOutputs(tx);
@@ -547,9 +577,8 @@ public class WalletFacade {
         return tx;
     }
 
-    public void broadcastCreateOfferFeeTx(Transaction tx, FutureCallback<Transaction> callback) throws
-            InsufficientMoneyException {
-        log.trace("broadcast tx");
+    public void broadcastCreateOfferFeeTx(Transaction tx, FutureCallback<Transaction> callback) {
+//        log.trace("broadcast tx");
 //        ListenableFuture<Transaction> future = walletAppKit.peerGroup().broadcastTransaction(tx);
 //        Futures.addCallback(future, callback);
     }
@@ -583,7 +612,6 @@ public class WalletFacade {
 
     public String sendFunds(String withdrawFromAddress,
                             String withdrawToAddress,
-                            String changeAddress,
                             Coin amount,
                             FutureCallback<Transaction> callback) throws AddressFormatException,
             InsufficientMoneyException, IllegalArgumentException {
@@ -924,7 +952,7 @@ public class WalletFacade {
     }
 
     // 4 step deposit tx: Offerer send deposit tx to taker
-    public String takerCommitDepositTx(String depositTxAsHex) {
+    public Transaction takerCommitDepositTx(String depositTxAsHex) {
         log.trace("takerCommitDepositTx");
         log.trace("inputs: ");
         log.trace("depositTxID=" + depositTxAsHex);
@@ -941,7 +969,7 @@ public class WalletFacade {
             throw new RuntimeException(e); // Cannot happen, we already called multisigContract.verify()
         }
 
-        return depositTx.getHashAsString();
+        return depositTx;
 
     }
 

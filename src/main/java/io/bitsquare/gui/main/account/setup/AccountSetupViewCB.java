@@ -17,7 +17,6 @@
 
 package io.bitsquare.gui.main.account.setup;
 
-import io.bitsquare.gui.CachedViewCB;
 import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.PresentationModel;
 import io.bitsquare.gui.ViewCB;
@@ -48,12 +47,15 @@ import javafx.scene.layout.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class AccountSetupViewCB extends CachedViewCB<AccountSetupPM> implements MultiStepNavigation {
+/**
+ * This UI is not cached as it is normally only needed once.
+ */
+public class AccountSetupViewCB extends ViewCB implements MultiStepNavigation {
 
     private static final Logger log = LoggerFactory.getLogger(AccountSetupViewCB.class);
 
     private WizardItem seedWords, password, fiatAccount, restrictions, registration;
-    private Navigation navigation;
+    private final Navigation navigation;
     private Navigation.Listener listener;
 
     @FXML VBox leftVBox;
@@ -65,8 +67,8 @@ class AccountSetupViewCB extends CachedViewCB<AccountSetupPM> implements MultiSt
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     @Inject
-    private AccountSetupViewCB(AccountSetupPM presentationModel, Navigation navigation) {
-        super(presentationModel);
+    private AccountSetupViewCB(Navigation navigation) {
+        super();
         this.navigation = navigation;
     }
 
@@ -81,51 +83,62 @@ class AccountSetupViewCB extends CachedViewCB<AccountSetupPM> implements MultiSt
             if (navigationItems != null &&
                     navigationItems.length == 4 &&
                     navigationItems[2] == Navigation.Item.ACCOUNT_SETUP) {
-                loadView(navigationItems[3]);
+                switch (navigationItems[3]) {
+                    case SEED_WORDS:
+                        childController = seedWords.show();
+                        break;
+                    case ADD_PASSWORD:
+                        seedWords.onCompleted();
+                        childController = password.show();
+                        break;
+                    case RESTRICTIONS:
+                        seedWords.onCompleted();
+                        password.onCompleted();
+                        childController = restrictions.show();
+                        break;
+                    case FIAT_ACCOUNT:
+                        seedWords.onCompleted();
+                        password.onCompleted();
+                        restrictions.onCompleted();
+                        childController = fiatAccount.show();
+                        break;
+                    case REGISTRATION:
+                        seedWords.onCompleted();
+                        password.onCompleted();
+                        restrictions.onCompleted();
+                        fiatAccount.onCompleted();
+                        childController = registration.show();
+                        break;
+                }
             }
         };
 
-        seedWords = new WizardItem(navigation, "Backup wallet seed", "Write down the seed word for your wallet",
+        seedWords = new WizardItem(this, "Backup wallet seed", "Write down the seed word for your wallet",
                 Navigation.Item.SEED_WORDS);
-        password = new WizardItem(navigation, "Setup password", "Protect your wallet with a password",
+        password = new WizardItem(this, "Setup password", "Protect your wallet with a password",
                 Navigation.Item.ADD_PASSWORD);
-        restrictions = new WizardItem(navigation, "Setup your preferences",
+        restrictions = new WizardItem(this, "Setup your preferences",
                 "Define your preferences with whom you want to trade",
                 Navigation.Item.RESTRICTIONS);
-        fiatAccount = new WizardItem(navigation, " Setup Payments account(s)",
-                "You need to add a payments account to your trading account",
+        fiatAccount = new WizardItem(this, " Setup Payments account(s)",
+                "You need to setup at least one payment account",
                 Navigation.Item.FIAT_ACCOUNT);
-        registration = new WizardItem(navigation, "Register your account",
-                "Pay in the registration fee of 0.0002 BTC and store your account in the BTC block chain",
+        registration = new WizardItem(this, "Register your account",
+                "The registration in the Blockchain requires a payment of 0.0002 BTC",
                 Navigation.Item.REGISTRATION);
 
         leftVBox.getChildren().addAll(seedWords, password, restrictions, fiatAccount, registration);
 
         super.initialize(url, rb);
-    }
-
-
-    @Override
-    public void activate() {
-        super.activate();
 
         navigation.addListener(listener);
-
-        // triggers navigationTo
         childController = seedWords.show();
     }
 
     @Override
-    public void deactivate() {
-        super.deactivate();
-
-        navigation.removeListener(listener);
-    }
-
-    @SuppressWarnings("EmptyMethod")
-    @Override
     public void terminate() {
         super.terminate();
+        navigation.removeListener(listener);
     }
 
 
@@ -155,7 +168,10 @@ class AccountSetupViewCB extends CachedViewCB<AccountSetupPM> implements MultiSt
             registration.onCompleted();
             childController = null;
 
-            navigation.navigationTo(navigation.getItemsForReturning());
+            if (navigation.getItemsForReturning() != null)
+                navigation.navigationTo(navigation.getItemsForReturning());
+            else
+                navigation.navigationTo(Navigation.Item.MAIN, Navigation.Item.HOME);
         }
     }
 
@@ -176,7 +192,7 @@ class AccountSetupViewCB extends CachedViewCB<AccountSetupPM> implements MultiSt
             return childController;
         } catch (IOException e) {
             log.error("Loading view failed. FxmlUrl = " + navigationItem.getFxmlUrl());
-            e.getStackTrace();
+            e.printStackTrace();
         }
         return null;
     }
@@ -190,12 +206,12 @@ class WizardItem extends HBox {
     private final ImageView imageView;
     private final Label titleLabel;
     private final Label subTitleLabel;
+    private final AccountSetupViewCB host;
     private final Navigation.Item navigationItem;
-    private final Navigation navigation;
 
-    WizardItem(Navigation navigation, String title, String subTitle,
+    WizardItem(AccountSetupViewCB host, String title, String subTitle,
                Navigation.Item navigationItem) {
-        this.navigation = navigation;
+        this.host = host;
         this.navigationItem = navigationItem;
 
         setId("wizard-item-background-deactivated");
@@ -233,14 +249,16 @@ class WizardItem extends HBox {
     }
 
     ViewCB<? extends PresentationModel> show() {
-        navigation.navigationTo(Navigation.Item.MAIN, Navigation.Item.ACCOUNT, Navigation
+        host.loadView(navigationItem);
+       /* navigation.navigationTo(Navigation.Item.MAIN, Navigation.Item.ACCOUNT, Navigation
                         .Item.ACCOUNT_SETUP,
-                navigationItem);
+                navigationItem);*/
 
         setId("wizard-item-background-active");
         imageView.setId("image-arrow-blue");
         titleLabel.setId("wizard-title-active");
         subTitleLabel.setId("wizard-sub-title-active");
+
         return childController;
     }
 

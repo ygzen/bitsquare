@@ -44,6 +44,7 @@ import io.bitsquare.user.User;
 import com.google.bitcoin.core.Coin;
 import com.google.bitcoin.core.ECKey;
 import com.google.bitcoin.core.Transaction;
+import com.google.bitcoin.core.Utils;
 
 import java.security.PublicKey;
 
@@ -169,7 +170,6 @@ public class BuyerAcceptsOfferProtocol {
         state = State.Init;
     }
 
-
     public void start() {
         log.debug("start called " + step++);
         state = State.HandleTakeOfferRequest;
@@ -180,8 +180,7 @@ public class BuyerAcceptsOfferProtocol {
     public void onResultHandleTakeOfferRequest(boolean takeOfferRequestAccepted) {
         log.debug("onResultHandleTakeOfferRequest called " + step++);
         if (takeOfferRequestAccepted) {
-            trade.setState(Trade.State.ACCEPTED);
-            messageFacade.removeOffer(offer);
+            trade.setState(Trade.State.OFFERER_ACCEPTED);
             listener.onOfferAccepted(offer);
             listener.onWaitingForPeerResponse(state);
         }
@@ -335,8 +334,7 @@ public class BuyerAcceptsOfferProtocol {
     public void onResultSignAndPublishDepositTx(Transaction depositTransaction) {
         log.debug("onResultSignAndPublishDepositTx called " + step++);
 
-        trade.setDepositTransaction(depositTransaction);
-        listener.onDepositTxPublished(depositTransaction.getHashAsString());
+        listener.onDepositTxPublished(depositTransaction);
 
         state = State.SendDepositTxIdToTaker;
         SendDepositTxIdToTaker.run(this::onResultSendDepositTxIdToTaker, this::onFault, peerAddress, messageFacade,
@@ -348,7 +346,7 @@ public class BuyerAcceptsOfferProtocol {
 
         state = State.SetupListenerForBlockChainConfirmation;
         SetupListenerForBlockChainConfirmation.run(this::onResultSetupListenerForBlockChainConfirmation,
-                this::onFault, trade.getDepositTransaction(), listener);
+                trade.getDepositTx(), listener);
     }
 
     public void onResultSetupListenerForBlockChainConfirmation() {
@@ -375,7 +373,7 @@ public class BuyerAcceptsOfferProtocol {
         state = State.onUIEventBankTransferInited;
 
         // next task
-        String depositTransactionId = trade.getDepositTransaction().getHashAsString();
+        String depositTransactionId = trade.getDepositTx().getHashAsString();
         Coin tradeAmount = trade.getTradeAmount();
         Coin collateral = trade.getCollateralAmount();
         state = State.SendSignedPayoutTx;
@@ -414,9 +412,9 @@ public class BuyerAcceptsOfferProtocol {
 
         state = State.onPayoutTxPublishedMessage;
 
-        // next task
-        listener.onPayoutTxPublished(payoutTxAsHex);
-        listener.onCompleted(state);
+        Transaction payoutTx = new Transaction(walletFacade.getWallet().getParams(),
+                Utils.parseAsHexOrBase58(payoutTxAsHex));
+        listener.onPayoutTxPublished(payoutTx);
     }
 
 

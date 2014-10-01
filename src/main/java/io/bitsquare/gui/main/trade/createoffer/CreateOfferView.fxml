@@ -17,8 +17,8 @@
   ~ along with Bitsquare. If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<?import io.bitsquare.gui.components.btc.AddressTextField?>
-<?import io.bitsquare.gui.components.btc.BalanceTextField?>
+<?import io.bitsquare.gui.components.AddressTextField?>
+<?import io.bitsquare.gui.components.BalanceTextField?>
 <?import io.bitsquare.gui.components.InfoDisplay?>
 <?import io.bitsquare.gui.components.InputTextField?>
 <?import io.bitsquare.gui.components.TitledGroupBg?>
@@ -28,8 +28,6 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <AnchorPane fx:id="root" fx:controller="io.bitsquare.gui.main.trade.createoffer.CreateOfferViewCB"
-            AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="10.0"
-            AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="10.0"
             xmlns:fx="http://javafx.com/fxml">
 
     <ScrollPane fx:id="scrollPane" hbarPolicy="NEVER" vbarPolicy="NEVER" fitToWidth="true" fitToHeight="true"
@@ -38,7 +36,7 @@
 
         <!--suppress JavaFxUnresolvedFxIdReference -->
         <GridPane fx:id="gridPane" hgap="5.0" vgap="5.0">
-        <padding>
+            <padding>
                 <Insets bottom="-10.0" left="25.0" top="30.0" right="25"/>
             </padding>
 
@@ -77,7 +75,7 @@
                 </VBox>
                 <Label text="x">
                     <font>
-                        <Font name="Helvetica" size="20.0"/>
+                        <Font name="Helvetica-Bold" size="20.0"/>
                     </font>
                     <padding>
                         <Insets top="14.0" left="3" right="3"/>
@@ -96,7 +94,7 @@
 
                 <Label text="=">
                     <font>
-                        <Font name="Helvetica" size="20.0"/>
+                        <Font name="Helvetica-Bold" size="20.0"/>
                     </font>
                     <padding>
                         <Insets top="14.0" left="2" right="2"/>
@@ -127,7 +125,7 @@
                 </HBox>
             </VBox>
 
-            <InfoDisplay gridPane="$gridPane" onAction="#onOpenGeneralHelp" rowIndex="2" prefWidth="740"
+            <InfoDisplay gridPane="$gridPane" onAction="#onOpenGeneralHelp" rowIndex="2"
                          text="%createOffer.amountPriceBox.info"/>
 
             <Button fx:id="showPaymentInfoScreenButton" text="%createOffer.amountPriceBox.next" id="show-details-button"
@@ -152,9 +150,8 @@
                 </GridPane.margin>
             </HBox>
             <TextField fx:id="totalToPayTextField" promptText="%createOffer.fundsBox.totalsNeeded.prompt"
-                       GridPane.columnIndex="1"
-                       GridPane.rowIndex="4"
-                       editable="false" focusTraversable="false" visible="false">
+                       GridPane.columnIndex="1" GridPane.rowIndex="4"
+                       mouseTransparent="true" editable="false" focusTraversable="false" visible="false">
                 <GridPane.margin>
                     <Insets top="10.0"/>
                 </GridPane.margin>
@@ -177,7 +174,7 @@
             </BalanceTextField>
 
             <InfoDisplay fx:id="fundsBoxInfoDisplay" gridPane="$gridPane" onAction="#onOpenFundingHelp" rowIndex="7"
-                         text="%createOffer.fundsBox.info" visible="false" prefWidth="740"/>
+                         text="%createOffer.fundsBox.info" visible="false"/>
 
             <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="8">
                 <Button fx:id="showAdvancedSettingsButton" text="%createOffer.fundsBox.showAdvanced"
@@ -196,20 +193,6 @@
             <TitledGroupBg fx:id="showDetailsPane" text="%createOffer.advancedBox.title" GridPane.columnSpan="3"
                            GridPane.rowIndex="9" GridPane.rowSpan="7" visible="false"/>
 
-            <!--     <Pane fx:id="showDetailsPane" id="form-group-background-active" GridPane.columnSpan="3"
-                     GridPane.rowIndex="9" GridPane.rowSpan="7" visible="false">
-                   <GridPane.margin>
-                       <Insets right="-10" bottom="-10" left="-10" top="-10"/>
-                   </GridPane.margin>
-                   <Label fx:id="showDetailsTitleLabel" text="%createOffer.advancedBox.title" id="form-group-title-active"
-                          layoutX="8"
-                          layoutY="-8">
-                       <padding>
-                           <Insets left="5" right="7"/>
-                       </padding>
-                   </Label>
-               </Pane> -->
-
             <HBox GridPane.rowIndex="9" spacing="4" alignment="CENTER_RIGHT">
                 <Label fx:id="acceptedCountriesLabel" text="%createOffer.advancedBox.countries" visible="false"/>
                 <Label fx:id="acceptedCountriesLabelIcon" visible="false"/>
@@ -219,31 +202,31 @@
             </HBox>
             <TextField fx:id="acceptedCountriesTextField" GridPane.columnIndex="1" GridPane.rowIndex="9"
                        visible="false"
-                       editable="false" focusTraversable="false"/>
+                       mouseTransparent="true" editable="false" focusTraversable="false"/>
 
             <HBox GridPane.rowIndex="10" spacing="4" alignment="CENTER_RIGHT">
                 <Label fx:id="acceptedLanguagesLabel" text="%createOffer.advancedBox.languages" visible="false"/>
                 <Label fx:id="acceptedLanguagesLabelIcon" visible="false"/>
             </HBox>
             <TextField fx:id="acceptedLanguagesTextField" GridPane.columnIndex="1" GridPane.rowIndex="10"
-                       editable="false" focusTraversable="false" visible="false"/>
+                       mouseTransparent="true" editable="false" focusTraversable="false" visible="false"/>
 
             <HBox GridPane.rowIndex="11" spacing="4" alignment="CENTER_RIGHT">
                 <Label fx:id="acceptedArbitratorsLabel" text="%createOffer.advancedBox.arbitrators" visible="false"/>
                 <Label fx:id="acceptedArbitratorsLabelIcon" visible="false"/>
             </HBox>
             <TextField fx:id="acceptedArbitratorsTextField" GridPane.columnIndex="1" GridPane.rowIndex="11"
-                       editable="false" focusTraversable="false" visible="false"/>
+                       mouseTransparent="true" editable="false" focusTraversable="false" visible="false"/>
 
             <Label fx:id="bankAccountTypeLabel" text="%createOffer.advancedBox.txType" GridPane.rowIndex="12"
                    visible="false"/>
-            <TextField fx:id="bankAccountTypeTextField" GridPane.columnIndex="1" GridPane.rowIndex="12" editable="false"
-                       focusTraversable="false" visible="false"/>
+            <TextField fx:id="bankAccountTypeTextField" GridPane.columnIndex="1" GridPane.rowIndex="12"
+                       mouseTransparent="true" editable="false" focusTraversable="false" visible="false"/>
 
             <Label fx:id="bankAccountCurrencyLabel" text="%createOffer.advancedBox.currency" GridPane.rowIndex="13"
                    visible="false"/>
             <TextField fx:id="bankAccountCurrencyTextField" GridPane.rowIndex="13" GridPane.columnIndex="1"
-                       editable="false" focusTraversable="false" visible="false"/>
+                       mouseTransparent="true" editable="false" focusTraversable="false" visible="false"/>
 
             <Label fx:id="bankAccountCountyLabel" text="%createOffer.advancedBox.county" GridPane.rowIndex="14"
                    visible="false">
@@ -252,14 +235,14 @@
                 </GridPane.margin>
             </Label>
             <TextField fx:id="bankAccountCountyTextField" GridPane.rowIndex="14" GridPane.columnIndex="1"
-                       editable="false" focusTraversable="false" visible="false">
+                       mouseTransparent="true" editable="false" focusTraversable="false" visible="false">
                 <GridPane.margin>
                     <Insets bottom="5.0"/>
                 </GridPane.margin>
             </TextField>
 
             <InfoDisplay fx:id="advancedInfoDisplay" gridPane="$gridPane" onAction="#onOpenAdvancedSettingsHelp"
-                         rowIndex="15" visible="false" prefWidth="740"
+                         rowIndex="15" visible="false"
                          text="%createOffer.advancedBox.info">
             </InfoDisplay>
 

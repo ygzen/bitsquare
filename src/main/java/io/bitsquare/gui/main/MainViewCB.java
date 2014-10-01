@@ -17,15 +17,17 @@
 
 package io.bitsquare.gui.main;
 
+import io.bitsquare.BitSquare;
 import io.bitsquare.bank.BankAccount;
-import io.bitsquare.gui.AWTSystemTray;
 import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.OverlayManager;
 import io.bitsquare.gui.ViewCB;
 import io.bitsquare.gui.components.NetworkSyncPane;
 import io.bitsquare.gui.components.Popups;
+import io.bitsquare.gui.components.SystemNotification;
 import io.bitsquare.gui.util.Profiler;
 import io.bitsquare.gui.util.Transitions;
+import io.bitsquare.trade.TradeManager;
 import io.bitsquare.util.ViewLoader;
 
 import java.io.IOException;
@@ -42,8 +44,10 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
+import javafx.scene.effect.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
+import javafx.scene.paint.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +68,7 @@ public class MainViewCB extends ViewCB<MainPM> {
     private ToggleButton buyButton, sellButton, homeButton, msgButton, ordersButton, fundsButton, settingsButton,
             accountButton;
     private Pane ordersButtonButtonPane;
+    private Label numPendingTradesLabel;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -72,11 +77,18 @@ public class MainViewCB extends ViewCB<MainPM> {
 
     @Inject
     private MainViewCB(MainPM presentationModel, Navigation navigation,
-                       OverlayManager overlayManager) {
+                       OverlayManager overlayManager, TradeManager tradeManager) {
         super(presentationModel);
 
         this.navigation = navigation;
         this.overlayManager = overlayManager;
+
+        tradeManager.featureNotImplementedWarningProperty().addListener((ov, oldValue, newValue) -> {
+            if (oldValue == null && newValue != null) {
+                Popups.openWarningPopup(newValue);
+                tradeManager.setFeatureNotImplementedWarning(null);
+            }
+        });
     }
 
 
@@ -141,7 +153,7 @@ public class MainViewCB extends ViewCB<MainPM> {
 
             return childController;
         } catch (IOException e) {
-            e.getStackTrace();
+            e.printStackTrace();
             log.error("Loading view failed. FxmlUrl = " + navigationItem.getFxmlUrl());
         }
         return null;
@@ -179,25 +191,47 @@ public class MainViewCB extends ViewCB<MainPM> {
         addMainNavigation();
     }
 
+    private void applyPendingTradesInfoIcon(int numPendingTrades) {
+        log.debug("numPendingTrades " + numPendingTrades);
+        if (numPendingTrades > 0) {
+            if (ordersButtonButtonPane.getChildren().size() == 1) {
+                ImageView icon = new ImageView();
+                icon.setLayoutX(0.5);
+                icon.setId("image-alert-round");
+
+                numPendingTradesLabel = new Label(String.valueOf(numPendingTrades));
+                numPendingTradesLabel.relocate(5, 1);
+                numPendingTradesLabel.setId("nav-alert-label");
+
+                Pane alert = new Pane();
+                alert.relocate(30, 9);
+                alert.setMouseTransparent(true);
+                alert.setEffect(new DropShadow(4, 1, 2, Color.GREY));
+                alert.getChildren().addAll(icon, numPendingTradesLabel);
+                ordersButtonButtonPane.getChildren().add(alert);
+            }
+            else {
+                numPendingTradesLabel.setText(String.valueOf(numPendingTrades));
+            }
+
+            log.trace("openInfoNotification " + BitSquare.getAppName());
+            SystemNotification.openInfoNotification(BitSquare.getAppName(), "You got a new trade message.");
+        }
+        else {
+            if (ordersButtonButtonPane.getChildren().size() > 1)
+                ordersButtonButtonPane.getChildren().remove(1);
+        }
+    }
+
     private void onMainNavigationAdded() {
         Profiler.printMsgWithTime("MainController.ondMainNavigationAdded");
 
-        presentationModel.takeOfferRequested.addListener((ov, olaValue, newValue) -> {
-            ImageView icon = new ImageView();
-            icon.setId("image-alert-round");
-            final Button alertButton = new Button("", icon);
-            alertButton.setId("nav-alert-button");
-            alertButton.relocate(36, 19);
-            alertButton.setOnAction((e) ->
-                    navigation.navigationTo(Navigation.Item.MAIN,
-                            Navigation.Item.ORDERS,
-                            Navigation.Item.PENDING_TRADE));
-            Tooltip.install(alertButton, new Tooltip("Your offer has been accepted"));
-            ordersButtonButtonPane.getChildren().add(alertButton);
-
-            AWTSystemTray.setAlertIcon();
+        presentationModel.numPendingTrades.addListener((ov, oldValue, newValue) ->
+        {
+            //if ((int) newValue > (int) oldValue)
+            applyPendingTradesInfoIcon((int) newValue);
         });
-
+        applyPendingTradesInfoIcon(presentationModel.numPendingTrades.get());
         navigation.navigateToLastStoredItem();
         onContentAdded();
     }
@@ -259,7 +293,7 @@ public class MainViewCB extends ViewCB<MainPM> {
         ImageView logo = new ImageView();
         logo.setId("image-splash-logo");
 
-        Label subTitle = new Label("The decentralized Bitcoin exchange");
+        Label subTitle = new Label("The decentralized bitcoin exchange");
         subTitle.setAlignment(Pos.CENTER);
         subTitle.setId("logo-sub-title-label");
 
@@ -299,6 +333,10 @@ public class MainViewCB extends ViewCB<MainPM> {
         AnchorPane.setLeftAnchor(networkSyncPane, 0d);
         AnchorPane.setBottomAnchor(networkSyncPane, 5d);
 
+        // TODO sometimes it keeps running... deactivate ti for the moment and replace it with the notification pane 
+        // from Mike Hearn later
+        networkSyncPane.setVisible(false);
+
         presentationModel.networkSyncComplete.addListener((ov, old, newValue) -> {
             if (newValue)
                 networkSyncPane.downloadComplete();
@@ -320,10 +358,10 @@ public class MainViewCB extends ViewCB<MainPM> {
         fundsButton = addNavButton(leftNavPane, "Funds", Navigation.Item.FUNDS);
 
         final Pane msgButtonHolder = new Pane();
-        msgButton = addNavButton(msgButtonHolder, "Message", Navigation.Item.MSG);
+        msgButton = addNavButton(msgButtonHolder, "Messages", Navigation.Item.MSG);
         leftNavPane.getChildren().add(msgButtonHolder);
 
-        addBalanceInfo(rightNavPane);
+        //addBalanceInfo(rightNavPane);
 
         addBankAccountComboBox(rightNavPane);
 
@@ -370,7 +408,7 @@ public class MainViewCB extends ViewCB<MainPM> {
         return toggleButton;
     }
 
-    private void addBalanceInfo(Pane parent) {
+    /*private void addBalanceInfo(Pane parent) {
         final TextField balanceTextField = new TextField();
         balanceTextField.setEditable(false);
         balanceTextField.setPrefWidth(110);
@@ -390,7 +428,7 @@ public class MainViewCB extends ViewCB<MainPM> {
         vBox.getChildren().setAll(balanceTextField, titleLabel);
         vBox.setAlignment(Pos.CENTER);
         parent.getChildren().add(vBox);
-    }
+    }*/
 
     private void addBankAccountComboBox(Pane parent) {
         final ComboBox<BankAccount> comboBox = new ComboBox<>(presentationModel.getBankAccounts());

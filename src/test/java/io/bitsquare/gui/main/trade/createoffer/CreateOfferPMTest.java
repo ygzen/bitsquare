@@ -22,6 +22,7 @@ import io.bitsquare.gui.util.BSFormatter;
 import io.bitsquare.gui.util.validation.BtcValidator;
 import io.bitsquare.gui.util.validation.FiatValidator;
 import io.bitsquare.locale.Country;
+import io.bitsquare.user.User;
 
 import com.google.bitcoin.core.Coin;
 import com.google.bitcoin.utils.Fiat;
@@ -44,12 +45,12 @@ public class CreateOfferPMTest {
 
     @Before
     public void setup() {
-        model = new CreateOfferModel(null, null, null, null, null, null);
+        BSFormatter formatter = new BSFormatter(new User());
+        formatter.setLocale(Locale.US);
+        formatter.setFiatCurrencyCode("USD");
+        model = new CreateOfferModel(null, null,null,null, null, null, formatter);
 
-        BSFormatter.setLocale(Locale.US);
-        BSFormatter.setFiatCurrencyCode("USD");
-
-        presenter = new CreateOfferPM(model, new FiatValidator(null), new BtcValidator());
+        presenter = new CreateOfferPM(model, new FiatValidator(null), new BtcValidator(), formatter);
         presenter.initialize();
     }
 
@@ -92,14 +93,7 @@ public class CreateOfferPMTest {
         assertEquals(Fiat.valueOf("USD", 300 * 10000), model.priceAsFiat.get());
         assertEquals(Fiat.valueOf("USD", 9999900), model.volumeAsFiat.get());
 
-
-        model.collateralAsLong.set(100);
-        assertEquals("Refundable collateral (10.0 %):", presenter.collateralLabel.get());
-
-        model.collateralAsLong.set(0);
-        assertEquals("Refundable collateral (0.0 %):", presenter.collateralLabel.get());
-
-
+        
         model.bankAccountType.set(BankAccountType.SEPA.toString());
         assertEquals("Sepa", presenter.bankAccountType.get());
 

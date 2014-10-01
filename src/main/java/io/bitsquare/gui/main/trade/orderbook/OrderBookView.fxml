@@ -31,7 +31,7 @@
         <Insets bottom="20.0" left="25.0" top="30.0" right="25"/>
     </padding>
 
-    <TitledGroupBg text="Order book filter" GridPane.rowIndex="0" GridPane.columnIndex="0"
+    <TitledGroupBg text="Filter offers" GridPane.rowIndex="0" GridPane.columnIndex="0"
                    GridPane.rowSpan="5" GridPane.columnSpan="2"/>
 
     <Label text="Filter by amount or price:" GridPane.rowIndex="0" GridPane.valignment="TOP">
@@ -52,7 +52,7 @@
         </VBox>
         <Label text="x">
             <font>
-                <Font name="Helvetica" size="20.0"/>
+                <Font name="Helvetica-Bold" size="20.0"/>
             </font>
             <padding>
                 <Insets top="14.0" left="3" right="3"/>
@@ -71,7 +71,7 @@
 
         <Label text="=">
             <font>
-                <Font name="Helvetica" size="20.0"/>
+                <Font name="Helvetica-Bold" size="20.0"/>
             </font>
             <padding>
                 <Insets top="14.0" left="2" right="2"/>
@@ -93,17 +93,20 @@
 
     <Label fx:id="extendedCheckBoxLabel" text="Show only matching offers:" GridPane.columnIndex="0"
            GridPane.rowIndex="2" visible="false" managed="false"/>
-    <CheckBox fx:id="extendedCheckBox" visible="false" managed="false" GridPane.columnIndex="1"
+    <CheckBox fx:id="showOnlyMatchingCheckBox" onAction="#onShowOnlyMatching" visible="false" managed="false"
+              GridPane.columnIndex="1"
               GridPane.rowIndex="2"/>
 
     <Label fx:id="extendedButton1Label" text="Payments account countries:" GridPane.columnIndex="0"
            GridPane.rowIndex="3" visible="false" managed="false"/>
-    <Button fx:id="extendedButton1" text="Open filter" GridPane.columnIndex="1"
+    <Button fx:id="openCountryFilterButton" text="Open countries filter"
+            onAction="#onOpenCountryFilter" GridPane.columnIndex="1"
             GridPane.rowIndex="3" visible="false" managed="false"/>
 
     <Label fx:id="extendedButton2Label" text="Payments account methods:" GridPane.columnIndex="0"
            GridPane.rowIndex="4" visible="false" managed="false"/>
-    <Button fx:id="extendedButton2" text="Open filter" GridPane.columnIndex="1"
+    <Button fx:id="openPaymentMethodsFilterButton" text="Open payment methods filter"
+            onAction="#onOpenPaymentMethodsFilter" GridPane.columnIndex="1"
             GridPane.rowIndex="4" visible="false" managed="false">
         <GridPane.margin>
             <Insets bottom="-5"/>
@@ -119,10 +122,10 @@
         </GridPane.margin>
     </HBox>
 
-    <TitledSeparator text="Order book for buying Bitcoin" GridPane.rowIndex="6" GridPane.columnIndex="0"
+    <TitledSeparator text="Offers" GridPane.rowIndex="6" GridPane.columnIndex="0"
                      GridPane.columnSpan="2"/>
 
-    <TableView fx:id="orderBookTable" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.columnSpan="2"
+    <TableView fx:id="table" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.columnSpan="2"
                prefHeight="1500">
         <GridPane.margin>
             <Insets top="10.0" left="-10" right="-10" bottom="-15"/>
