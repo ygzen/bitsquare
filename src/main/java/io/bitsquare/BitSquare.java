@@ -17,6 +17,10 @@
 
 package io.bitsquare;
 
+import akka.actor.ActorSystem;
+import com.google.common.base.Throwables;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import io.bitsquare.btc.WalletFacade;
 import io.bitsquare.di.BitSquareModule;
 import io.bitsquare.gui.AWTSystemTray;
@@ -29,26 +33,20 @@ import io.bitsquare.persistence.Persistence;
 import io.bitsquare.settings.Settings;
 import io.bitsquare.user.User;
 import io.bitsquare.util.ViewLoader;
-
-import com.google.common.base.Throwables;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-
-import java.io.IOException;
-
-import java.util.Arrays;
-
 import javafx.application.Application;
-import javafx.scene.*;
-import javafx.scene.image.*;
-import javafx.scene.input.*;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
-
+import lighthouse.files.AppDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import lighthouse.files.AppDirectory;
+import java.io.IOException;
+import java.util.Arrays;
 
 public class BitSquare extends Application {
     private static final Logger log = LoggerFactory.getLogger(BitSquare.class);
@@ -91,11 +89,10 @@ public class BitSquare extends Application {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+        final Injector injector = Guice.createInjector(new BitSquareModule());
 
         // currently there is not SystemTray support for java fx (planned for version 3) so we use the old AWT
-        AWTSystemTray.createSystemTray(primaryStage);
-
-        final Injector injector = Guice.createInjector(new BitSquareModule());
+        AWTSystemTray.createSystemTray(primaryStage, injector.getInstance(ActorSystem.class));
 
         walletFacade = injector.getInstance(WalletFacade.class);
         messageFacade = injector.getInstance(MessageFacade.class);

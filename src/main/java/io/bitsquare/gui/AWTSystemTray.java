@@ -18,18 +18,18 @@
 package io.bitsquare.gui;
 
 
+import akka.actor.ActorSystem;
 import io.bitsquare.BitSquare;
 import io.bitsquare.gui.util.ImageUtil;
-
-import java.awt.*;
-
-import javax.swing.*;
-
 import javafx.application.Platform;
 import javafx.stage.Stage;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.concurrent.duration.Duration;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * There is no JavaFX support yet, so we need to use AWT.
@@ -39,11 +39,16 @@ public class AWTSystemTray {
     private static final Logger log = LoggerFactory.getLogger(AWTSystemTray.class);
     private static boolean isStageVisible = true;
     private static MenuItem showGuiItem;
+
     private static Stage stage;
+    private static ActorSystem actorSystem;
+
     private static TrayIcon trayIcon;
 
-    public static void createSystemTray(Stage stage) {
+    public static void createSystemTray(Stage stage, ActorSystem actorSystem) {
         AWTSystemTray.stage = stage;
+        AWTSystemTray.actorSystem = actorSystem;
+
         if (SystemTray.isSupported()) {
             // prevent exiting the app when the last window get closed
             Platform.setImplicitExit(false);
@@ -73,8 +78,7 @@ public class AWTSystemTray {
                     showGuiItem.setLabel("Open exchange window");
                     Platform.runLater(stage::hide);
                     isStageVisible = false;
-                }
-                else {
+                } else {
                     showGuiItem.setLabel("Close exchange window");
                     Platform.runLater(stage::show);
                     isStageVisible = true;
@@ -82,6 +86,16 @@ public class AWTSystemTray {
             });
             exitItem.addActionListener(e -> {
                 systemTray.remove(trayIcon);
+
+                actorSystem.shutdown();
+                try {
+                    actorSystem.awaitTermination(Duration.create(5L, "seconds"));
+                } catch (Exception ex) {
+                    if (ex instanceof TimeoutException)
+                        log.error("ActorSystem did NOT properly shutdown.");
+                    else
+                        log.error(ex.getMessage());
+                }
                 System.exit(0);
             });
 
@@ -91,8 +105,7 @@ public class AWTSystemTray {
             } catch (AWTException e) {
                 log.error("TrayIcon could not be added.");
             }
-        }
-        else {
+        } else {
             log.error("SystemTray is not supported");
         }
     }
