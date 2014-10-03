@@ -26,13 +26,24 @@ import io.bitsquare.di.BitSquareModule;
 import io.bitsquare.gui.AWTSystemTray;
 import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.components.Popups;
-import io.bitsquare.gui.util.ImageUtil;
 import io.bitsquare.gui.util.Profiler;
 import io.bitsquare.msg.MessageFacade;
+import io.bitsquare.msg.SeedNodeAddress;
 import io.bitsquare.persistence.Persistence;
 import io.bitsquare.settings.Settings;
 import io.bitsquare.user.User;
 import io.bitsquare.util.ViewLoader;
+
+import com.google.common.base.Throwables;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
+import java.io.IOException;
+
+import java.util.Arrays;
+import java.util.List;
+
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -40,6 +51,8 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.*;
+import javafx.scene.input.*;
 import javafx.stage.Stage;
 import lighthouse.files.AppDirectory;
 import org.slf4j.Logger;
@@ -65,8 +78,34 @@ public class BitSquare extends Application {
         if (args.length > 0)
             APP_NAME = APP_NAME + "_" + args[0];
 
+        /*Thread seedNodeThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                startSeedNode();
+            }
+        });
+        seedNodeThread.start();*/
+
         launch(args);
     }
+
+    private static void startSeedNode() {
+        List<SeedNodeAddress.StaticSeedNodeAddresses> staticSedNodeAddresses = SeedNodeAddress
+                .StaticSeedNodeAddresses.getAllSeedNodeAddresses();
+        SeedNode seedNode = new SeedNode(new SeedNodeAddress(staticSedNodeAddresses.get(0)));
+        seedNode.setDaemon(true);
+        seedNode.start();
+
+        try {
+            // keep main thread up
+            Thread.sleep(Long.MAX_VALUE);
+            log.debug("Localhost seed node started");
+        } catch (InterruptedException e) {
+            log.error(e.toString());
+        }
+
+    }
+
 
     public static Stage getPrimaryStage() {
         return primaryStage;
@@ -110,12 +149,6 @@ public class BitSquare extends Application {
         settings.applyPersistedSettings((Settings) persistence.read(settings.getClass().getName()));
 
         primaryStage.setTitle("BitSquare (" + APP_NAME + ")");
-        if (ImageUtil.isRetina())
-            primaryStage.getIcons().add(new Image(BitSquare.class.getResourceAsStream
-                    ("/images/window_icon@2x.png")));
-        else
-            primaryStage.getIcons().add(new Image(BitSquare.class.getResourceAsStream
-                    ("/images/window_icon.png")));
 
         ViewLoader.setInjector(injector);
 
@@ -124,7 +157,7 @@ public class BitSquare extends Application {
         try {
             final Parent view = loader.load();
 
-            final Scene scene = new Scene(view, 1000, 800);
+            final Scene scene = new Scene(view, 1000, 900);
             scene.getStylesheets().setAll(getClass().getResource("/io/bitsquare/gui/bitsquare.css").toExternalForm(),
                     getClass().getResource("/io/bitsquare/gui/images.css").toExternalForm());
 
