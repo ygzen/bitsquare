@@ -17,35 +17,26 @@
 
 package io.bitsquare.gui.main;
 
+import com.google.inject.Inject;
 import io.bitsquare.bank.BankAccount;
+import io.bitsquare.btc.BTCService;
 import io.bitsquare.btc.WalletFacade;
 import io.bitsquare.btc.actor.event.DownloadDone;
 import io.bitsquare.btc.actor.event.DownloadProgress;
 import io.bitsquare.btc.actor.event.DownloadStarted;
 import io.bitsquare.btc.actor.event.WalletInitialized;
-import io.bitsquare.btc.listeners.BalanceListener;
 import io.bitsquare.gui.UIModel;
-import io.bitsquare.gui.main.funds.BTCService;
 import io.bitsquare.gui.util.Profiler;
+import io.bitsquare.msg.DHTService;
 import io.bitsquare.msg.MessageFacade;
-import io.bitsquare.msg.listeners.BootstrapListener;
+import io.bitsquare.msg.actor.event.PeerInitialized;
 import io.bitsquare.persistence.Persistence;
 import io.bitsquare.trade.Trade;
 import io.bitsquare.trade.TradeManager;
 import io.bitsquare.user.User;
-
-import com.google.inject.Inject;
-
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.*;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +48,9 @@ class MainModel extends UIModel {
     private final MessageFacade messageFacade;
     private final TradeManager tradeManager;
     private final Persistence persistence;
+
     private final BTCService btcService;
+    private final DHTService dhtService;
 
     private boolean messageFacadeInited;
     private boolean walletFacadeInited;
@@ -73,12 +66,13 @@ class MainModel extends UIModel {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     @Inject
-    private MainModel(User user, BTCService btcService,
+    private MainModel(User user, BTCService btcService, DHTService dhtService,
                       WalletFacade walletFacade,
                       MessageFacade messageFacade,
                       TradeManager tradeManager, Persistence persistence) {
         this.user = user;
         this.btcService = btcService;
+        this.dhtService = dhtService;
         this.walletFacade = walletFacade;
         this.messageFacade = messageFacade;
         this.tradeManager = tradeManager;
@@ -114,48 +108,32 @@ class MainModel extends UIModel {
             if (m instanceof WalletInitialized) {
                 log.debug("btc wallet initialized. ");
                 walletFacadeInited = true;
-                if (messageFacadeInited)
-                    onFacadesInitialised();
+                if (messageFacadeInited) onFacadesInitialised();
             } else if (m instanceof DownloadStarted) {
                 log.debug("btc download started. ");
 
             } else if (m instanceof DownloadProgress) {
-                log.debug("btc download progress: "+ ((DownloadProgress)m).getPercent());
-                networkSyncProgress.set(((DownloadProgress)m).getPercent());
+                log.debug("btc download progress: " + ((DownloadProgress) m).getPercent());
+                networkSyncProgress.set(((DownloadProgress) m).getPercent());
             } else if (m instanceof DownloadDone) {
                 log.debug("btc download Done. ");
                 networkSyncComplete.set(true);
+            } else {
+                log.error("received unknown message from btcService.");
             }
         });
-        btcService.initializeBTCWallet();
 
-        messageFacade.init(new BootstrapListener() {
-            @Override
-            public void onCompleted() {
+        btcService.initializeWallet();
+
+        dhtService.setHandler(m -> {
+            if (m instanceof PeerInitialized) {
+                log.debug("dht peer initialized. ");
                 messageFacadeInited = true;
                 if (walletFacadeInited) onFacadesInitialised();
             }
-
-            @Override
-            public void onFailed(Throwable throwable) {
-                log.error(throwable.toString());
-            }
         });
 
-        walletFacade.initialize(() -> {
-            walletFacadeInited = true;
-            if (messageFacadeInited)
-                onFacadesInitialised();
-
-
-          /*  walletFacade.addBalanceListener(new BalanceListener() {
-                @Override
-                public void onBalanceChanged(Coin balance) {
-                    updateBalance(balance);
-                }
-            });
-            updateBalance(walletFacade.getWalletBalance());*/
-        });
+        dhtService.initializePeer();
     }
 
 

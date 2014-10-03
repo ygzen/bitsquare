@@ -6,9 +6,10 @@ import akka.actor.Props;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
-import io.bitsquare.BitSquare;
 import io.bitsquare.bank.BankAccountType;
 import io.bitsquare.locale.Country;
+import io.bitsquare.msg.actor.command.InitializePeer;
+import io.bitsquare.msg.actor.event.PeerInitialized;
 import io.bitsquare.trade.Offer;
 import io.bitsquare.trade.actor.command.CreateOffer;
 import io.bitsquare.trade.actor.command.GetOffers;
@@ -24,21 +25,14 @@ import net.tomp2p.futures.FutureBootstrap;
 import net.tomp2p.p2p.Peer;
 import net.tomp2p.p2p.PeerBuilder;
 import net.tomp2p.peers.Number160;
-import net.tomp2p.peers.PeerAddress;
 import net.tomp2p.storage.Data;
-import net.tomp2p.utils.Utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 public class DHTManager extends AbstractActor {
+
+    public static final String NAME = "dhtManager";
 
     private final LoggingAdapter log = Logging.getLogger(context().system(), this);
 
@@ -46,46 +40,51 @@ public class DHTManager extends AbstractActor {
     // timeout in ms
     private final Long bootstrapTimeout = 10000L;
 
-    public static Props LOCAL_TEST = getPeerIdProps(new Number160(4001), 4001, Arrays.asList(
-            new PeerAddress(new Number160(4000), InetAddress.getLoopbackAddress(), 4000, 4000)));
+//    public static Props LOCAL_TEST = getPeerIdProps(new Number160(4001), 4001, Arrays.asList(
+//            new PeerAddress(new Number160(4000), InetAddress.getLoopbackAddress(), 4000, 4000)));
+//
+//    public static Props LOCAL_BOOTSTRAP = getPeerIdProps(new Number160(4000), 4000, null);
+//
+//
+//    public static Props getKeyPairProps(KeyPair keyPair, Integer port, Collection<PeerAddress> bootstrapTo)
+//            throws NoSuchAlgorithmException {
+//        Number160 peerId = Utils.makeSHAHash(keyPair.getPublic().getEncoded());
+//        return Props.create(DHTManager.class, bootstrapTo, peerId, port);
+//    }
+//
+//    public static Props getPeerIdProps(Number160 peerId, Integer port, Collection<PeerAddress> bootstrapTo) {
+//        return Props.create(DHTManager.class, bootstrapTo, peerId, port);
+//    }
 
-    public static Props LOCAL_BOOTSTRAP = getPeerIdProps(new Number160(4000), 4000, null);
-
-
-    public static Props getKeyPairProps(KeyPair keyPair, Integer port, Collection<PeerAddress> bootstrapTo)
-            throws NoSuchAlgorithmException {
-        Number160 peerId = Utils.makeSHAHash(keyPair.getPublic().getEncoded());
-        return Props.create(DHTManager.class, bootstrapTo, peerId, port);
+    public static Props getProps() {
+        return Props.create(DHTManager.class);
     }
 
-    public static Props getPeerIdProps(Number160 peerId, Integer port, Collection<PeerAddress> bootstrapTo) {
-        return Props.create(DHTManager.class, bootstrapTo, peerId, port);
-    }
+    private Peer peer;
+    private PeerDHT peerDHT;
 
-    private final File dataDir = new File(System.getProperty("user.home") + "/Library/" + BitSquare.getAppName());
-    private final Collection<PeerAddress> bootstrapPeers;
+    public DHTManager() {
 
-    private final Peer peer;
-    private final PeerDHT peerDHT;
+        receive(ReceiveBuilder
+                        .match(InitializePeer.class, ip -> {
+                            log.debug("Received message: {}", ip);
 
-    public DHTManager(Collection<PeerAddress> bootstrapPeers, Number160 peerId, Integer port) throws IOException,
-            NoSuchAlgorithmException {
+                            peer = new PeerBuilder(ip.getPeerId())
+                                    .ports(ip.getPort() != null ? ip.getPort() : new Ports().tcpPort()).start();
+                            peerDHT = new PeerBuilderDHT(peer).start();
 
-        this.peer = new PeerBuilder(peerId).ports(port != null ? port : new Ports().tcpPort()).start();
-        this.bootstrapPeers = bootstrapPeers;
-        this.peerDHT = new PeerBuilderDHT(peer).start();
+                            // TODO add code to discover non-local peers
+                            // FutureDiscover futureDiscover = peer.discover().peerAddress(bootstrapPeers.).start();
+                            // futureDiscover.awaitUninterruptibly();
 
-        // TODO add code to discover non-local peers
-        // FutureDiscover futureDiscover = peer.discover().peerAddress(bootstrapPeers.).start();
-        // futureDiscover.awaitUninterruptibly();
-
-        if (bootstrapPeers != null) {
-            FutureBootstrap futureBootstrap = peer.bootstrap().bootstrapTo(this.bootstrapPeers).start();
-            futureBootstrap.awaitUninterruptibly(bootstrapTimeout);
-        }
-
-        receive(ReceiveBuilder.
-                        match(CreateOffer.class, co -> {
+                            if (ip.getBootstrapPeers() != null) {
+                                FutureBootstrap futureBootstrap = peer.bootstrap()
+                                        .bootstrapTo(ip.getBootstrapPeers()).start();
+                                futureBootstrap.awaitUninterruptibly(bootstrapTimeout);
+                            }
+                            sender().tell(new PeerInitialized(peer.peerID()), self());
+                        })
+                        .match(CreateOffer.class, co -> {
                             log.debug("Received message: {}", co);
                             Offer o = co.getOffer();
                             //String locationCode = createOfferLocationCode(o.);

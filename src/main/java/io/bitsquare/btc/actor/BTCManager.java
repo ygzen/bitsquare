@@ -20,11 +20,11 @@ import java.util.List;
 
 public class BTCManager extends AbstractActor {
 
+    public final static String NAME = "btcManager";
+
     private final LoggingAdapter log = Logging.getLogger(context().system(), this);
 
     private final ActorPeerWalletEventListener actorPeerWalletEventListener;
-
-    public final static String NAME = "btcManager";
 
     public static Props getProps() {
         return Props.create(BTCManager.class);
@@ -79,7 +79,10 @@ public class BTCManager extends AbstractActor {
 
         actorPeerWalletEventListener.setNetworkId(networkId);
         actorPeerWalletEventListener.addReceiver(sender());
+
+        // TODO make more generic for linux and win support
         File dataDir = new File(System.getProperty("user.home") + "/Library/" + BitSquare.getAppName());
+
         NetworkParameters netParams = NetworkParameters.fromID(networkId);
 
         ActorRef sender = sender();

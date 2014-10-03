@@ -25,7 +25,7 @@ import io.bitsquare.btc.WalletFacade;
 import io.bitsquare.btc.listeners.BalanceListener;
 import io.bitsquare.gui.UIModel;
 import io.bitsquare.gui.util.BSFormatter;
-import io.bitsquare.gui.main.funds.BTCService;
+import io.bitsquare.btc.BTCService;
 import io.bitsquare.gui.main.trade.TradeService;
 import io.bitsquare.locale.Country;
 import io.bitsquare.settings.Settings;

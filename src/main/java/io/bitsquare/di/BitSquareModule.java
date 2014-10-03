@@ -19,47 +19,39 @@ package io.bitsquare.di;
 
 
 import akka.actor.ActorSystem;
-import io.bitsquare.BitSquare;
-import io.bitsquare.btc.BlockChainFacade;
-import io.bitsquare.btc.FeePolicy;
-import io.bitsquare.btc.WalletFacade;
-import io.bitsquare.crypto.CryptoFacade;
-import io.bitsquare.gui.Navigation;
-import io.bitsquare.gui.OverlayManager;
-import io.bitsquare.gui.main.funds.BTCService;
-import io.bitsquare.gui.main.trade.TradeService;
-import io.bitsquare.gui.main.trade.orderbook.OrderBook;
-import io.bitsquare.gui.util.BSFormatter;
-import io.bitsquare.gui.util.validation.BankAccountNumberValidator;
-import io.bitsquare.gui.util.validation.BtcValidator;
-import io.bitsquare.gui.util.validation.FiatValidator;
-import io.bitsquare.gui.util.validation.InputValidator;
-import io.bitsquare.gui.util.validation.PasswordValidator;
-import io.bitsquare.msg.BootstrappedPeerFactory;
-import io.bitsquare.msg.MessageFacade;
-import io.bitsquare.msg.P2PNode;
-import io.bitsquare.msg.SeedNodeAddress;
-import io.bitsquare.persistence.Persistence;
-import io.bitsquare.settings.Settings;
-//import io.bitsquare.trade.TradeManager;
-import io.bitsquare.btc.actor.BTCManager;
-import io.bitsquare.trade.actor.TradeManager;
-import io.bitsquare.user.User;
-import io.bitsquare.util.ConfigLoader;
-
 import com.google.bitcoin.core.NetworkParameters;
 import com.google.bitcoin.params.MainNetParams;
 import com.google.bitcoin.params.RegTestParams;
 import com.google.bitcoin.params.TestNet3Params;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.name.Names;
+import io.bitsquare.BitSquare;
+import io.bitsquare.btc.BTCService;
+import io.bitsquare.btc.BlockChainFacade;
+import io.bitsquare.btc.FeePolicy;
+import io.bitsquare.btc.WalletFacade;
+import io.bitsquare.btc.actor.BTCManager;
+import io.bitsquare.crypto.CryptoFacade;
+import io.bitsquare.gui.Navigation;
+import io.bitsquare.gui.OverlayManager;
+import io.bitsquare.gui.main.trade.TradeService;
+import io.bitsquare.gui.main.trade.orderbook.OrderBook;
+import io.bitsquare.gui.util.BSFormatter;
+import io.bitsquare.gui.util.validation.*;
+import io.bitsquare.msg.*;
+import io.bitsquare.msg.actor.DHTManager;
+import io.bitsquare.persistence.Persistence;
+import io.bitsquare.settings.Settings;
+import io.bitsquare.trade.actor.TradeManager;
+import io.bitsquare.user.User;
+import io.bitsquare.util.ConfigLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import io.bitsquare.trade.TradeManager;
 
 public class BitSquareModule extends AbstractModule {
     private static final Logger log = LoggerFactory.getLogger(BitSquareModule.class);
@@ -101,11 +93,13 @@ public class BitSquareModule extends AbstractModule {
 
         bind(SeedNodeAddress.StaticSeedNodeAddresses.class).annotatedWith(Names.named("defaultSeedNode"))
                 .toProvider(StaticSeedNodeAddressesProvider.class).asEagerSingleton();
-        
-        // Actor Related Singleton Objects
+
+        // Actor Related Classes to Inject
         bind(ActorSystem.class).toProvider(ActorSystemProvider.class).asEagerSingleton();
-        bind(TradeService.class);
+
         bind(BTCService.class);
+        bind(DHTService.class);
+        bind(TradeService.class);
     }
 }
 
@@ -176,8 +170,10 @@ class ActorSystemProvider implements Provider<ActorSystem> {
         ActorSystem system = ActorSystem.create(BitSquare.getAppName());
 
         // create top level actors
-        system.actorOf(TradeManager.getProps(), TradeManager.NAME);
         system.actorOf(BTCManager.getProps(), BTCManager.NAME);
+        system.actorOf(DHTManager.getProps(), DHTManager.NAME);
+        system.actorOf(TradeManager.getProps(), TradeManager.NAME);
+
 
         return system;
     }
