@@ -11,11 +11,11 @@ import net.tomp2p.peers.PeerAddress;
 import java.net.InetAddress;
 import java.util.Arrays;
 
-public class DHTService extends ActorService {
+public class DHTPeerService extends ActorService {
 
     @Inject
-    public DHTService(ActorSystem system) {
-        super(system, "/user/" + DHTManager.NAME);
+    public DHTPeerService(ActorSystem system) {
+        super(system, "/user/" + DHTManager.PEER_NAME);
     }
 
     public void initializePeer() {

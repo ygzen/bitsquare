@@ -32,7 +32,8 @@ import java.util.List;
 
 public class DHTManager extends AbstractActor {
 
-    public static final String NAME = "dhtManager";
+    public static final String PEER_NAME = "peerDhtManager";
+    public static final String SEED_NAME = "seedDhtManager";
 
     private final LoggingAdapter log = Logging.getLogger(context().system(), this);
 

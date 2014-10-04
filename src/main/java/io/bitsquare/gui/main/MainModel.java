@@ -27,7 +27,8 @@ import io.bitsquare.btc.actor.event.DownloadStarted;
 import io.bitsquare.btc.actor.event.WalletInitialized;
 import io.bitsquare.gui.UIModel;
 import io.bitsquare.gui.util.Profiler;
-import io.bitsquare.msg.DHTService;
+import io.bitsquare.msg.DHTPeerService;
+import io.bitsquare.msg.DHTSeedService;
 import io.bitsquare.msg.MessageFacade;
 import io.bitsquare.msg.actor.event.PeerInitialized;
 import io.bitsquare.persistence.Persistence;
@@ -50,7 +51,8 @@ class MainModel extends UIModel {
     private final Persistence persistence;
 
     private final BTCService btcService;
-    private final DHTService dhtService;
+    private final DHTSeedService dhtSeedService;
+    private final DHTPeerService dhtPeerService;
 
     private boolean messageFacadeInited;
     private boolean walletFacadeInited;
@@ -66,13 +68,14 @@ class MainModel extends UIModel {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     @Inject
-    private MainModel(User user, BTCService btcService, DHTService dhtService,
+    private MainModel(User user, BTCService btcService, DHTSeedService dhtSeedService, DHTPeerService dhtPeerService,
                       WalletFacade walletFacade,
                       MessageFacade messageFacade,
                       TradeManager tradeManager, Persistence persistence) {
         this.user = user;
         this.btcService = btcService;
-        this.dhtService = dhtService;
+        this.dhtSeedService = dhtSeedService;
+        this.dhtPeerService = dhtPeerService;
         this.walletFacade = walletFacade;
         this.messageFacade = messageFacade;
         this.tradeManager = tradeManager;
@@ -125,7 +128,7 @@ class MainModel extends UIModel {
 
         btcService.initializeWallet();
 
-        dhtService.setHandler(m -> {
+        dhtPeerService.setHandler(m -> {
             if (m instanceof PeerInitialized) {
                 log.debug("dht peer initialized. ");
                 messageFacadeInited = true;
@@ -133,7 +136,15 @@ class MainModel extends UIModel {
             }
         });
 
-        dhtService.initializePeer();
+        dhtSeedService.setHandler(m -> {
+            if (m instanceof PeerInitialized) {
+                log.debug("dht seed initialized. ");
+                dhtPeerService.initializePeer();
+            }
+        });
+
+        dhtSeedService.initializePeer();
+
     }
 
 

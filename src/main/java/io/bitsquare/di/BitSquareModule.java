@@ -98,7 +98,8 @@ public class BitSquareModule extends AbstractModule {
         bind(ActorSystem.class).toProvider(ActorSystemProvider.class).asEagerSingleton();
 
         bind(BTCService.class);
-        bind(DHTService.class);
+        bind(DHTSeedService.class);
+        bind(DHTPeerService.class);
         bind(TradeService.class);
     }
 }
@@ -170,7 +171,8 @@ class ActorSystemProvider implements Provider<ActorSystem> {
 
         // create top level actors
         system.actorOf(BTCManager.getProps(), BTCManager.NAME);
-        system.actorOf(DHTManager.getProps(), DHTManager.NAME);
+        system.actorOf(DHTManager.getProps(), DHTManager.SEED_NAME);
+        system.actorOf(DHTManager.getProps(), DHTManager.PEER_NAME);
         system.actorOf(TradeManager.getProps(), TradeManager.NAME);
 
 
