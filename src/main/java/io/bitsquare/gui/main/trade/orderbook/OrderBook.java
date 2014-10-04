@@ -171,19 +171,19 @@ public class OrderBook {
 
     // TODO Just temporary, will be removed later when we have a push solution
     private void startPolling() {
-        addListeners();
-        setBankAccount(user.getCurrentBankAccount());
-        pollingTimer = Utilities.setInterval(1000, (animationTimer) -> {
-            messageFacade.requestInvalidationTimeStampFromDHT(fiatCode);
-            return null;
-        });
-
-        messageFacade.getOffers(fiatCode);
+//        addListeners();
+//        setBankAccount(user.getCurrentBankAccount());
+//        pollingTimer = Utilities.setInterval(1000, (animationTimer) -> {
+//            messageFacade.requestInvalidationTimeStampFromDHT(fiatCode);
+//            return null;
+//        });
+//
+//        messageFacade.getOffers(fiatCode);
     }
 
     private void stopPolling() {
-        pollingTimer.stop();
-        removeListeners();
+//        pollingTimer.stop();
+//        removeListeners();
     }
 
 }
