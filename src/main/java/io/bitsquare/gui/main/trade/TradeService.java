@@ -1,6 +1,6 @@
 package io.bitsquare.gui.main.trade;
 
-import io.bitsquare.gui.util.ActorService;
+import io.bitsquare.util.ActorService;
 import io.bitsquare.persistence.Persistence;
 import io.bitsquare.settings.Settings;
 import io.bitsquare.trade.Direction;

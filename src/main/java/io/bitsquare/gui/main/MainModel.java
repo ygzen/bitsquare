@@ -17,7 +17,6 @@
 
 package io.bitsquare.gui.main;
 
-import com.google.inject.Inject;
 import io.bitsquare.bank.BankAccount;
 import io.bitsquare.btc.BTCService;
 import io.bitsquare.btc.WalletFacade;
@@ -35,9 +34,19 @@ import io.bitsquare.persistence.Persistence;
 import io.bitsquare.trade.Trade;
 import io.bitsquare.trade.TradeManager;
 import io.bitsquare.user.User;
-import javafx.beans.property.*;
+
+import com.google.inject.Inject;
+
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

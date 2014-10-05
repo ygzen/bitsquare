@@ -2,7 +2,7 @@ package io.bitsquare.msg;
 
 import akka.actor.ActorSystem;
 import com.google.inject.Inject;
-import io.bitsquare.gui.util.ActorService;
+import io.bitsquare.util.ActorService;
 import io.bitsquare.msg.actor.DHTManager;
 import io.bitsquare.msg.actor.command.InitializePeer;
 import net.tomp2p.peers.Number160;

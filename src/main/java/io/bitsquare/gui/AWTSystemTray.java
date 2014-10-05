@@ -92,7 +92,7 @@ public class AWTSystemTray {
                     actorSystem.awaitTermination(Duration.create(5L, "seconds"));
                 } catch (Exception ex) {
                     if (ex instanceof TimeoutException)
-                        log.error("ActorSystem did NOT properly shutdown.");
+                        log.error("ActorSystem did not shutdown properly.");
                     else
                         log.error(ex.getMessage());
                 }
