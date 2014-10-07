@@ -4,7 +4,6 @@ Bitsquare User Guide
 :toc:
 :numbered:
 
-
 Introduction
 ------------
 
@@ -12,22 +11,28 @@ Introduction
 Getting Started
 ---------------
 
-=== Download and install Bitcoin Core
+Download and install Bitcoin Core
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-=== Download 
+Download
+~~~~~~~~
 
 
 Buying bitcoin
 --------------
 
-=== Publish an offer to buy
+Publish an offer to buy
+~~~~~~~~~~~~~~~~~~~~~~~
 
-=== Take an offer to sell
+Take an offer to sell
+~~~~~~~~~~~~~~~~~~~~~
 
 
 Selling bitcoin
 ---------------
 
-=== Publish an offer to sell
+Publish an offer to sell
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-=== Take an offer to buy
+Take an offer to buy
+~~~~~~~~~~~~~~~~~~~~
