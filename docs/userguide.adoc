@@ -1,18 +1,29 @@
 Bitsquare User Guide
 ====================
 :version:       {project-version}
-:revnumber:     {version}
+:revnumber:     {version} (Alpha)
 :repo-url:      https://github.com/bitsquare/bitsquare
 :download-url:  {repo-url}/releases/download/v{version}
 :devguide-url:  http://bitsquare.io/docs/{version}/devguide.html
 :browse-url:    {repo-url}/blob/master
 :toc:
+:toc-placement!:
 :numbered:
 
+.Welcome!
+**********************************************************************
+If you're new to Bitsquare, we recommend you begin by reading the <<introduction>> and browsing the <<use-cases>> to get a clear picture of what Bitsquare is and what it can do. If you like what you see, then follow the steps in <<getting-started>>. From there, move on to the <<how-to>> section, where you'll find specific instructions on how to set up your account, place and take offers and more. Having trouble along the way? See the <<faq>>—but don't hesitate to {repo-url}#staying-in-touch[contact the team] if you get stuck.
+
+Thanks for your interest, and we look forward to hearing from you!
+**********************************************************************
+
+NOTE: We're working our way toward a 1.0 release, but right now **Bitsquare is alpha-quality software**. This means that it should only be used on the bitcoin 'testnet' and 'regtest' networks. If you're not familiar with what that means, don't worry—instructions will be given along the way. Happy testing!
+
+toc::[]
+
+[[introduction]]
 Introduction
 ------------
-
-Welcome, and thanks for your interest in Bitsquare. 
 
 What is Bitsquare?
 ~~~~~~~~~~~~~~~~~~
@@ -38,10 +49,6 @@ Purpose
 ^^^^^^^
 This document is designed to provide Bitsquare users with clear and complete instructions on how to use Bitsquare to buy and sell bitcoin. It does not address technical details or provide instructions specific to Bitsquare developers or arbitrators. For more information on these and other topics, see <<additional-resources>>.
 
-Recommended use
-^^^^^^^^^^^^^^^
-If you're new to Bitsquare, we recommend you begin by looking over the <<use-cases>> to get a clear picture of what Bitsquare can do. If you like what you see, then follow the steps in <<getting-started>>. From there, move on to the <<how-to>> section, where you'll find specific instructions how to set up your account, place and take offers and more. Refer to <<faq>> appendix if you get stuck.
-
 Conventions
 ^^^^^^^^^^^
 TODO
@@ -58,26 +65,10 @@ Copyright
 ^^^^^^^^^
 TODO, but in the meantime, _all rights reserved_.
 
-[[additional-resources]]
-Additional resources
-~~~~~~~~~~~~~~~~~~~~
-
- - http://bitsquare.io/images/overview.png[Overview Infographic]
- -  https://docs.google.com/document/d/1d3EiWZdaM89-P6MVhS53unXv2-pDpSFsN3W4kCGXKgY/edit#[Whitepaper]
- -  https://docs.google.com/document/d/1LJCRFdtM2Jn2Oiv49qRXwBDG8HZD0Hiedy8tNjErHps/edit[Arbitration System]
- - https://docs.google.com/document/d/1sHwU7K7C8Nl-fS4Z6X88L-NVJ_WBiKnsSpYpYfyqUXA/edit[Risk Analysis]
-  - https://docs.google.com/document/d/1d3EiWZdaM89-P6MVhS53unXv2-pDpSFsN3W4kCGXKgY/edit#[Screencasts]
-  - {devguide-url}[Developer Guide]
-
 
 [[getting-started]]
 Getting Started
 ---------------
-
-This is alpha software.
-
-We recommend that you follow the steps in <<getting-started>>
-
 
 Download and install Bitsquare
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -182,6 +173,20 @@ Review open offers
 
 TODO
 
+
+[[additional-resources]]
+[appendix]
+Additional resources
+--------------------
+
+ - http://bitsquare.io/images/overview.png[Overview Infographic]
+ - https://docs.google.com/document/d/1d3EiWZdaM89-P6MVhS53unXv2-pDpSFsN3W4kCGXKgY/edit#[Whitepaper]
+ - https://docs.google.com/document/d/1LJCRFdtM2Jn2Oiv49qRXwBDG8HZD0Hiedy8tNjErHps/edit[Arbitration System]
+ - https://docs.google.com/document/d/1sHwU7K7C8Nl-fS4Z6X88L-NVJ_WBiKnsSpYpYfyqUXA/edit[Risk Analysis]
+ - https://docs.google.com/document/d/1d3EiWZdaM89-P6MVhS53unXv2-pDpSFsN3W4kCGXKgY/edit#[Screencasts]
+ - {devguide-url}[Developer Guide]
+
+
 [[testing]]
 [appendix]
 Testing
@@ -232,8 +237,9 @@ Delete 'Alice' and 'Bob' Bitsquare data directories
 [appendix]
 Frequently Asked Questions
 --------------------------
+[qanda]
+I don't have any bitcoin. How can I get enough to pay the security deposit on my first trade?::
+  TODO
 
-=== I don't have any bitcoin. How can I get enough to pay the security deposit on my first trade?
-
-A: TODO
+Second question:: Second answer
 
