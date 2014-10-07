@@ -22,7 +22,7 @@ Status
 
 The [team](https://github.com/orgs/bitsquare/people) is currently working on a series of pre-releases on the way to version 1.0. See the [roadmap](https://github.com/bitsquare/bitsquare/wiki/Roadmap) for details.
 
-**Alpha testers welcome!** Please see the [instructions for alpha testing](https://github.com/bitsquare/bitsquare/wiki/Alpha-Testing), where you'll find detailed information about downloading and using our native installers, [building from source](doc/build.md) and more.
+**Alpha testers welcome!** Please see the [instructions for alpha testing](https://github.com/bitsquare/bitsquare/wiki/Alpha-Testing), where you'll find detailed information about downloading and using our native installers, [building from source](docs/build.md) and more.
 
 
 Staying in Touch
