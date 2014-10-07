@@ -87,8 +87,8 @@ At this point you can launch Bitsquare from your operating system's application 
 Use Cases
 ---------
 
-Alice offers to buy, Bob takes her offer and sells
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Alice places offer to buy, Bob takes it
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Prepare
 ^^^^^^^
@@ -97,10 +97,10 @@ Prepare
  2. <<launch-alice>> and <<set-up-account>>, using "United States" in the 'Accepted Countries' and 'Location of Bank' fields.
  3. <<launch-bob>> and <<set-up-account>>, using "United States" in the 'Accepted Countries' and 'Location of Bank' fields.
 
-'Alice': publish an offer to buy 1.0 bitcoin
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+'Alice': place an offer to buy 1.0 bitcoin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- 1. <<publish-buy-offer>> with `1.00` as the 'Amount of Bitcoin to buy', `250.00` as 'Price per Bitcoin in USD' and `0.80` as the 'Minimum amount of Bitcoin'.
+ 1. <<place-buy-offer>> with `1.00` as the 'Amount of Bitcoin to buy', `250.00` as 'Price per Bitcoin in USD' and `0.80` as the 'Minimum amount of Bitcoin'.
  2. <<review-open-offers>> and verify that Alice's offer to buy 1.0 BTC shows up as expected.
 
 'Bob': take the offer and sell 0.8 bitcoin
@@ -131,8 +131,8 @@ TODO
 Buy bitcoin
 ~~~~~~~~~~~
 
-[[publish-buy-offer]]
-Publish an offer to buy
+[[place-buy-offer]]
+Place an offer to buy
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 TODO
@@ -147,8 +147,8 @@ TODO
 Sell bitcoin
 ~~~~~~~~~~~~
 
-[[publish-sell-offer]]
-Publish an offer to sell
+[[place-sell-offer]]
+Place an offer to sell
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 TODO
