@@ -1,8 +1,11 @@
 Bitsquare User Guide
 ====================
-:revnumber: {project-version}
-:download-baseurl: https://github.com/bitsquare/bitsquare/releases/download/v{project-version}/bitsquare-{project-version}
-:devguide-url: http://bitsquare.io/docs/{project-version}/devguide.html
+:version:       {project-version}
+:revnumber:     {version}
+:repo-url:      https://github.com/bitsquare/bitsquare
+:download-url:  {repo-url}/releases/download/v{version}
+:devguide-url:  http://bitsquare.io/docs/{version}/devguide.html
+:browse-url:    {repo-url}/blob/master
 :toc:
 :numbered:
 
@@ -31,22 +34,41 @@ TODO
 About this guide
 ~~~~~~~~~~~~~~~~
 
-This document is designed to provide users with clear and complete instructions on how to use Bitsquare to buy and sell bitcoin. It does not address technical details or provide instructions for developers or arbitrators. For more information on these topics, see <<further-reading>>.
+Purpose
+^^^^^^^
+This document is designed to provide Bitsquare users with clear and complete instructions on how to use Bitsquare to buy and sell bitcoin. It does not address technical details or provide instructions specific to Bitsquare developers or arbitrators. For more information on these and other topics, see <<additional-resources>>.
 
-If you're new to Bitsquare, we recommend you begin by looking over the <<use-cases>> section to get a clear picture of what Bitsquare can do. If you like what you see, then follow the steps in the <<getting-started>> section. From there, you can move on to the <<how-to>> section, where you'll find specific instructions how to <<set-up-account>> <<place-offer-to-buy>> and <<take-offer-to-buy>> guides that will walk you through the process of placing an offer to 
+Recommended use
+^^^^^^^^^^^^^^^
+If you're new to Bitsquare, we recommend you begin by looking over the <<use-cases>> to get a clear picture of what Bitsquare can do. If you like what you see, then follow the steps in <<getting-started>>. From there, move on to the <<how-to>> section, where you'll find specific instructions how to set up your account, place and take offers and more. Refer to <<faq>> appendix if you get stuck.
 
-The source for this guide can be found at TODO.
+Conventions
+^^^^^^^^^^^
+TODO
 
+Feedback
+^^^^^^^^
 Should you find any errors in the guide or have suggestions for improvement, please https://github.com/bitsquare/bitsquare/issues/new?labels=%5Bdocs%5D[raise an issue] or mailto:team@bitsquare.io?subject=User+Guide+feedback[send us an email].
 
-[[further-reading]]
-Further reading
-~~~~~~~~~~~~~~~
+Source
+^^^^^^
+This guide is authored in Asciidoc and the source can be found at {browse-url}/docs/userguide.adoc[docs/userguide.adoc] in the main Bitsquare repository. 
 
-You can read about all of this and more in the http://bitsquare.io/images/overview.png[overview], https://docs.google.com/document/d/1d3EiWZdaM89-P6MVhS53unXv2-pDpSFsN3W4kCGXKgY/edit#[whitepaper], https://docs.google.com/document/d/1LJCRFdtM2Jn2Oiv49qRXwBDG8HZD0Hiedy8tNjErHps/edit[arbitration] and https://docs.google.com/document/d/1sHwU7K7C8Nl-fS4Z6X88L-NVJ_WBiKnsSpYpYfyqUXA/edit[risk analysis] documents. Several https://docs.google.com/document/d/1d3EiWZdaM89-P6MVhS53unXv2-pDpSFsN3W4kCGXKgY/edit#[screencasts] are available as well.
+Copyright
+^^^^^^^^^
+TODO, but in the meantime, _all rights reserved_.
 
+[[additional-resources]]
+Additional resources
+~~~~~~~~~~~~~~~~~~~~
 
-TODO
+ - http://bitsquare.io/images/overview.png[Overview Infographic]
+ -  https://docs.google.com/document/d/1d3EiWZdaM89-P6MVhS53unXv2-pDpSFsN3W4kCGXKgY/edit#[Whitepaper]
+ -  https://docs.google.com/document/d/1LJCRFdtM2Jn2Oiv49qRXwBDG8HZD0Hiedy8tNjErHps/edit[Arbitration System]
+ - https://docs.google.com/document/d/1sHwU7K7C8Nl-fS4Z6X88L-NVJ_WBiKnsSpYpYfyqUXA/edit[Risk Analysis]
+  - https://docs.google.com/document/d/1d3EiWZdaM89-P6MVhS53unXv2-pDpSFsN3W4kCGXKgY/edit#[Screencasts]
+  - {devguide-url}[Developer Guide]
+
 
 [[getting-started]]
 Getting Started
@@ -62,19 +84,16 @@ Download and install Bitsquare
 
 Mac OS X
 ^^^^^^^^
-
-Download the Bitsquare {download-baseurl}.dmg[.dmg image]. Open it, and copy Bitsquare to your `/Applications` folder.
+Download the Bitsquare {download-url}/bitsquare-{version}.dmg[.dmg image]. Open it, and copy Bitsquare to your `/Applications` folder.
 
 TODO: screenshot
 
 Linux
 ^^^^^
-
-Linux users on Debian- or Ubuntu-based distributions can download the Bitsquare {download-baseurl}.deb[.deb package] and install it using `dpkg`. Linux users on other distributions can {devguide-url}#build-from-source[build from source].
+Linux users on Debian- or Ubuntu-based distributions can download the Bitsquare {download-url}/bitsquare-{version}.deb[.deb package] and install it using `dpkg`. Linux users on other distributions can {devguide-url}#build-from-source[build from source].
 
 Windows
 ^^^^^^^
-
 A Windows MSI installer will be https://github.com/bitsquare/bitsquare/issues/108[included in a future release]. Until then, Windows users can {devguide-url}#build-from-source[build from source].
 
 Take a quick tour
@@ -92,7 +111,6 @@ Alice places offer to buy, Bob takes it
 
 Prepare
 ^^^^^^^
-
  1. <<delete-data-dirs>>—unless this is the first testing scenario.
  2. <<launch-alice>> and <<set-up-account>>, using "United States" in the 'Accepted Countries' and 'Location of Bank' fields.
  3. <<launch-bob>> and <<set-up-account>>, using "United States" in the 'Accepted Countries' and 'Location of Bank' fields.
@@ -105,7 +123,6 @@ Prepare
 
 'Bob': take the offer and sell 0.8 bitcoin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
  1. <<review-open-offers>> and verify that Alice's offer to buy 1.0 BTC shows up as expected.
  2. <<take-buy-offer>> with `0.80` as 'Amount of bitcoin to sell'.
  3. <<review-open-offers>> and verify the 1 BTC order shows up as expected.
@@ -118,6 +135,7 @@ In a terminal window, launch the 'Alice' instance of Bitsquare with the followin
  - Set up account
 
 
+[[how-to]]
 How-To
 ------
 
@@ -131,16 +149,16 @@ TODO
 Buy bitcoin
 ~~~~~~~~~~~
 
+There are two ways to buy bitcoin using Bitsquare: You can place your own offer to buy, or you can search TODO
+
 [[place-buy-offer]]
 Place an offer to buy
-^^^^^^^^^^^^^^^^^^^^^^^
-
+^^^^^^^^^^^^^^^^^^^^^
 TODO
 
 [[take-sell-offer]]
 Take an offer to sell
 ^^^^^^^^^^^^^^^^^^^^^
-
 TODO
 
 
@@ -149,14 +167,12 @@ Sell bitcoin
 
 [[place-sell-offer]]
 Place an offer to sell
-^^^^^^^^^^^^^^^^^^^^^^^^
-
+^^^^^^^^^^^^^^^^^^^^^^
 TODO
 
 [[take-buy-offer]]
 Take an offer to buy
 ^^^^^^^^^^^^^^^^^^^^
-
 TODO
 
 
@@ -177,16 +193,17 @@ Use the bitcoin 'regtest' network
 
 Install Bitcoin Core
 ^^^^^^^^^^^^^^^^^^^^
+TODO
 
 Configure Bitcoin Core
 ^^^^^^^^^^^^^^^^^^^^^^
+TODO
 
 Use two instances of Bitsquare on the same machine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Create a second copy of Bitsquare
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 Assuming you have already gone through the steps to <<install-bitsquare>>, you can create a second copy for testing purposes by running the following command from a terminal window:
 
     cp -r /Applications/Bitsquare.app /Applications/Bitsquare2.app/
@@ -209,3 +226,14 @@ Delete 'Alice' and 'Bob' Bitsquare data directories
 
     rm -rf ~/Library/Application\ Support/Bitsquare
     rm -rf ~/Library/Application\ Support/Bitsquare2
+
+
+[[faq]]
+[appendix]
+Frequently Asked Questions
+--------------------------
+
+=== I don't have any bitcoin. How can I get enough to pay the security deposit on my first trade?
+
+A: TODO
+
