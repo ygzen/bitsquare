@@ -1,38 +1,168 @@
 Bitsquare User Guide
 ====================
 :revnumber: {project-version}
+:download-baseurl: https://github.com/bitsquare/bitsquare/releases/download/v{project-version}/bitsquare-{project-version}
+:devguide-url: http://bitsquare.io/docs/{project-version}/devguide.html
 :toc:
 :numbered:
 
 Introduction
 ------------
 
+TODO
 
 Getting Started
 ---------------
 
-Download and install Bitcoin Core
+Install Bitsquare
+~~~~~~~~~~~~~~~~~~
+
+Mac OS X
+^^^^^^^^
+
+Download the Bitsquare {download-baseurl}.dmg[.dmg image]. Open it, and copy Bitsquare to your `/Applications` folder.
+
+TODO: screenshot
+
+Linux
+^^^^^
+
+Linux users on Debian- or Ubuntu-based distributions can download the Bitsquare {download-baseurl}.deb[.deb package] and install it using `dpkg`. Linux users on other distributions can {devguide-url}#build-from-source[build from source].
+
+Windows
+^^^^^^^
+
+A Windows MSI installer will be https://github.com/bitsquare/bitsquare/issues/108[included in a future release]. Until then, Windows users can {devguide-url}#build-from-source[build from source].
+
+Run Bitsquare
+~~~~~~~~~~~~~
+
+Launch Bitsquare from your operating system's application menu. Take a look around the UI. You'll see that certain functionality is not yet implemented, but the _Buy BTC_, _Sell BTC_, _Orders_, _Funds_ and _Account_ screens are. You'll see how to use each of these in the sections below.
+
+
+Use Cases
+---------
+
+Alice offers to buy, Bob takes her offer and sells
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Prepare
+^^^^^^^
+
+ 1. <<delete-data-dirs>>—unless this is the first testing scenario.
+ 2. <<launch-alice>> and <<set-up-account>>, using "United States" in the 'Accepted Countries' and 'Location of Bank' fields.
+ 3. <<launch-bob>> and <<set-up-account>>, using "United States" in the 'Accepted Countries' and 'Location of Bank' fields.
+
+'Alice': publish an offer to buy 1.0 bitcoin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ 1. <<publish-buy-offer>> with `1.00` as the 'Amount of Bitcoin to buy', `250.00` as 'Price per Bitcoin in USD' and `0.80` as the 'Minimum amount of Bitcoin'.
+ 2. <<review-open-offers>> and verify that Alice's offer to buy 1.0 BTC shows up as expected.
+
+'Bob': take the offer and sell 0.8 bitcoin
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ 1. <<review-open-offers>> and verify that Alice's offer to buy 1.0 BTC shows up as expected.
+ 2. <<take-buy-offer>> with `0.80` as 'Amount of bitcoin to sell'.
+ 3. <<review-open-offers>> and verify the 1 BTC order shows up as expected.
+
+Wait for confirmation
+
+In a terminal window, launch the 'Alice' instance of Bitsquare with the following command:
+
+
+ - Set up account
+
+
+How-To
+------
+
+[[set-up-account]]
+Set up an account
+~~~~~~~~~~~~~~~~~
+
+TODO
+
+
+Buy bitcoin
+~~~~~~~~~~~
+
+[[publish-buy-offer]]
+Publish an offer to buy
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+[[take-sell-offer]]
+Take an offer to sell
+^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+
+Sell bitcoin
+~~~~~~~~~~~~
+
+[[publish-sell-offer]]
+Publish an offer to sell
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+[[take-buy-offer]]
+Take an offer to buy
+^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
+
+[[review-open-offers]]
+Review open offers
+~~~~~~~~~~~~~~~~~~
+
+TODO
+
+[[testing]]
+[appendix]
+Testing
+-------
+
+[[use-regtest]]
+Use the bitcoin 'regtest' network
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Download
-~~~~~~~~
+Install Bitcoin Core
+^^^^^^^^^^^^^^^^^^^^
 
+Configure Bitcoin Core
+^^^^^^^^^^^^^^^^^^^^^^
 
-Buying bitcoin
---------------
+[[use-two-copies-locally]]
+Use two copies of Bitsquare on the same machine
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Publish an offer to buy
-~~~~~~~~~~~~~~~~~~~~~~~
+Create a second copy of Bitsquare
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Take an offer to sell
-~~~~~~~~~~~~~~~~~~~~~
+Assuming you have already gone through the steps to <<install-bitsquare>>, you can create a second copy for testing purposes by running the following command from a terminal window:
 
+    cp -r /Applications/Bitsquare.app /Applications/Bitsquare2.app/
 
-Selling bitcoin
----------------
+[[launch-alice]]
+Launch the 'Alice' Bitsquare instance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Publish an offer to sell
-~~~~~~~~~~~~~~~~~~~~~~~~
+    /Applications/Bitsquare.app/Contents/MacOS/Bitsquare Alice
 
-Take an offer to buy
-~~~~~~~~~~~~~~~~~~~~
+[[launch-bob]]
+Launch the 'Bob' Bitsquare instance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    /Applications/Bitsquare2.app/Contents/MacOS/Bitsquare Bob
+
+[[delete-data-dirs]]
+Delete 'Alice' and 'Bob' Bitsquare data directories
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    rm -rf ~/Library/Application\ Support/Bitsquare
+    rm -rf ~/Library/Application\ Support/Bitsquare2
