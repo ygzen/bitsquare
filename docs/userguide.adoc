@@ -1,0 +1,31 @@
+Bitsquare User Guide
+====================
+Chris Beams <chris@beams.io>
+:toc:
+
+Introduction
+------------
+
+
+Getting Started
+---------------
+
+=== Download and install Bitcoin Core
+
+=== Download 
+
+
+Buying bitcoin
+--------------
+
+=== Publish an offer to buy
+
+=== Take an offer to sell
+
+
+Selling bitcoin
+---------------
+
+=== Publish an offer to sell
+
+=== Take an offer to buy
