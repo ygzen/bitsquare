@@ -9,21 +9,6 @@ sourceCompatibility = 1.8
 
 sourceSets.main.resources.srcDirs += 'src/main/java'
 
-javafx {
-    appID 'Bitsquare'
-    appName 'Bitsquare'
-    mainClass 'io.bitsquare.BitSquare'
-
-    profiles {
-        windows {
-            javaRuntime = 'C:/Program Files/Java/jdk1.8.0_20/jre'
-            bundleArguments = [
-                'win.msi.productVersion' : '0.1.0'
-            ]
-        }
-    }
-}
-
 repositories {
     jcenter()
     maven { url 'http://partnerdemo.artifactoryonline.com/partnerdemo/libs-snapshots-local' }
@@ -50,3 +35,19 @@ dependencies {
 }
 
 wrapper.gradleVersion = '2.1'
+
+javafx {
+    appID 'Bitsquare'
+    appName 'Bitsquare'
+    mainClass 'io.bitsquare.BitSquare'
+
+    profiles {
+        windows {
+            javaRuntime = 'C:/Program Files/Java/jdk1.8.0_20/jre'
+            bundleArguments = [
+                'win.msi.productVersion' : '0.1.0'
+            ]
+        }
+    }
+}
+
