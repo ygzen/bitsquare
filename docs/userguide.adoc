@@ -9,13 +9,56 @@ Bitsquare User Guide
 Introduction
 ------------
 
+Welcome, and thanks for your interest in Bitsquare. 
+
+What is Bitsquare?
+~~~~~~~~~~~~~~~~~~
+
+Bitsquare is a cross-platform desktop application that allows users to trade 'fiat money' (dollars, euros, etc) for bitcoin without relying on centralized exchanges such as Coinbase, Bitstamp or (the former) Mt. Gox.
+
+By running Bitsquare on their individual computers, users work together to form a peer-to-peer network. Through the Bitsquare interface, users broadcast offers to buy and sell bitcoin on that network. The process of offering and accepting these trades results in a fully functioning, yet totally decentralized marketplace.
+
+Why Bitsquare?
+~~~~~~~~~~~~~~
+
 TODO
 
+Who should use Bitsquare?
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO
+
+About this guide
+~~~~~~~~~~~~~~~~
+
+This document is designed to provide users with clear and complete instructions on how to use Bitsquare to buy and sell bitcoin. It does not address technical details or provide instructions for developers or arbitrators. For more information on these topics, see <<further-reading>>.
+
+If you're new to Bitsquare, we recommend you begin by looking over the <<use-cases>> section to get a clear picture of what Bitsquare can do. If you like what you see, then follow the steps in the <<getting-started>> section. From there, you can move on to the <<how-to>> section, where you'll find specific instructions how to <<set-up-account>> <<place-offer-to-buy>> and <<take-offer-to-buy>> guides that will walk you through the process of placing an offer to 
+
+The source for this guide can be found at TODO.
+
+Should you find any errors in the guide or have suggestions for improvement, please https://github.com/bitsquare/bitsquare/issues/new?labels=%5Bdocs%5D[raise an issue] or mailto:team@bitsquare.io?subject=User+Guide+feedback[send us an email].
+
+[[further-reading]]
+Further reading
+~~~~~~~~~~~~~~~
+
+You can read about all of this and more in the http://bitsquare.io/images/overview.png[overview], https://docs.google.com/document/d/1d3EiWZdaM89-P6MVhS53unXv2-pDpSFsN3W4kCGXKgY/edit#[whitepaper], https://docs.google.com/document/d/1LJCRFdtM2Jn2Oiv49qRXwBDG8HZD0Hiedy8tNjErHps/edit[arbitration] and https://docs.google.com/document/d/1sHwU7K7C8Nl-fS4Z6X88L-NVJ_WBiKnsSpYpYfyqUXA/edit[risk analysis] documents. Several https://docs.google.com/document/d/1d3EiWZdaM89-P6MVhS53unXv2-pDpSFsN3W4kCGXKgY/edit#[screencasts] are available as well.
+
+
+TODO
+
+[[getting-started]]
 Getting Started
 ---------------
 
-Install Bitsquare
-~~~~~~~~~~~~~~~~~~
+This is alpha software.
+
+We recommend that you follow the steps in <<getting-started>>
+
+
+Download and install Bitsquare
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Mac OS X
 ^^^^^^^^
@@ -34,12 +77,13 @@ Windows
 
 A Windows MSI installer will be https://github.com/bitsquare/bitsquare/issues/108[included in a future release]. Until then, Windows users can {devguide-url}#build-from-source[build from source].
 
-Run Bitsquare
-~~~~~~~~~~~~~
+Take a quick tour
+~~~~~~~~~~~~~~~~~
 
-Launch Bitsquare from your operating system's application menu. Take a look around the UI. You'll see that certain functionality is not yet implemented, but the _Buy BTC_, _Sell BTC_, _Orders_, _Funds_ and _Account_ screens are. You'll see how to use each of these in the sections below.
+At this point you can launch Bitsquare from your operating system's application menu. Take a look around the UI. You'll see that certain screens such as _Overview_, _Preferences_ and _Messages_ are not implemented yet. And you'll see that _Buy BTC_, _Sell BTC_, _Orders_, _Funds_ and _Account_ are. You'll see how to use each of these in the sections below.
 
 
+[[use-cases]]
 Use Cases
 ---------
 
@@ -137,9 +181,8 @@ Install Bitcoin Core
 Configure Bitcoin Core
 ^^^^^^^^^^^^^^^^^^^^^^
 
-[[use-two-copies-locally]]
-Use two copies of Bitsquare on the same machine
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Use two instances of Bitsquare on the same machine
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Create a second copy of Bitsquare
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
