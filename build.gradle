@@ -51,3 +51,7 @@ javafx {
     }
 }
 
+asciidoctor {
+    sourceDir = file("$rootDir/docs")
+    outputDir = file("$buildDir/docs")
+}
