@@ -1,12 +1,15 @@
 Bitsquare Developer Guide
 =========================
-Chris Beams <chris@beams.io>
+:revnumber: {project-version}
 :toc:
+:numbered:
+
 
 Introduction
 ------------
 
 TODO
+
 
 Build from source
 -----------------
@@ -48,7 +51,7 @@ TIP: Here are http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-deb
 
 === Steps
 
-==== 1. Get the source
+==== Get the source
 
 The preferred approach is to clone the Bitsquare repository using http://www.git-scm.com/[git]:
 
@@ -57,7 +60,7 @@ The preferred approach is to clone the Bitsquare repository using http://www.git
 However, if you're not familiar with git or it is otherwise inconvenient to use, you can also download and extract a zip file of the latest sources at https://github.com/bitsquare/bitsquare/archive/master.zip.
 
 
-==== 2. Build
+==== Build everything
 
 Bitsquare uses http://www.gradle.org/[Gradle], and the http://www.gradle.org/docs/current/userguide/gradle_wrapper.html[Gradle wrapper] as a build system. This means you don't need to download or do anything other than run the following command within the `bitsquare` directory.
 
@@ -66,7 +69,7 @@ Bitsquare uses http://www.gradle.org/[Gradle], and the http://www.gradle.org/doc
 NOTE: on Windows, leave out the `./` and simply run `gradlew build`.
 
 
-==== 3. Run
+==== Run the installer
 
 When the build completes, you'll find executables and installers in the `build/distributions` directory.
 

@@ -1,7 +1,9 @@
 Bitsquare User Guide
 ====================
-Chris Beams <chris@beams.io>
+:revnumber: {project-version}
 :toc:
+:numbered:
+
 
 Introduction
 ------------
