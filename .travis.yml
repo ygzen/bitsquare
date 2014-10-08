@@ -18,3 +18,11 @@ notifications:
     on_failure: always
     use_notice: true
     skip_join: true
+
+env:
+  global:
+    # ORG_GRADLE_PROJECT_bitsquareDocsPassword
+    - secure: "F2Al31+NsHMGztKYT9YlVHg6OBXXUdQisFJwI82vJLEjmuHoMBUdr3vC818xtxnW05CuiNtqtoMknXfDf3tYWWJ4YLDIU0vqAeDrHVSa6QCIUZqy/LTjyDoSIJ60B34TJ+XokSYPBXwwHUSmIAEnA6V23UueR7CVN4sH9ycXIWo="
+
+after_success:
+  "./gradlew publish"

@@ -1,5 +1,6 @@
 plugins {
     id 'org.asciidoctor.gradle.asciidoctor' version '1.5.0'
+    id 'org.hidetake.ssh' version '0.3.12'
 }
 
 apply from: 'gradle/javafx.gradle'
@@ -54,4 +55,28 @@ javafx {
 asciidoctor {
     sourceDir = file("$rootDir/docs")
     outputDir = file("$buildDir/docs")
+}
+
+ssh {
+    knownHosts = allowAnyHosts
+}
+
+remotes {
+    docs {
+        host = 'docs.bitsquare.io'
+        user = 'bsdocs'
+        port = 2238
+        if (project.hasProperty('bitsquareDocsPassword'))
+            password = project.bitsquareDocsPassword
+    }
+}
+
+task publish(type: SshTask, dependsOn: asciidoctor) {
+    group = 'Documentation'
+    description = "Publishes documentation to ${remotes.docs.host}"
+    session(remotes.docs) {
+        def userguideDir = "public_html/${project.version}/userguide"
+        execute "mkdir -p ${userguideDir}"
+        put 'build/docs/userguide.html', "${userguideDir}/index.html"
+    }
 }
