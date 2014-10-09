@@ -10,7 +10,7 @@ Bitsquare User Guide
 :toc:
 :toc-placement!:
 
-.Welcome!
+.TEST2 Welcome!
 **********************************************************************
 If you're new to Bitsquare, we recommend you begin by reading the <<introduction>> and browsing the <<use-cases>> to get a clear picture of what Bitsquare is and what it can do. If you like what you see, then follow the steps in <<getting-started>>. From there, move on to the <<how-to>> section, where you'll find specific instructions on how to set up your account, place and take offers and more. Having trouble along the way? See the <<faq>>—and don't hesitate to {repo-url}#staying-in-touch[contact the team] if you get stuck.
 
