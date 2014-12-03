@@ -10,6 +10,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'application'
 apply plugin: 'jacoco'
+apply from: 'gradle/javafx.gradle'
 
 wrapper.gradleVersion = '2.1'
 
@@ -31,6 +32,21 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         include '**/*.properties'
         filter(ReplaceTokens, tokens: ['app.version': project.version])
+    }
+}
+
+javafx {
+    appID 'Bitsquare'
+    appName 'Bitsquare'
+    mainClass "io.bitsquare.app.gui.BitsquareAppMain"
+
+    profiles {
+        windows {
+            javaRuntime = 'C:/Program Files/Java/jdk1.8.0_20/jre'
+            bundleArguments = [
+                'win.msi.productVersion' : '0.1.0'
+            ]
+        }
     }
 }
 
