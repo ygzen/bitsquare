@@ -49,4 +49,6 @@ $JAVA_HOME/bin/javapackager \
     -appclass io.bitsquare.app.BitsquareAppMain \
     -outfile Bitsquare
     
+# -BjvmProperties=-Djava.net.preferIPv4Stack=true
+    
 cd package/mac
