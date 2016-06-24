@@ -98,31 +98,31 @@ public class PriceTest {
         Coin btcAmount = Coin.parseCoin("0.2");
         Coin btcPerEth = Coin.parseCoin("0.02");
         AltcoinPrice altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(AltCoin.parseCoin("ETH", "10"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(Altcoin1.parseCoin("ETH", "10"), altcoinPrice.getVolume(btcAmount));
 
         btcAmount = Coin.parseCoin("0");
         btcPerEth = Coin.parseCoin("0.02");
         altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(AltCoin.parseCoin("ETH", "0"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(Altcoin1.parseCoin("ETH", "0"), altcoinPrice.getVolume(btcAmount));
 
         btcAmount = Coin.parseCoin("1");
         btcPerEth = Coin.parseCoin("0.02");
         altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(AltCoin.parseCoin("ETH", "50"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(Altcoin1.parseCoin("ETH", "50"), altcoinPrice.getVolume(btcAmount));
 
         btcAmount = Coin.parseCoin("0.2");
         btcPerEth = Coin.parseCoin("1");
         altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(AltCoin.parseCoin("ETH", "0.2"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(Altcoin1.parseCoin("ETH", "0.2"), altcoinPrice.getVolume(btcAmount));
 
         btcAmount = Coin.parseCoin("1");
         btcPerEth = Coin.parseCoin("0.00000001");
         altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(AltCoin.parseCoin("ETH", "100000000"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(Altcoin1.parseCoin("ETH", "100000000"), altcoinPrice.getVolume(btcAmount));
 
         btcAmount = Coin.parseCoin("1");
         btcPerEth = Coin.parseCoin("10000000");
         altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(AltCoin.parseCoin("ETH", "0.0000001"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(Altcoin1.parseCoin("ETH", "0.0000001"), altcoinPrice.getVolume(btcAmount));
     }
 }

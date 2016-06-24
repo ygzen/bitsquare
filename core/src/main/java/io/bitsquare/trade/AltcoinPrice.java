@@ -14,7 +14,7 @@ public class AltcoinPrice implements Serializable, Price {
     private static final Logger log = LoggerFactory.getLogger(AltcoinPrice.class);
 
     public final Coin coin;
-    public final AltCoin altCoin;
+    public final Altcoin1 altcoin;
 
     @Override
     public String getPriceAsString() {
@@ -37,25 +37,25 @@ public class AltcoinPrice implements Serializable, Price {
 
     @Override
     public String getCurrencyCode() {
-        return altCoin.currencyCode;
+        return altcoin.currencyCode;
     }
 
     @Override
     public String getCurrencyCodePair() {
-        return "BTC/" + altCoin.currencyCode;
+        return "BTC/" + altcoin.currencyCode;
     }
 
     @Override
-    public AltCoin getVolume(Coin amount) {
+    public Altcoin1 getVolume(Coin amount) {
         // Use BigInteger because it's much easier to maintain full precision without overflowing.
         final BigInteger coinVal = BigInteger.valueOf(coin.value);
         if (coinVal.compareTo(BigInteger.ZERO) == 0)
-            return AltCoin.valueOf(altCoin.currencyCode, 0);
-        BigInteger converted = BigInteger.valueOf(amount.value).multiply(BigInteger.valueOf(altCoin.value)).divide(coinVal);
+            return Altcoin1.valueOf(altcoin.currencyCode, 0);
+        BigInteger converted = BigInteger.valueOf(amount.value).multiply(BigInteger.valueOf(altcoin.value)).divide(coinVal);
         if (converted.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0
                 || converted.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0)
             throw new ArithmeticException("Overflow");
-        return AltCoin.valueOf(altCoin.currencyCode, converted.longValue());
+        return Altcoin1.valueOf(altcoin.currencyCode, converted.longValue());
     }
 
     /**
@@ -65,7 +65,7 @@ public class AltcoinPrice implements Serializable, Price {
         checkArgument(coin.isPositive());
         checkArgument(altcoinCurrencyCode != null, "currency code required");
         this.coin = coin;
-        this.altCoin = AltCoin.valueOf(altcoinCurrencyCode, AltCoin.COIN_VALUE);
+        this.altcoin = Altcoin1.valueOf(altcoinCurrencyCode, Altcoin1.COIN_VALUE);
     }
 
     @Override
@@ -76,14 +76,14 @@ public class AltcoinPrice implements Serializable, Price {
         AltcoinPrice that = (AltcoinPrice) o;
 
         if (coin != null ? !coin.equals(that.coin) : that.coin != null) return false;
-        return !(altCoin != null ? !altCoin.equals(that.altCoin) : that.altCoin != null);
+        return !(altcoin != null ? !altcoin.equals(that.altcoin) : that.altcoin != null);
 
     }
 
     @Override
     public int hashCode() {
         int result = coin != null ? coin.hashCode() : 0;
-        result = 31 * result + (altCoin != null ? altCoin.hashCode() : 0);
+        result = 31 * result + (altcoin != null ? altcoin.hashCode() : 0);
         return result;
     }
 
