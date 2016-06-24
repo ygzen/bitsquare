@@ -12,8 +12,8 @@ import java.math.BigDecimal;
 /**
  * Represents an Altcoin value. This class is immutable.
  */
-public class Altcoin1 implements Monetary, Comparable<Altcoin1>, Serializable {
-    private static final Logger log = LoggerFactory.getLogger(Altcoin1.class);
+public class Altcoin implements Monetary, Comparable<Altcoin>, Serializable {
+    private static final Logger log = LoggerFactory.getLogger(Altcoin.class);
 
     public final String currencyCode;
 
@@ -25,13 +25,13 @@ public class Altcoin1 implements Monetary, Comparable<Altcoin1>, Serializable {
     public static final long COIN_VALUE = LongMath.pow(10, SMALLEST_UNIT_EXPONENT);
     public final long value;
 
-    private Altcoin1(final String currencyCode, final long value) {
+    private Altcoin(final String currencyCode, final long value) {
         this.value = value;
         this.currencyCode = currencyCode;
     }
 
-    public static Altcoin1 valueOf(final String currencyCode, final long value) {
-        return new Altcoin1(currencyCode, value);
+    public static Altcoin valueOf(final String currencyCode, final long value) {
+        return new Altcoin(currencyCode, value);
     }
 
     @Override
@@ -55,36 +55,36 @@ public class Altcoin1 implements Monetary, Comparable<Altcoin1>, Serializable {
      *
      * @throws IllegalArgumentException if you try to specify fractional value, or a value out of range.
      */
-    public static Altcoin1 parseCoin(final String currencyCode, final String str) {
+    public static Altcoin parseCoin(final String currencyCode, final String str) {
         try {
             long value = new BigDecimal(str).movePointRight(SMALLEST_UNIT_EXPONENT).toBigIntegerExact().longValue();
-            return Altcoin1.valueOf(currencyCode, value);
+            return Altcoin.valueOf(currencyCode, value);
         } catch (ArithmeticException e) {
             throw new IllegalArgumentException(e); // Repackage exception to honor method contract
         }
     }
 
-    public Altcoin1 add(final String currencyCode, final Altcoin1 value) {
-        return new Altcoin1(currencyCode, LongMath.checkedAdd(this.value, value.value));
+    public Altcoin add(final String currencyCode, final Altcoin value) {
+        return new Altcoin(currencyCode, LongMath.checkedAdd(this.value, value.value));
     }
 
-    public Altcoin1 subtract(final String currencyCode, final Altcoin1 value) {
-        return new Altcoin1(currencyCode, LongMath.checkedSubtract(this.value, value.value));
+    public Altcoin subtract(final String currencyCode, final Altcoin value) {
+        return new Altcoin(currencyCode, LongMath.checkedSubtract(this.value, value.value));
     }
 
-    public Altcoin1 multiply(final String currencyCode, final long factor) {
-        return new Altcoin1(currencyCode, LongMath.checkedMultiply(this.value, factor));
+    public Altcoin multiply(final String currencyCode, final long factor) {
+        return new Altcoin(currencyCode, LongMath.checkedMultiply(this.value, factor));
     }
 
-    public Altcoin1 divide(final String currencyCode, final long divisor) {
-        return new Altcoin1(currencyCode, this.value / divisor);
+    public Altcoin divide(final String currencyCode, final long divisor) {
+        return new Altcoin(currencyCode, this.value / divisor);
     }
 
-    public Altcoin1[] divideAndRemainder(final String currencyCode, final long divisor) {
-        return new Altcoin1[]{new Altcoin1(currencyCode, this.value / divisor), new Altcoin1(currencyCode, this.value % divisor)};
+    public Altcoin[] divideAndRemainder(final String currencyCode, final long divisor) {
+        return new Altcoin[]{new Altcoin(currencyCode, this.value / divisor), new Altcoin(currencyCode, this.value % divisor)};
     }
 
-    public long divide(final String currencyCode, final Altcoin1 divisor) {
+    public long divide(final String currencyCode, final Altcoin divisor) {
         return this.value / divisor.value;
     }
 
@@ -116,7 +116,7 @@ public class Altcoin1 implements Monetary, Comparable<Altcoin1>, Serializable {
      * Returns true if the monetary value represented by this instance is greater than that
      * of the given other Altcoin, otherwise false.
      */
-    public boolean isGreaterThan(Altcoin1 other) {
+    public boolean isGreaterThan(Altcoin other) {
         return compareTo(other) > 0;
     }
 
@@ -124,16 +124,16 @@ public class Altcoin1 implements Monetary, Comparable<Altcoin1>, Serializable {
      * Returns true if the monetary value represented by this instance is less than that
      * of the given other Altcoin, otherwise false.
      */
-    public boolean isLessThan(Altcoin1 other) {
+    public boolean isLessThan(Altcoin other) {
         return compareTo(other) < 0;
     }
 
-    public Altcoin1 shiftLeft(final String currencyCode, final int n) {
-        return new Altcoin1(currencyCode, this.value << n);
+    public Altcoin shiftLeft(final String currencyCode, final int n) {
+        return new Altcoin(currencyCode, this.value << n);
     }
 
-    public Altcoin1 shiftRight(final String currencyCode, final int n) {
-        return new Altcoin1(currencyCode, this.value >> n);
+    public Altcoin shiftRight(final String currencyCode, final int n) {
+        return new Altcoin(currencyCode, this.value >> n);
     }
 
     @Override
@@ -143,8 +143,8 @@ public class Altcoin1 implements Monetary, Comparable<Altcoin1>, Serializable {
         return this.value < 0 ? -1 : 1;
     }
 
-    public Altcoin1 negate() {
-        return new Altcoin1(currencyCode, -this.value);
+    public Altcoin negate() {
+        return new Altcoin(currencyCode, -this.value);
     }
 
     /**
@@ -189,7 +189,7 @@ public class Altcoin1 implements Monetary, Comparable<Altcoin1>, Serializable {
             return true;
         if (o == null || o.getClass() != getClass())
             return false;
-        final Altcoin1 other = (Altcoin1) o;
+        final Altcoin other = (Altcoin) o;
         if (this.value != other.value)
             return false;
         return true;
@@ -201,7 +201,7 @@ public class Altcoin1 implements Monetary, Comparable<Altcoin1>, Serializable {
     }
 
     @Override
-    public int compareTo(final Altcoin1 other) {
+    public int compareTo(final Altcoin other) {
         if (this.value == other.value)
             return 0;
         return this.value > other.value ? 1 : -1;
