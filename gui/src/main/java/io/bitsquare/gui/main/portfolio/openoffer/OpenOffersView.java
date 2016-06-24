@@ -74,8 +74,8 @@ public class OpenOffersView extends ActivatableViewAndModel<VBox, OpenOffersView
         directionColumn.setComparator((o1, o2) -> o1.getOffer().getDirection().compareTo(o2.getOffer().getDirection()));
         amountColumn.setComparator((o1, o2) -> o1.getOffer().getAmount().compareTo(o2.getOffer().getAmount()));
         priceColumn.setComparator((o1, o2) -> {
-            Fiat price1 = o1.getOffer().getPrice();
-            Fiat price2 = o2.getOffer().getPrice();
+            Fiat price1 = o1.getOffer().getPriceAsFiat();
+            Fiat price2 = o2.getOffer().getPriceAsFiat();
             return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
         });
         volumeColumn.setComparator((o1, o2) -> {

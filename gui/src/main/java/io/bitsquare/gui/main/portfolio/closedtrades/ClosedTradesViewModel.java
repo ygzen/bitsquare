@@ -63,7 +63,7 @@ class ClosedTradesViewModel extends ActivatableWithDataModel<ClosedTradesDataMod
         if (tradable instanceof Trade)
             return formatter.formatFiat(((Trade) tradable).getTradePrice());
         else
-            return formatter.formatFiat(tradable.getOffer().getPrice());
+            return formatter.formatFiat(tradable.getOffer().getPriceAsFiat());
     }
 
     String getVolume(ClosedTradableListItem item) {

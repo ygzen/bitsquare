@@ -87,8 +87,8 @@ public class ClosedTradesView extends ActivatableViewAndModel<VBox, ClosedTrades
             if (tradable instanceof Trade)
                 return ((Trade) o1.getTradable()).getTradePrice().compareTo(((Trade) o2.getTradable()).getTradePrice());
             else {
-                Fiat price1 = o1.getTradable().getOffer().getPrice();
-                Fiat price2 = o2.getTradable().getOffer().getPrice();
+                Fiat price1 = o1.getTradable().getOffer().getPriceAsFiat();
+                Fiat price2 = o2.getTradable().getOffer().getPriceAsFiat();
                 return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
             }
         });

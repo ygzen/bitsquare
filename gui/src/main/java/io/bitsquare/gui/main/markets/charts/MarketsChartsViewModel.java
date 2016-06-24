@@ -126,7 +126,7 @@ class MarketsChartsViewModel extends ActivatableViewModel {
     }
 
     private boolean isAnyPricePresent() {
-        return offerBookListItems.stream().filter(item -> item.getOffer().getPrice() == null).findAny().isPresent();
+        return offerBookListItems.stream().filter(item -> item.getOffer().getPriceAsFiat() == null).findAny().isPresent();
     }
 
     private void updateChartData() {
@@ -136,8 +136,8 @@ class MarketsChartsViewModel extends ActivatableViewModel {
                 .filter(e -> e.getCurrencyCode().equals(tradeCurrency.get().getCode())
                         && e.getDirection().equals(Offer.Direction.BUY))
                 .sorted((o1, o2) -> {
-                    long a = o1.getPrice() != null ? o1.getPrice().value : 0;
-                    long b = o2.getPrice() != null ? o2.getPrice().value : 0;
+                    long a = o1.getPriceAsFiat() != null ? o1.getPriceAsFiat().value : 0;
+                    long b = o2.getPriceAsFiat() != null ? o2.getPriceAsFiat().value : 0;
                     if (a != b)
                         return a < b ? 1 : -1;
                     return 0;
@@ -151,8 +151,8 @@ class MarketsChartsViewModel extends ActivatableViewModel {
                 .filter(e -> e.getCurrencyCode().equals(tradeCurrency.get().getCode())
                         && e.getDirection().equals(Offer.Direction.SELL))
                 .sorted((o1, o2) -> {
-                    long a = o1.getPrice() != null ? o1.getPrice().value : 0;
-                    long b = o2.getPrice() != null ? o2.getPrice().value : 0;
+                    long a = o1.getPriceAsFiat() != null ? o1.getPriceAsFiat().value : 0;
+                    long b = o2.getPriceAsFiat() != null ? o2.getPriceAsFiat().value : 0;
                     if (a != b)
                         return a > b ? 1 : -1;
                     return 0;
@@ -166,7 +166,7 @@ class MarketsChartsViewModel extends ActivatableViewModel {
         data.clear();
         double accumulatedAmount = 0;
         for (Offer offer : sortedList) {
-            Fiat priceAsFiat = offer.getPrice();
+            Fiat priceAsFiat = offer.getPriceAsFiat();
             if (priceAsFiat != null) {
                 double price = (double) priceAsFiat.value / LongMath.pow(10, priceAsFiat.smallestUnitExponent());
                 double amount = (double) offer.getAmount().value / LongMath.pow(10, offer.getAmount().smallestUnitExponent());

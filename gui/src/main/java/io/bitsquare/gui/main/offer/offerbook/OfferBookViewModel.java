@@ -269,7 +269,7 @@ class OfferBookViewModel extends ActivatableViewModel {
             return "";
 
         Offer offer = item.getOffer();
-        Fiat price = offer.getPrice();
+        Fiat price = offer.getPriceAsFiat();
         if (price != null) {
             String postFix = "";
             if (offer.getUseMarketBasedPrice()) {

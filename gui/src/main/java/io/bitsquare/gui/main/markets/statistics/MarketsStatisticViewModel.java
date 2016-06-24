@@ -82,8 +82,8 @@ class MarketsStatisticViewModel extends ActivatableViewModel {
                     .stream()
                     .filter(e -> e.getDirection().equals(Offer.Direction.BUY))
                     .sorted((o1, o2) -> {
-                        long a = o1.getPrice() != null ? o1.getPrice().value : 0;
-                        long b = o2.getPrice() != null ? o2.getPrice().value : 0;
+                        long a = o1.getPriceAsFiat() != null ? o1.getPriceAsFiat().value : 0;
+                        long b = o2.getPriceAsFiat() != null ? o2.getPriceAsFiat().value : 0;
                         if (a != b)
                             return a < b ? 1 : -1;
                         return 0;
@@ -94,8 +94,8 @@ class MarketsStatisticViewModel extends ActivatableViewModel {
                     .stream()
                     .filter(e -> e.getDirection().equals(Offer.Direction.SELL))
                     .sorted((o1, o2) -> {
-                        long a = o1.getPrice() != null ? o1.getPrice().value : 0;
-                        long b = o2.getPrice() != null ? o2.getPrice().value : 0;
+                        long a = o1.getPriceAsFiat() != null ? o1.getPriceAsFiat().value : 0;
+                        long b = o2.getPriceAsFiat() != null ? o2.getPriceAsFiat().value : 0;
                         if (a != b)
                             return a > b ? 1 : -1;
                         return 0;
@@ -103,8 +103,8 @@ class MarketsStatisticViewModel extends ActivatableViewModel {
                     .collect(Collectors.toList());
 
             Fiat spread = null;
-            Fiat bestSellOfferPrice = sellOffers.isEmpty() ? null : sellOffers.get(0).getPrice();
-            Fiat bestBuyOfferPrice = buyOffers.isEmpty() ? null : buyOffers.get(0).getPrice();
+            Fiat bestSellOfferPrice = sellOffers.isEmpty() ? null : sellOffers.get(0).getPriceAsFiat();
+            Fiat bestBuyOfferPrice = buyOffers.isEmpty() ? null : buyOffers.get(0).getPriceAsFiat();
             if (bestBuyOfferPrice != null && bestSellOfferPrice != null)
                 spread = bestSellOfferPrice.subtract(bestBuyOfferPrice);
 

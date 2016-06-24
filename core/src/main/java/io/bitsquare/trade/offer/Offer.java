@@ -218,7 +218,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
         checkNotNull(getId(), "Id is null");
         checkNotNull(getPubKeyRing(), "pubKeyRing is null");
         checkNotNull(getMinAmount(), "MinAmount is null");
-        checkNotNull(getPrice(), "Price is null");
+        checkNotNull(getPriceAsFiat(), "Price is null");
 
         checkArgument(getMinAmount().compareTo(Restrictions.MIN_TRADE_AMOUNT) >= 0, "MinAmount is less then "
                 + Restrictions.MIN_TRADE_AMOUNT.toFriendlyString());
@@ -226,7 +226,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
                 + getPaymentMethod().getMaxTradeLimit().toFriendlyString());
         checkArgument(getAmount().compareTo(getMinAmount()) >= 0, "MinAmount is larger then Amount");
 
-        checkArgument(getPrice().isPositive(), "Price is not a positive value");
+        checkArgument(getPriceAsFiat().isPositive(), "Price is not a positive value");
         // TODO check upper and lower bounds for fiat
     }
 
@@ -240,7 +240,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
 
     @Nullable
     public Fiat getVolumeByAmount(Coin amount) {
-        Fiat price = getPrice();
+        Fiat price = getPriceAsFiat();
         if (price != null && amount != null) {
             try {
                 return new ExchangeRate(price).coinToFiat(amount);
@@ -348,8 +348,41 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
         return pubKeyRing;
     }
 
-    @Nullable
+    /*@Nullable
     public Fiat getPrice() {
+        if (useMarketBasedPrice) {
+            checkNotNull(priceFeed, "priceFeed must not be null");
+            MarketPrice marketPrice = priceFeed.getMarketPrice(currencyCode);
+            if (marketPrice != null) {
+                PriceFeed.Type priceFeedType = direction == Direction.BUY ? PriceFeed.Type.ASK : PriceFeed.Type.BID;
+                double marketPriceAsDouble = marketPrice.getPrice(priceFeedType);
+                double factor = direction == Offer.Direction.BUY ? 1 - marketPriceMargin : 1 + marketPriceMargin;
+                double targetPrice = marketPriceAsDouble * factor;
+
+                // round
+                long factor1 = (long) Math.pow(10, 2);
+                targetPrice = targetPrice * factor1;
+                long tmp = Math.round(targetPrice);
+                targetPrice = (double) tmp / factor1;
+
+                try {
+                    return Fiat.parseFiat(currencyCode, String.valueOf(targetPrice));
+                } catch (Exception e) {
+                    log.error("Exception at getPrice / parseToFiat: " + e.toString() + "\n" +
+                            "That case should never happen.");
+                    return null;
+                }
+            } else {
+                log.debug("We don't have a market price.\n" +
+                        "That case could only happen if you don't have a price feed.");
+                return null;
+            }
+        } else {
+            return Fiat.valueOf(currencyCode, fiatPrice);
+        }
+    }*/
+    @Nullable
+    public Fiat getPriceAsFiat() {
         if (useMarketBasedPrice) {
             checkNotNull(priceFeed, "priceFeed must not be null");
             MarketPrice marketPrice = priceFeed.getMarketPrice(currencyCode);
@@ -385,7 +418,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
     public void checkTradePriceTolerance(long takersTradePrice) throws TradePriceOutOfToleranceException, IllegalArgumentException {
         checkArgument(takersTradePrice > 0, "takersTradePrice must be positive");
         Fiat tradePriceAsFiat = Fiat.valueOf(getCurrencyCode(), takersTradePrice);
-        Fiat offerPriceAsFiat = getPrice();
+        Fiat offerPriceAsFiat = getPriceAsFiat();
         checkArgument(offerPriceAsFiat != null, "offerPriceAsFiat must not be null");
         double factor = (double) takersTradePrice / (double) offerPriceAsFiat.value;
         // We allow max. 2 % difference between own offer price calculation and takers calculation.

@@ -160,7 +160,7 @@ class TakeOfferDataModel extends ActivatableDataModel {
     // called before activate
     void initWithData(Offer offer) {
         this.offer = offer;
-        tradePrice = offer.getPrice();
+        tradePrice = offer.getPriceAsFiat();
         addressEntry = walletService.getOrCreateAddressEntry(offer.getId(), AddressEntry.Context.OFFER_FUNDING);
         checkNotNull(addressEntry, "addressEntry must not be null");
 

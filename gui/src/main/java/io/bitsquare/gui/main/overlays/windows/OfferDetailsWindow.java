@@ -186,7 +186,7 @@ public class OfferDetailsWindow extends Overlay<OfferDetailsWindow> {
         if (takeOfferHandlerOptional.isPresent()) {
             addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatFiat(tradePrice) + " " + offer.getCurrencyCode() + "/" + "BTC");
         } else {
-            Fiat price = offer.getPrice();
+            Fiat price = offer.getPriceAsFiat();
             if (offer.getUseMarketBasedPrice()) {
                 addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceWithCode(price) +
                         " (distance from market price: " + formatter.formatPercentagePrice(offer.getMarketPriceMargin()) + ")");

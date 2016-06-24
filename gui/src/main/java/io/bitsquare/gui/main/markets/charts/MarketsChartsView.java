@@ -196,8 +196,8 @@ public class MarketsChartsView extends ActivatableViewAndModel<VBox, MarketsChar
                             ChangeListener<Number> listener = new ChangeListener<Number>() {
                                 @Override
                                 public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                                    if (offer != null && offer.getPrice() != null) {
-                                        setText(formatter.formatFiat(offer.getPrice()));
+                                    if (offer != null && offer.getPriceAsFiat() != null) {
+                                        setText(formatter.formatFiat(offer.getPriceAsFiat()));
                                         model.priceFeed.currenciesUpdateFlagProperty().removeListener(listener);
                                     }
                                 }
@@ -207,12 +207,12 @@ public class MarketsChartsView extends ActivatableViewAndModel<VBox, MarketsChar
                             public void updateItem(final Offer offer, boolean empty) {
                                 super.updateItem(offer, empty);
                                 if (offer != null && !empty) {
-                                    if (offer.getPrice() == null) {
+                                    if (offer.getPriceAsFiat() == null) {
                                         this.offer = offer;
                                         model.priceFeed.currenciesUpdateFlagProperty().addListener(listener);
                                         setText("N/A");
                                     } else {
-                                        setText(formatter.formatFiat(offer.getPrice()));
+                                        setText(formatter.formatFiat(offer.getPriceAsFiat()));
                                     }
                                 } else {
                                     if (listener != null)
@@ -267,7 +267,7 @@ public class MarketsChartsView extends ActivatableViewAndModel<VBox, MarketsChar
                             ChangeListener<Number> listener = new ChangeListener<Number>() {
                                 @Override
                                 public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                                    if (offer != null && offer.getPrice() != null) {
+                                    if (offer != null && offer.getPriceAsFiat() != null) {
                                         setText(formatter.formatFiat(offer.getOfferVolume()));
                                         model.priceFeed.currenciesUpdateFlagProperty().removeListener(listener);
                                     }
@@ -278,7 +278,7 @@ public class MarketsChartsView extends ActivatableViewAndModel<VBox, MarketsChar
                             public void updateItem(final Offer offer, boolean empty) {
                                 super.updateItem(offer, empty);
                                 if (offer != null && !empty) {
-                                    if (offer.getPrice() == null) {
+                                    if (offer.getPriceAsFiat() == null) {
                                         this.offer = offer;
                                         model.priceFeed.currenciesUpdateFlagProperty().addListener(listener);
                                         setText("N/A");
