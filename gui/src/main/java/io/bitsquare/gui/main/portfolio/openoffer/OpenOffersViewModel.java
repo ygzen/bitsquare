@@ -69,7 +69,7 @@ class OpenOffersViewModel extends ActivatableWithDataModel<OpenOffersDataModel> 
             String postFix = "";
             if (offer.getUseMarketBasedPrice())
                 postFix = " (" + formatter.formatPercentagePrice(offer.getMarketPriceMargin()) + ")";
-            return formatter.formatPriceWithCode(price) + postFix;
+            return formatter.formatPriceAsFiatWithCode(price) + postFix;
         } else {
             return "N/A";
         }

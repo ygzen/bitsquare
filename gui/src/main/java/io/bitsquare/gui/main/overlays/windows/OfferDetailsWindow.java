@@ -188,10 +188,10 @@ public class OfferDetailsWindow extends Overlay<OfferDetailsWindow> {
         } else {
             Fiat price = offer.getPriceAsFiat();
             if (offer.getUseMarketBasedPrice()) {
-                addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceWithCode(price) +
+                addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceAsFiatWithCode(price) +
                         " (distance from market price: " + formatter.formatPercentagePrice(offer.getMarketPriceMargin()) + ")");
             } else {
-                addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceWithCode(price));
+                addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceAsFiatWithCode(price));
             }
         }
         if (offer.isMyOffer(keyRing) && user.getPaymentAccount(offer.getOffererPaymentAccountId()) != null)

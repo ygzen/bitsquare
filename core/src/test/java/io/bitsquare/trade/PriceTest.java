@@ -29,6 +29,29 @@ public class PriceTest {
     private static final Logger log = LoggerFactory.getLogger(AltcoinPrice.class);
 
     @Test
+    public void testPriceFactory() {
+        Fiat fiat = Fiat.parseFiat("EUR", "500");
+        FiatPrice fiatPrice = new FiatPrice(fiat);
+        Price price = PriceFactory.getPriceFromLong("EUR", fiat.value);
+        assertEquals(price, fiatPrice);
+
+        Coin btcPerEth = Coin.parseCoin("0.12345678");
+        AltcoinPrice altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
+        price = PriceFactory.getPriceFromLong("ETH", btcPerEth.value);
+        assertEquals(price, altcoinPrice);
+
+        fiat = Fiat.parseFiat("EUR", "500");
+        fiatPrice = new FiatPrice(fiat);
+        price = PriceFactory.getPriceFromString("EUR", "500");
+        assertEquals(price, fiatPrice);
+
+        btcPerEth = Coin.parseCoin("0.12345678");
+        altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
+        price = PriceFactory.getPriceFromString("ETH", "0.12345678");
+        assertEquals(price, altcoinPrice);
+    }
+
+    @Test
     public void testFiatPriceGetVolume() {
         Coin amount = Coin.parseCoin("0.1");
         Fiat fiat = Fiat.parseFiat("EUR", "500");
@@ -70,37 +93,36 @@ public class PriceTest {
         assertEquals(50, altcoinPrice.getInvertedPriceAsLong());
     }
 
-
     @Test
     public void testAltcoinPriceGetVolume() {
         Coin btcAmount = Coin.parseCoin("0.2");
         Coin btcPerEth = Coin.parseCoin("0.02");
         AltcoinPrice altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(Altcoin.parseCoin("ETH", "10"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(AltCoin.parseCoin("ETH", "10"), altcoinPrice.getVolume(btcAmount));
 
         btcAmount = Coin.parseCoin("0");
         btcPerEth = Coin.parseCoin("0.02");
         altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(Altcoin.parseCoin("ETH", "0"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(AltCoin.parseCoin("ETH", "0"), altcoinPrice.getVolume(btcAmount));
 
         btcAmount = Coin.parseCoin("1");
         btcPerEth = Coin.parseCoin("0.02");
         altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(Altcoin.parseCoin("ETH", "50"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(AltCoin.parseCoin("ETH", "50"), altcoinPrice.getVolume(btcAmount));
 
         btcAmount = Coin.parseCoin("0.2");
         btcPerEth = Coin.parseCoin("1");
         altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(Altcoin.parseCoin("ETH", "0.2"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(AltCoin.parseCoin("ETH", "0.2"), altcoinPrice.getVolume(btcAmount));
 
         btcAmount = Coin.parseCoin("1");
         btcPerEth = Coin.parseCoin("0.00000001");
         altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(Altcoin.parseCoin("ETH", "100000000"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(AltCoin.parseCoin("ETH", "100000000"), altcoinPrice.getVolume(btcAmount));
 
         btcAmount = Coin.parseCoin("1");
         btcPerEth = Coin.parseCoin("10000000");
         altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        assertEquals(Altcoin.parseCoin("ETH", "0.0000001"), altcoinPrice.getVolume(btcAmount));
+        assertEquals(AltCoin.parseCoin("ETH", "0.0000001"), altcoinPrice.getVolume(btcAmount));
     }
 }

@@ -21,6 +21,7 @@ import io.bitsquare.btc.BitcoinNetwork;
 import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.locale.LanguageUtil;
 import io.bitsquare.p2p.NodeAddress;
+import io.bitsquare.trade.Price;
 import io.bitsquare.trade.offer.Offer;
 import io.bitsquare.user.Preferences;
 import org.apache.commons.lang3.StringUtils;
@@ -217,7 +218,7 @@ public class BSFormatter {
         }
     }
 
-    public String formatPriceWithCode(Fiat fiat) {
+    public String formatPriceAsFiatWithCode(Fiat fiat) {
         if (fiat != null) {
             return formatFiat(fiat) + " " + getCurrencyPair(fiat.getCurrencyCode());
         } else {
@@ -225,6 +226,26 @@ public class BSFormatter {
         }
     }
 
+    public String formatPriceWithCode(Price price) {
+        if (price != null) {
+            return formatPrice(price) + " " + price.getCurrencyCodePair();
+        } else {
+            return "N/A";
+        }
+    }
+
+    public String formatPrice(Price price) {
+        if (price != null) {
+            try {
+                return price.getPriceAsString();
+            } catch (Throwable t) {
+                log.warn("Exception at formatFiat: " + t.toString());
+                return "N/A " + price.getCurrencyCodePair();
+            }
+        } else {
+            return "N/A";
+        }
+    }
     private Fiat parseToFiat(String input, String currencyCode) {
         if (input != null && input.length() > 0) {
             try {

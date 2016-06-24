@@ -30,6 +30,8 @@ import io.bitsquare.p2p.NodeAddress;
 import io.bitsquare.p2p.storage.payload.RequiresOwnerIsOnlinePayload;
 import io.bitsquare.p2p.storage.payload.StoragePayload;
 import io.bitsquare.payment.PaymentMethod;
+import io.bitsquare.trade.Price;
+import io.bitsquare.trade.PriceFactory;
 import io.bitsquare.trade.exceptions.TradePriceOutOfToleranceException;
 import io.bitsquare.trade.protocol.availability.OfferAvailabilityModel;
 import io.bitsquare.trade.protocol.availability.OfferAvailabilityProtocol;
@@ -348,8 +350,8 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
         return pubKeyRing;
     }
 
-    /*@Nullable
-    public Fiat getPrice() {
+    @Nullable
+    public Price getPrice() {
         if (useMarketBasedPrice) {
             checkNotNull(priceFeed, "priceFeed must not be null");
             MarketPrice marketPrice = priceFeed.getMarketPrice(currencyCode);
@@ -365,8 +367,10 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
                 long tmp = Math.round(targetPrice);
                 targetPrice = (double) tmp / factor1;
 
+                PriceFactory.getPriceFromString(currencyCode, String.valueOf(targetPrice));
                 try {
-                    return Fiat.parseFiat(currencyCode, String.valueOf(targetPrice));
+                    return PriceFactory.getPriceFromString(currencyCode, String.valueOf(targetPrice));
+                    // return Fiat.parseFiat(currencyCode, String.valueOf(targetPrice));
                 } catch (Exception e) {
                     log.error("Exception at getPrice / parseToFiat: " + e.toString() + "\n" +
                             "That case should never happen.");
@@ -378,9 +382,11 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
                 return null;
             }
         } else {
-            return Fiat.valueOf(currencyCode, fiatPrice);
+            return PriceFactory.getPriceFromLong(currencyCode, fiatPrice);
+            //return Fiat.valueOf(currencyCode, fiatPrice);
         }
-    }*/
+    }
+
     @Nullable
     public Fiat getPriceAsFiat() {
         if (useMarketBasedPrice) {

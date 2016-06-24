@@ -11,4 +11,8 @@ public interface Price {
     double getPriceAsDouble();
 
     long getPriceAsLong();
+
+    String getCurrencyCode();
+
+    String getCurrencyCodePair();
 }

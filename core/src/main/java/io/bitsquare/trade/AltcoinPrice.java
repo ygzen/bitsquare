@@ -14,7 +14,7 @@ public class AltcoinPrice implements Serializable, Price {
     private static final Logger log = LoggerFactory.getLogger(AltcoinPrice.class);
 
     public final Coin coin;
-    public final Altcoin altcoin;
+    public final AltCoin altCoin;
 
     @Override
     public String getPriceAsString() {
@@ -36,16 +36,26 @@ public class AltcoinPrice implements Serializable, Price {
     }
 
     @Override
-    public Altcoin getVolume(Coin amount) {
+    public String getCurrencyCode() {
+        return altCoin.currencyCode;
+    }
+
+    @Override
+    public String getCurrencyCodePair() {
+        return "BTC/" + altCoin.currencyCode;
+    }
+
+    @Override
+    public AltCoin getVolume(Coin amount) {
         // Use BigInteger because it's much easier to maintain full precision without overflowing.
         final BigInteger coinVal = BigInteger.valueOf(coin.value);
         if (coinVal.compareTo(BigInteger.ZERO) == 0)
-            return Altcoin.valueOf(altcoin.currencyCode, 0);
-        BigInteger converted = BigInteger.valueOf(amount.value).multiply(BigInteger.valueOf(altcoin.value)).divide(coinVal);
+            return AltCoin.valueOf(altCoin.currencyCode, 0);
+        BigInteger converted = BigInteger.valueOf(amount.value).multiply(BigInteger.valueOf(altCoin.value)).divide(coinVal);
         if (converted.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0
                 || converted.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0)
             throw new ArithmeticException("Overflow");
-        return Altcoin.valueOf(altcoin.currencyCode, converted.longValue());
+        return AltCoin.valueOf(altCoin.currencyCode, converted.longValue());
     }
 
     /**
@@ -55,9 +65,27 @@ public class AltcoinPrice implements Serializable, Price {
         checkArgument(coin.isPositive());
         checkArgument(altcoinCurrencyCode != null, "currency code required");
         this.coin = coin;
-        this.altcoin = Altcoin.valueOf(altcoinCurrencyCode, Altcoin.COIN_VALUE);
+        this.altCoin = AltCoin.valueOf(altcoinCurrencyCode, AltCoin.COIN_VALUE);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AltcoinPrice)) return false;
+
+        AltcoinPrice that = (AltcoinPrice) o;
+
+        if (coin != null ? !coin.equals(that.coin) : that.coin != null) return false;
+        return !(altCoin != null ? !altCoin.equals(that.altCoin) : that.altCoin != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = coin != null ? coin.hashCode() : 0;
+        result = 31 * result + (altCoin != null ? altCoin.hashCode() : 0);
+        return result;
+    }
 
     /**
      * Convert a altCoin amount to a coin amount using this exchange rate.

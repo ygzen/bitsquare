@@ -359,7 +359,7 @@ public class PendingTradesView extends ActivatableViewAndModel<VBox, PendingTrad
                             public void updateItem(final PendingTradesListItem item, boolean empty) {
                                 super.updateItem(item, empty);
                                 if (item != null && !empty)
-                                    setText(formatter.formatPriceWithCode(item.getPrice()));
+                                    setText(formatter.formatPriceAsFiatWithCode(item.getPrice()));
                                 else
                                     setText(null);
                             }

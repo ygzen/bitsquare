@@ -33,6 +33,7 @@ import io.bitsquare.locale.*;
 import io.bitsquare.p2p.NodeAddress;
 import io.bitsquare.p2p.P2PService;
 import io.bitsquare.payment.*;
+import io.bitsquare.trade.Price;
 import io.bitsquare.trade.Trade;
 import io.bitsquare.trade.closed.ClosedTradableManager;
 import io.bitsquare.trade.offer.Offer;
@@ -269,7 +270,7 @@ class OfferBookViewModel extends ActivatableViewModel {
             return "";
 
         Offer offer = item.getOffer();
-        Fiat price = offer.getPriceAsFiat();
+        Price price = offer.getPrice();
         if (price != null) {
             String postFix = "";
             if (offer.getUseMarketBasedPrice()) {
@@ -278,7 +279,7 @@ class OfferBookViewModel extends ActivatableViewModel {
             if (showAllTradeCurrenciesProperty.get())
                 return formatter.formatPriceWithCode(price) + postFix;
             else
-                return formatter.formatFiat(price) + postFix;
+                return formatter.formatPrice(price) + postFix;
         } else {
             return "N/A";
         }

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 public class FiatPrice extends ExchangeRate implements Price {
     private static final Logger log = LoggerFactory.getLogger(FiatPrice.class);
 
+
     @Override
     public String getPriceAsString() {
         return fiat.toPlainString();
@@ -26,14 +27,44 @@ public class FiatPrice extends ExchangeRate implements Price {
         return 0;
     }
 
-
     @Override
     public Fiat getVolume(Coin amount) {
         return super.coinToFiat(amount);
+    }
+
+    @Override
+    public String getCurrencyCode() {
+        return fiat.getCurrencyCode();
+    }
+
+    @Override
+    public String getCurrencyCodePair() {
+        return fiat.currencyCode + "/BTC";
     }
 
     // One bitcoin is worth this amount of fiat.
     public FiatPrice(Fiat fiat) {
         super(fiat);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FiatPrice)) return false;
+
+        FiatPrice that = (FiatPrice) o;
+
+        if (coin != null ? !coin.equals(that.coin) : that.coin != null) return false;
+        return !(fiat != null ? !fiat.equals(that.fiat) : that.fiat != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = coin != null ? coin.hashCode() : 0;
+        result = 31 * result + (fiat != null ? fiat.hashCode() : 0);
+        return result;
+    }
+
+
 }
