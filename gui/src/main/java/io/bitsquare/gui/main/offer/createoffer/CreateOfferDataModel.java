@@ -36,6 +36,7 @@ import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.locale.TradeCurrency;
 import io.bitsquare.p2p.P2PService;
 import io.bitsquare.payment.*;
+import io.bitsquare.trade.FiatPrice;
 import io.bitsquare.trade.handlers.TransactionResultHandler;
 import io.bitsquare.trade.offer.Offer;
 import io.bitsquare.trade.offer.OpenOfferManager;
@@ -422,8 +423,11 @@ class CreateOfferDataModel extends ActivatableDataModel {
                 !volumeAsFiat.get().isZero() &&
                 !priceAsFiat.get().isZero()) {
             // If we got a btc value with more then 4 decimals we convert it to max 4 decimals
-            amountAsCoin.set(formatter.reduceTo4Decimals(new ExchangeRate(priceAsFiat.get()).fiatToCoin(volumeAsFiat.get())));
-
+           /* if (CurrencyUtil.isCryptoCurrency(tradeCurrency.getCode()))
+                amountAsCoin.set(formatter.reduceTo4Decimals(new AltcoinPrice(priceAsFiat.get()).fiatToCoin(volumeAsFiat.get())));
+            else*/
+            amountAsCoin.set(formatter.reduceTo4Decimals(new FiatPrice(priceAsFiat.get()).fiatToCoin(volumeAsFiat.get())));
+            
             calculateTotalToPay();
         }
     }
