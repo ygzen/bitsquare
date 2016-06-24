@@ -11,6 +11,23 @@ public class FiatPrice extends ExchangeRate implements Price {
     private static final Logger log = LoggerFactory.getLogger(FiatPrice.class);
 
     @Override
+    public String getPriceAsString() {
+        return fiat.toPlainString();
+    }
+
+    @Override
+    public long getPriceAsLong() {
+        return fiat.value;
+    }
+
+    @Override
+    public double getPriceAsDouble() {
+
+        return 0;
+    }
+
+
+    @Override
     public Fiat getVolume(Coin amount) {
         return super.coinToFiat(amount);
     }

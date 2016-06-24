@@ -4,7 +4,11 @@ import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Monetary;
 
 public interface Price {
-
     Monetary getVolume(Coin amount);
 
+    String getPriceAsString();
+
+    double getPriceAsDouble();
+
+    long getPriceAsLong();
 }

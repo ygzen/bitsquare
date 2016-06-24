@@ -14,20 +14,38 @@ public class AltcoinPrice implements Serializable, Price {
     private static final Logger log = LoggerFactory.getLogger(AltcoinPrice.class);
 
     public final Coin coin;
-    public final Altcoin altcoin;
-
+    public final Altcoin1 altcoin;
 
     @Override
-    public Altcoin getVolume(Coin amount) {
+    public String getPriceAsString() {
+        return coin.toPlainString();
+    }
+
+    @Override
+    public long getPriceAsLong() {
+        return coin.value;
+    }
+
+    public long getInvertedPriceAsLong() {
+        return Coin.COIN.divide(coin);
+    }
+
+    @Override
+    public double getPriceAsDouble() {
+        return 0;
+    }
+
+    @Override
+    public Altcoin1 getVolume(Coin amount) {
         // Use BigInteger because it's much easier to maintain full precision without overflowing.
         final BigInteger coinVal = BigInteger.valueOf(coin.value);
         if (coinVal.compareTo(BigInteger.ZERO) == 0)
-            return Altcoin.valueOf(altcoin.currencyCode, 0);
+            return Altcoin1.valueOf(altcoin.currencyCode, 0);
         BigInteger converted = BigInteger.valueOf(amount.value).multiply(BigInteger.valueOf(altcoin.value)).divide(coinVal);
         if (converted.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0
                 || converted.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0)
             throw new ArithmeticException("Overflow");
-        return Altcoin.valueOf(altcoin.currencyCode, converted.longValue());
+        return Altcoin1.valueOf(altcoin.currencyCode, converted.longValue());
     }
 
     /**
@@ -37,8 +55,9 @@ public class AltcoinPrice implements Serializable, Price {
         checkArgument(coin.isPositive());
         checkArgument(altcoinCurrencyCode != null, "currency code required");
         this.coin = coin;
-        this.altcoin = Altcoin.valueOf(altcoinCurrencyCode, Altcoin.COIN_VALUE);
+        this.altcoin = Altcoin1.valueOf(altcoinCurrencyCode, Altcoin1.COIN_VALUE);
     }
+
 
     /**
      * Convert a altCoin amount to a coin amount using this exchange rate.
