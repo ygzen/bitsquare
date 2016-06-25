@@ -61,7 +61,7 @@ public class FiatPrice extends ExchangeRate implements Price {
 
     @Override
     public Coin getAmountFromVolume(Monetary volume) {
-        checkArgument(volume instanceof Fiat, "Volume need to be instance of Fiat. volume=" + volume);
+        checkArgument(volume instanceof Fiat, "Volume need to be instance of Fiat. volume=" + volume.getClass().getSimpleName());
         return super.fiatToCoin((Fiat) volume);
     }
 
@@ -97,6 +97,14 @@ public class FiatPrice extends ExchangeRate implements Price {
             return fiat.compareTo(((FiatPrice) other).fiat);
         else
             return 0;
+    }
+
+    @Override
+    public String toString() {
+        return "FiatPrice{" +
+                "coin=" + coin +
+                ", fiat=" + fiat +
+                '}';
     }
 
 

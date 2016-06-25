@@ -141,5 +141,12 @@ public class AltcoinPrice implements Serializable, Price {
             return 0;
     }
 
+    @Override
+    public String toString() {
+        return "AltcoinPrice{" +
+                "coin=" + coin +
+                ", altcoin=" + altcoin +
+                '}';
+    }
 }
 

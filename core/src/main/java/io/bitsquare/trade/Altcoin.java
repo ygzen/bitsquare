@@ -178,11 +178,6 @@ public class Altcoin implements Monetary, Comparable<Altcoin> {
     }
 
     @Override
-    public String toString() {
-        return Long.toString(value);
-    }
-
-    @Override
     public boolean equals(final Object o) {
         if (o == this)
             return true;
@@ -208,5 +203,13 @@ public class Altcoin implements Monetary, Comparable<Altcoin> {
 
     public String getCurrencyCode() {
         return currencyCode;
+    }
+
+    @Override
+    public String toString() {
+        return "Altcoin{" +
+                "currencyCode='" + currencyCode + '\'' +
+                ", value=" + value +
+                '}';
     }
 }
