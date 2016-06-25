@@ -19,4 +19,8 @@ public interface Price extends Comparable {
     String getCurrencyCodePair();
 
     boolean isZero();
+
+    boolean isPositive();
+
+    String toFriendlyString();
 }

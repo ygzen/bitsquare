@@ -38,7 +38,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import org.bitcoinj.core.Coin;
-import org.bitcoinj.utils.Fiat;
 
 import javax.inject.Inject;
 
@@ -86,11 +85,9 @@ public class ClosedTradesView extends ActivatableViewAndModel<VBox, ClosedTrades
         priceColumn.setComparator((o1, o2) -> {
             Tradable tradable = o1.getTradable();
             if (tradable instanceof Trade)
-                return ((Trade) o1.getTradable()).getFiatTradePrice().compareTo(((Trade) o2.getTradable()).getFiatTradePrice());
+                return GUIUtil.compareTradePrices((Trade) o1.getTradable(), (Trade) o2.getTradable());
             else {
-                Fiat price1 = o1.getTradable().getOffer().getPriceAsFiat();
-                Fiat price2 = o2.getTradable().getOffer().getPriceAsFiat();
-                return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
+                return GUIUtil.compareOfferPrices(o1.getTradable().getOffer(), o2.getTradable().getOffer());
             }
         });
         volumeColumn.setComparator((o1, o2) -> {

@@ -144,7 +144,7 @@ public class BSFormatter {
     }
 
     public Coin parseToBitcoin(String input) {
-        if (input != null && input.length() > 0) {
+        if (input != null && !input.isEmpty()) {
             try {
                 return coinFormat.parse(cleanInput(input));
             } catch (Throwable t) {
@@ -169,7 +169,7 @@ public class BSFormatter {
             return Coin.valueOf(new BigDecimal(parseToBitcoin(cleanInput(input)).value).setScale(-scale - 1,
                     BigDecimal.ROUND_HALF_UP).setScale(scale + 1).toBigInteger().longValue());
         } catch (Throwable t) {
-            if (input != null && input.length() > 0)
+            if (input != null && !input.isEmpty())
                 log.warn("Exception at parseToCoinWith4Decimals: " + t.toString());
             return Coin.ZERO;
         }
@@ -223,6 +223,13 @@ public class BSFormatter {
             return parseToFiat(input, currencyCode).equals(parseToFiatWithDecimals(input, currencyCode, 4));
     }
 
+    public String cleanPriceString(String input, String currencyCode) {
+        if (CurrencyUtil.isCryptoCurrency(currencyCode))
+            return getLimitedDecimals(input, 8);
+        else
+            return getLimitedDecimals(input, 4);
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -270,20 +277,12 @@ public class BSFormatter {
         return formatVolume(monetary) + getCurrencyPair(monetary, " ");
     }
 
-    public String getCurrencyPair(Monetary monetary) {
-        return getCurrencyPair(monetary, "");
-    }
-
-    public String getCurrencyPair(Monetary monetary, String prefix) {
-        String code;
-        if (monetary instanceof Fiat)
-            code = ((Fiat) monetary).getCurrencyCode();
+    public String cleanVolumeString(String input, String currencyCode) {
+        if (CurrencyUtil.isCryptoCurrency(currencyCode))
+            return getLimitedDecimals(input, 4);
         else
-            code = ((Altcoin) monetary).getCurrencyCode();
-
-        return prefix + getCurrencyPair(code);
+            return getLimitedDecimals(input, 2);
     }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Fiat
@@ -303,7 +302,7 @@ public class BSFormatter {
     }
 
     private Fiat parseToFiat(String input, String currencyCode) {
-        if (input != null && input.length() > 0) {
+        if (input != null && !input.isEmpty()) {
             try {
                 return Fiat.parseFiat(currencyCode, cleanInput(input));
             } catch (Exception e) {
@@ -318,16 +317,7 @@ public class BSFormatter {
 
     @VisibleForTesting
     Fiat parseToFiatWithDecimals(String input, String currencyCode, int decPlaces) {
-        if (input != null && input.length() > 0) {
-            try {
-                return parseToFiat(new BigDecimal(cleanInput(input)).setScale(decPlaces, BigDecimal.ROUND_HALF_UP).toString(), currencyCode);
-            } catch (Throwable t) {
-                log.warn("Exception at parseToFiatWithDecimals: " + t.toString());
-                return Fiat.valueOf(currencyCode, 0);
-            }
-
-        }
-        return Fiat.valueOf(currencyCode, 0);
+        return parseToFiat(getLimitedDecimals(input, decPlaces), currencyCode);
     }
 
     @VisibleForTesting
@@ -354,7 +344,7 @@ public class BSFormatter {
     }
 
     private Altcoin parseToAltcoin(String input, String currencyCode) {
-        if (input != null && input.length() > 0) {
+        if (input != null && !input.isEmpty()) {
             try {
                 return Altcoin.parseCoin(currencyCode, cleanInput(input));
             } catch (Exception e) {
@@ -368,21 +358,44 @@ public class BSFormatter {
     }
 
     private Altcoin parseToAltcoinWithDecimals(String input, String currencyCode, int decPlaces) {
-        if (input != null && input.length() > 0) {
-            try {
-                return parseToAltcoin(new BigDecimal(cleanInput(input)).setScale(decPlaces, BigDecimal.ROUND_HALF_UP).toString(), currencyCode);
-            } catch (Throwable t) {
-                log.warn("Exception at parseToAltcoinWithDecimals: " + t.toString());
-                return Altcoin.valueOf(currencyCode, 0);
-            }
-
-        }
-        return Altcoin.valueOf(currencyCode, 0);
+        return parseToAltcoin(getLimitedDecimals(input, decPlaces), currencyCode);
     }
 
     private boolean hasAltcoinValidDecimals(String input, String currencyCode) {
-        return parseToFiat(input, currencyCode).equals(parseToAltcoinWithDecimals(input, currencyCode, 4));
+        return parseToAltcoin(input, currencyCode).equals(parseToAltcoinWithDecimals(input, currencyCode, 4));
     }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Utils
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    private String getLimitedDecimals(String input, int decPlaces) {
+        if (input != null && !input.isEmpty()) {
+            try {
+                return new BigDecimal(cleanInput(input)).setScale(decPlaces, BigDecimal.ROUND_HALF_UP).toString();
+            } catch (Throwable t) {
+                log.warn("Exception at parseToAltcoinWithDecimals: " + t.toString());
+                return "";
+            }
+        }
+        return "";
+    }
+
+    public String getCurrencyPair(Monetary monetary) {
+        return getCurrencyPair(monetary, "");
+    }
+
+    public String getCurrencyPair(Monetary monetary, String prefix) {
+        String code;
+        if (monetary instanceof Fiat)
+            code = ((Fiat) monetary).getCurrencyCode();
+        else
+            code = ((Altcoin) monetary).getCurrencyCode();
+
+        return prefix + getCurrencyPair(code);
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Other
@@ -398,8 +411,8 @@ public class BSFormatter {
         df.setMaximumFractionDigits(decimals);
         return df.format(price);
     }
-    
-    
+
+
     public String getDirection(Offer.Direction direction) {
         return getDirection(direction, false) + " bitcoin";
     }

@@ -35,7 +35,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-import org.bitcoinj.utils.Fiat;
 
 import javax.inject.Inject;
 
@@ -74,11 +73,7 @@ public class OpenOffersView extends ActivatableViewAndModel<VBox, OpenOffersView
         offerIdColumn.setComparator((o1, o2) -> o1.getOffer().getId().compareTo(o2.getOffer().getId()));
         directionColumn.setComparator((o1, o2) -> o1.getOffer().getDirection().compareTo(o2.getOffer().getDirection()));
         amountColumn.setComparator((o1, o2) -> o1.getOffer().getAmount().compareTo(o2.getOffer().getAmount()));
-        priceColumn.setComparator((o1, o2) -> {
-            Fiat price1 = o1.getOffer().getPriceAsFiat();
-            Fiat price2 = o2.getOffer().getPriceAsFiat();
-            return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
-        });
+        priceColumn.setComparator((o1, o2) -> GUIUtil.compareOfferPrices(o1.getOffer(), o2.getOffer()));
         volumeColumn.setComparator((o1, o2) -> GUIUtil.compareOfferVolumes(o1.getOffer(), o2.getOffer()));
         dateColumn.setComparator((o1, o2) -> o1.getOffer().getDate().compareTo(o2.getOffer().getDate()));
 

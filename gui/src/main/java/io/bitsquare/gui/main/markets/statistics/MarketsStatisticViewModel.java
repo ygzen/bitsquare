@@ -85,8 +85,8 @@ class MarketsStatisticViewModel extends ActivatableViewModel {
                     .stream()
                     .filter(e -> e.getDirection().equals(Offer.Direction.BUY))
                     .sorted((o1, o2) -> {
-                        long a = o1.getPriceAsFiat() != null ? o1.getPriceAsFiat().value : 0;
-                        long b = o2.getPriceAsFiat() != null ? o2.getPriceAsFiat().value : 0;
+                        long a = o1.getPrice() != null ? o1.getPrice().getPriceAsLong() : 0;
+                        long b = o2.getPrice() != null ? o2.getPrice().getPriceAsLong() : 0;
                         if (a != b)
                             return a < b ? 1 : -1;
                         return 0;
@@ -97,8 +97,8 @@ class MarketsStatisticViewModel extends ActivatableViewModel {
                     .stream()
                     .filter(e -> e.getDirection().equals(Offer.Direction.SELL))
                     .sorted((o1, o2) -> {
-                        long a = o1.getPriceAsFiat() != null ? o1.getPriceAsFiat().value : 0;
-                        long b = o2.getPriceAsFiat() != null ? o2.getPriceAsFiat().value : 0;
+                        long a = o1.getPrice() != null ? o1.getPrice().getPriceAsLong() : 0;
+                        long b = o2.getPrice() != null ? o2.getPrice().getPriceAsLong() : 0;
                         if (a != b)
                             return a > b ? 1 : -1;
                         return 0;

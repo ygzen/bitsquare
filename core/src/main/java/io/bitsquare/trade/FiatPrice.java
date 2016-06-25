@@ -1,5 +1,6 @@
 package io.bitsquare.trade;
 
+import com.google.common.math.LongMath;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Monetary;
 import org.bitcoinj.utils.ExchangeRate;
@@ -30,8 +31,7 @@ public class FiatPrice extends ExchangeRate implements Price {
 
     @Override
     public double getPriceAsDouble() {
-
-        return 0;
+        return (double) fiat.value / LongMath.pow(10, fiat.smallestUnitExponent());
     }
 
     @Override
@@ -46,7 +46,12 @@ public class FiatPrice extends ExchangeRate implements Price {
 
     @Override
     public boolean isZero() {
-        return getPriceAsLong() == 0;
+        return fiat.isZero();
+    }
+
+    @Override
+    public boolean isPositive() {
+        return fiat.isPositive();
     }
 
     @Override
@@ -58,6 +63,11 @@ public class FiatPrice extends ExchangeRate implements Price {
     public Coin getAmountFromVolume(Monetary volume) {
         checkArgument(volume instanceof Fiat, "Volume need to be instance of Fiat. volume=" + volume);
         return super.fiatToCoin((Fiat) volume);
+    }
+
+    @Override
+    public String toFriendlyString() {
+        return fiat.toFriendlyString();
     }
 
 

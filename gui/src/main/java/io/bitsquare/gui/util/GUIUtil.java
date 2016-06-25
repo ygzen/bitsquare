@@ -19,6 +19,8 @@ package io.bitsquare.gui.util;
 
 import io.bitsquare.app.DevFlags;
 import io.bitsquare.gui.main.overlays.popups.Popup;
+import io.bitsquare.trade.Price;
+import io.bitsquare.trade.Trade;
 import io.bitsquare.trade.offer.Offer;
 import io.bitsquare.user.Preferences;
 import javafx.geometry.Orientation;
@@ -70,5 +72,17 @@ public class GUIUtil {
         } else {
             return 0;
         }
+    }
+
+    public static int compareTradePrices(Trade trade1, Trade trade2) {
+        Price price1 = trade1.getTradePrice();
+        Price price2 = trade2.getTradePrice();
+        return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
+    }
+
+    public static int compareOfferPrices(Offer offer1, Offer offer2) {
+        Price price1 = offer1.getPrice();
+        Price price2 = offer2.getPrice();
+        return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
     }
 }

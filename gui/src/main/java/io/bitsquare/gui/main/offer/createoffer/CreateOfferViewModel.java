@@ -726,8 +726,9 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
     }
 
     private void setPriceToModel() {
-        if (price.get() != null && !price.get().isEmpty() && dataModel.tradeCurrencyCode.get() != null && !dataModel.tradeCurrencyCode.get().isEmpty())
-            dataModel.price.set(PriceFactory.getPriceFromString(dataModel.tradeCurrencyCode.get(), price.get()));
+        final String currencyCode = dataModel.tradeCurrencyCode.get();
+        if (price.get() != null && !price.get().isEmpty() && currencyCode != null && !currencyCode.isEmpty())
+            dataModel.price.set(PriceFactory.getPriceFromString(currencyCode, formatter.cleanPriceString(price.get(), currencyCode)));
     }
 
     private void setVolumeToModel() {

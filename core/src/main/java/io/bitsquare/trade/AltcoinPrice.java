@@ -1,5 +1,6 @@
 package io.bitsquare.trade;
 
+import com.google.common.math.LongMath;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Monetary;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class AltcoinPrice implements Serializable, Price {
 
     @Override
     public double getPriceAsDouble() {
-        return 0;
+        return (double) coin.value / LongMath.pow(10, coin.smallestUnitExponent());
     }
 
     @Override
@@ -59,7 +60,17 @@ public class AltcoinPrice implements Serializable, Price {
 
     @Override
     public boolean isZero() {
-        return getPriceAsLong() == 0;
+        return coin.isZero();
+    }
+
+    @Override
+    public boolean isPositive() {
+        return coin.isPositive();
+    }
+
+    @Override
+    public String toFriendlyString() {
+        return coin.toFriendlyString();
     }
 
     @Override

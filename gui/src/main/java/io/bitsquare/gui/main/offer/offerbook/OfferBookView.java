@@ -57,7 +57,6 @@ import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.bitcoinj.core.Monetary;
-import org.bitcoinj.utils.Fiat;
 
 import javax.inject.Inject;
 
@@ -175,12 +174,8 @@ public class OfferBookView extends ActivatableViewAndModel<GridPane, OfferBookVi
         placeholder.setWrapText(true);
         tableView.setPlaceholder(placeholder);
 
-        priceColumn.setComparator((o1, o2) -> {
-            Fiat price1 = o1.getOffer().getPriceAsFiat();
-            Fiat price2 = o2.getOffer().getPriceAsFiat();
-            return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
-        });
         amountColumn.setComparator((o1, o2) -> o1.getOffer().getAmount().compareTo(o2.getOffer().getAmount()));
+        priceColumn.setComparator((o1, o2) -> GUIUtil.compareOfferPrices(o1.getOffer(), o2.getOffer()));
         volumeColumn.setComparator((o1, o2) -> GUIUtil.compareOfferVolumes(o1.getOffer(), o2.getOffer()));
         paymentMethodColumn.setComparator((o1, o2) -> o1.getOffer().getPaymentMethod().compareTo(o2.getOffer().getPaymentMethod()));
         avatarColumn.setComparator((o1, o2) -> o1.getOffer().getOwnerNodeAddress().hostName.compareTo(o2.getOffer().getOwnerNodeAddress().hostName));
@@ -460,7 +455,7 @@ public class OfferBookView extends ActivatableViewAndModel<GridPane, OfferBookVi
                             ChangeListener<Number> listener = new ChangeListener<Number>() {
                                 @Override
                                 public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                                    if (offerBookListItem != null && offerBookListItem.getOffer().getPriceAsFiat() != null) {
+                                    if (offerBookListItem != null && offerBookListItem.getOffer().getPrice() != null) {
                                         setText(model.getPrice(offerBookListItem));
                                         model.priceFeed.currenciesUpdateFlagProperty().removeListener(listener);
                                     }
@@ -472,7 +467,7 @@ public class OfferBookView extends ActivatableViewAndModel<GridPane, OfferBookVi
                                 super.updateItem(item, empty);
 
                                 if (item != null && !empty) {
-                                    if (item.getOffer().getPriceAsFiat() == null) {
+                                    if (item.getOffer().getPrice() == null) {
                                         this.offerBookListItem = item;
                                         model.priceFeed.currenciesUpdateFlagProperty().addListener(listener);
                                         setText("N/A");
@@ -521,7 +516,7 @@ public class OfferBookView extends ActivatableViewAndModel<GridPane, OfferBookVi
                             public void updateItem(final OfferBookListItem item, boolean empty) {
                                 super.updateItem(item, empty);
                                 if (item != null && !empty) {
-                                    if (item.getOffer().getPriceAsFiat() == null) {
+                                    if (item.getOffer().getPrice() == null) {
                                         this.offerBookListItem = item;
                                         model.priceFeed.currenciesUpdateFlagProperty().addListener(listener);
                                         setText("N/A");

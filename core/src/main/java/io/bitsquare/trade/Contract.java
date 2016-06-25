@@ -26,7 +26,6 @@ import io.bitsquare.payment.PaymentAccountContractData;
 import io.bitsquare.trade.offer.Offer;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Monetary;
-import org.bitcoinj.utils.Fiat;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
@@ -67,7 +66,7 @@ public final class Contract implements Payload {
 
     public Contract(Offer offer,
                     Coin tradeAmount,
-                    Fiat tradePrice,
+                    Price tradePrice,
                     String takeOfferFeeTxID,
                     NodeAddress buyerNodeAddress,
                     NodeAddress sellerNodeAddress,
@@ -84,7 +83,7 @@ public final class Contract implements Payload {
                     byte[] offererBtcPubKey,
                     byte[] takerBtcPubKey) {
         this.offer = offer;
-        this.tradePrice = tradePrice.value;
+        this.tradePrice = tradePrice.getPriceAsLong();
         this.buyerNodeAddress = buyerNodeAddress;
         this.sellerNodeAddress = sellerNodeAddress;
         this.tradeAmount = tradeAmount.value;

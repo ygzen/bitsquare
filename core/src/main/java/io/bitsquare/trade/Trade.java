@@ -42,7 +42,6 @@ import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Monetary;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionConfidence;
-import org.bitcoinj.utils.Fiat;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -461,10 +460,6 @@ public abstract class Trade implements Tradable, Model {
 
     public void setTradePrice(long tradePrice) {
         this.tradePrice = tradePrice;
-    }
-
-    public Fiat getFiatTradePrice() {
-        return Fiat.valueOf(offer.getCurrencyCode(), tradePrice);
     }
 
     public Price getTradePrice() {

@@ -61,7 +61,7 @@ public class OfferAvailabilityModel implements Model {
     }
 
     public long getTakersTradePrice() {
-        return offer.getPriceAsFiat() != null ? offer.getPriceAsFiat().value : 0;
+        return offer.getPrice() != null ? offer.getPrice().getPriceAsLong() : 0;
     }
 
     @Override

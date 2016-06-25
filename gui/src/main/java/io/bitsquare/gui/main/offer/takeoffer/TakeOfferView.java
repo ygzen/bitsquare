@@ -243,7 +243,7 @@ public class TakeOfferView extends ActivatableViewAndModel<AnchorPane, TakeOffer
         addressTextField.setPaymentLabel(model.getPaymentLabel());
         addressTextField.setAddress(model.dataModel.getAddressEntry().getAddressString());
 
-        if (offer.getPriceAsFiat() == null)
+        if (offer.getPrice() == null)
             new Popup().warning("You cannot take that offer as it uses a percentage price based on the " +
                     "market price but there is no price feed available.")
                     .onClose(this::close)
