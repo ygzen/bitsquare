@@ -20,7 +20,6 @@ package io.bitsquare.trade.offer;
 import io.bitsquare.app.DevFlags;
 import io.bitsquare.app.Version;
 import io.bitsquare.btc.Restrictions;
-import io.bitsquare.btc.pricefeed.MarketPrice;
 import io.bitsquare.btc.pricefeed.PriceFeed;
 import io.bitsquare.common.crypto.KeyRing;
 import io.bitsquare.common.crypto.PubKeyRing;
@@ -32,6 +31,7 @@ import io.bitsquare.p2p.storage.payload.StoragePayload;
 import io.bitsquare.payment.PaymentMethod;
 import io.bitsquare.trade.Price;
 import io.bitsquare.trade.PriceFactory;
+import io.bitsquare.trade.exceptions.MarketPriceNoAvailableException;
 import io.bitsquare.trade.exceptions.TradePriceOutOfToleranceException;
 import io.bitsquare.trade.protocol.availability.OfferAvailabilityModel;
 import io.bitsquare.trade.protocol.availability.OfferAvailabilityProtocol;
@@ -353,28 +353,20 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
     public Price getPrice() {
         if (useMarketBasedPrice) {
             checkNotNull(priceFeed, "priceFeed must not be null");
-            MarketPrice marketPrice = priceFeed.getMarketPrice(currencyCode);
-            if (marketPrice != null) {
-                PriceFeed.Type priceFeedType = direction == Direction.BUY ? PriceFeed.Type.ASK : PriceFeed.Type.BID;
-                double marketPriceAsDouble = marketPrice.getPrice(priceFeedType);
-                double factor = direction == Offer.Direction.BUY ? 1 - marketPriceMargin : 1 + marketPriceMargin;
-                double targetPrice = marketPriceAsDouble * factor;
+            try {
+                double priceAsDouble = Price.getPriceFromPercentagePrice(priceFeed,
+                        currencyCode,
+                        direction,
+                        marketPriceMargin);
+                return PriceFactory.getPriceFromString(currencyCode, String.valueOf(priceAsDouble));
 
-                // round
-                long factor1 = (long) Math.pow(10, 8);
-                targetPrice = targetPrice * factor1;
-                long tmp = Math.round(targetPrice);
-                targetPrice = (double) tmp / factor1;
-                try {
-                    return PriceFactory.getPriceFromString(currencyCode, String.valueOf(targetPrice));
-                } catch (Exception e) {
-                    log.error("Exception at getPrice / parseToFiat: " + e.toString() + "\n" +
-                            "That case should never happen.");
-                    return null;
-                }
-            } else {
+            } catch (MarketPriceNoAvailableException e) {
                 log.debug("We don't have a market price.\n" +
                         "That case could only happen if you don't have a price feed.");
+                return null;
+            } catch (Throwable e) {
+                log.error("Exception at getPrice / parseToFiat: " + e.toString() + "\n" +
+                        "That case should never happen.");
                 return null;
             }
         } else {
@@ -390,9 +382,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
         double factor = (double) takersTradePrice / (double) offerPrice.getPriceAsLong();
         // We allow max. 2 % difference between own offer price calculation and takers calculation.
         // Market price might be different at offerers and takers side so we need a bit of tolerance.
-        // The tolerance will get smaller once we have multiple price feeds avoiding fast price fluctuations 
-        // from one provider.
-        if (Math.abs(1 - factor) > 0.02) {
+        if (Math.abs(1 - factor) > Restrictions.MAX_PRICE_TOLERANCE) {
             String msg = "Taker's trade price is too far away from our calculated price based on the market price.\n" +
                     "tradePrice=" + tradePrice.toFriendlyString() + "\n" +
                     "offerPrice=" + offerPrice.toFriendlyString();

@@ -24,6 +24,9 @@ public class Restrictions {
 
     public static final Coin MIN_TRADE_AMOUNT = Coin.parseCoin("0.0001"); // 4 cent @ 400 EUR/BTC 
 
+    // Max tolerance between calculated market price of offerer and trader (2%)
+    public static final double MAX_PRICE_TOLERANCE = 0.02;
+
     public static boolean isAboveFixedTxFeeForTradesAndDust(Coin amount) {
         return amount != null && amount.compareTo(FeePolicy.getFixedTxFeeForTrades().add(Transaction.MIN_NONDUST_OUTPUT)) > 0;
     }

@@ -124,7 +124,6 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
     private int gridRow = 0;
     private final Preferences preferences;
     private BSFormatter formatter;
-    private ChangeListener<String> tradeCurrencyCodeListener;
     private ImageView qrCodeImageView;
     private HBox fundingHBox;
     private Subscription isSpinnerVisibleSubscription;
@@ -194,8 +193,8 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
             if (spinner != null && spinner.isVisible())
                 spinner.setProgress(-1);
 
-            useMarketBasedPriceButton.setSelected(model.dataModel.useMarketBasedPrice.get());
-            fixedPriceButton.setSelected(!model.dataModel.useMarketBasedPrice.get());
+            useMarketBasedPriceButton.setSelected(model.dataModel.usePercentagePrice.get());
+            fixedPriceButton.setSelected(!model.dataModel.usePercentagePrice.get());
 
             directionLabel.setText(model.getDirectionLabel());
             amountDescriptionLabel.setText(model.getAmountDescription());
@@ -446,10 +445,10 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
     private void addBindings() {
         amountBtcLabel.textProperty().bind(model.btcCode);
         priceCurrencyLabel.textProperty().bind(createStringBinding(() -> formatter.getCurrencyPair(model.tradeCurrencyCode.get()), model.btcCode, model.tradeCurrencyCode));
-        fixedPriceTextField.disableProperty().bind(model.dataModel.useMarketBasedPrice);
-        priceCurrencyLabel.disableProperty().bind(model.dataModel.useMarketBasedPrice);
-        marketBasedPriceTextField.disableProperty().bind(model.dataModel.useMarketBasedPrice.not());
-        marketBasedPriceLabel.disableProperty().bind(model.dataModel.useMarketBasedPrice.not());
+        fixedPriceTextField.disableProperty().bind(model.dataModel.usePercentagePrice);
+        priceCurrencyLabel.disableProperty().bind(model.dataModel.usePercentagePrice);
+        marketBasedPriceTextField.disableProperty().bind(model.dataModel.usePercentagePrice.not());
+        marketBasedPriceLabel.disableProperty().bind(model.dataModel.usePercentagePrice.not());
         marketBasedPriceLabel.prefWidthProperty().bind(priceCurrencyLabel.widthProperty());
         volumeCurrencyLabel.textProperty().bind(model.tradeCurrencyCode);
         minAmountBtcLabel.textProperty().bind(model.btcCode);
@@ -464,7 +463,7 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
         amountTextField.textProperty().bindBidirectional(model.amount);
         minAmountTextField.textProperty().bindBidirectional(model.minAmount);
         fixedPriceTextField.textProperty().bindBidirectional(model.price);
-        marketBasedPriceTextField.textProperty().bindBidirectional(model.priceAsPercentage);
+        marketBasedPriceTextField.textProperty().bindBidirectional(model.percentagePrice);
         volumeTextField.textProperty().bindBidirectional(model.volume);
         volumeTextField.promptTextProperty().bind(model.volumePromptLabel);
         totalToPayTextField.textProperty().bind(model.totalToPay);
@@ -515,7 +514,7 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
         amountTextField.textProperty().unbindBidirectional(model.amount);
         minAmountTextField.textProperty().unbindBidirectional(model.minAmount);
         fixedPriceTextField.textProperty().unbindBidirectional(model.price);
-        marketBasedPriceTextField.textProperty().unbindBidirectional(model.priceAsPercentage);
+        marketBasedPriceTextField.textProperty().unbindBidirectional(model.percentagePrice);
         marketBasedPriceLabel.prefWidthProperty().unbind();
         volumeTextField.textProperty().unbindBidirectional(model.volume);
         volumeTextField.promptTextProperty().unbindBidirectional(model.volume);
@@ -571,20 +570,16 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
     private void createListeners() {
         amountFocusedListener = (o, oldValue, newValue) -> {
             model.onFocusOutAmountTextField(oldValue, newValue, amountTextField.getText());
-            amountTextField.setText(model.amount.get());
         };
 
         minAmountFocusedListener = (o, oldValue, newValue) -> {
             model.onFocusOutMinAmountTextField(oldValue, newValue, minAmountTextField.getText());
-            minAmountTextField.setText(model.minAmount.get());
         };
         priceFocusedListener = (o, oldValue, newValue) -> {
             model.onFocusOutPriceTextField(oldValue, newValue, fixedPriceTextField.getText());
-            fixedPriceTextField.setText(model.price.get());
         };
         priceAsPercentageFocusedListener = (o, oldValue, newValue) -> {
             model.onFocusOutPriceAsPercentageTextField(oldValue, newValue, marketBasedPriceTextField.getText());
-            marketBasedPriceTextField.setText(model.priceAsPercentage.get());
         };
         volumeFocusedListener = (o, oldValue, newValue) -> {
             model.onFocusOutVolumeTextField(oldValue, newValue, volumeTextField.getText());
@@ -611,7 +606,7 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
 
         showWarningAdjustedVolumeListener = (o, oldValue, newValue) -> {
             if (newValue) {
-                new Popup().warning(BSResources.get("createOffer.amountPriceBox.warning.adjustedVolume")).show();
+                // new Popup().warning(BSResources.get("createOffer.amountPriceBox.warning.adjustedVolume")).show();
                 model.showWarningAdjustedVolume.set(false);
                 volumeTextField.setText(model.volume.get());
             }
@@ -650,12 +645,6 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
         paymentAccountsComboBoxSelectionHandler = e -> onPaymentAccountsComboBoxSelected();
         currencyComboBoxSelectionHandler = e -> onCurrencyComboBoxSelected();
 
-        tradeCurrencyCodeListener = (observable, oldValue, newValue) -> {
-            fixedPriceTextField.clear();
-            marketBasedPriceTextField.clear();
-            volumeTextField.clear();
-        };
-
         placeOfferCompletedListener = (o, oldValue, newValue) -> {
             if (DevFlags.DEV_MODE) {
                 close();
@@ -684,8 +673,6 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
     }
 
     private void addListeners() {
-        model.tradeCurrencyCode.addListener(tradeCurrencyCodeListener);
-
         // focus out
         amountTextField.focusedProperty().addListener(amountFocusedListener);
         minAmountTextField.focusedProperty().addListener(minAmountFocusedListener);
@@ -709,8 +696,6 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
     }
 
     private void removeListeners() {
-        model.tradeCurrencyCode.removeListener(tradeCurrencyCodeListener);
-
         // focus out
         amountTextField.focusedProperty().removeListener(amountFocusedListener);
         minAmountTextField.focusedProperty().removeListener(minAmountFocusedListener);
@@ -1006,7 +991,7 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
         fixedPriceButton.setId("toggle-price-left");
         fixedPriceButton.setToggleGroup(toggleGroup);
         fixedPriceButton.selectedProperty().addListener((ov, oldValue, newValue) -> {
-            model.dataModel.setUseMarketBasedPrice(!newValue);
+            model.dataModel.setUsePercentagePrice(!newValue);
             useMarketBasedPriceButton.setSelected(!newValue);
         });
 
@@ -1015,7 +1000,7 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
         useMarketBasedPriceButton.setId("toggle-price-right");
         useMarketBasedPriceButton.setToggleGroup(toggleGroup);
         useMarketBasedPriceButton.selectedProperty().addListener((ov, oldValue, newValue) -> {
-            model.dataModel.setUseMarketBasedPrice(newValue);
+            model.dataModel.setUsePercentagePrice(newValue);
             fixedPriceButton.setSelected(!newValue);
         });
 

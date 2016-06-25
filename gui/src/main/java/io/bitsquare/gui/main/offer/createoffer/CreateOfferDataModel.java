@@ -91,16 +91,18 @@ class CreateOfferDataModel extends ActivatableDataModel {
     final StringProperty btcCode = new SimpleStringProperty();
 
     final BooleanProperty isWalletFunded = new SimpleBooleanProperty();
-    final BooleanProperty useMarketBasedPrice = new SimpleBooleanProperty();
+
     //final BooleanProperty isMainNet = new SimpleBooleanProperty();
     //final BooleanProperty isFeeFromFundingTxSufficient = new SimpleBooleanProperty();
 
     // final ObjectProperty<Coin> feeFromFundingTxProperty = new SimpleObjectProperty(Coin.NEGATIVE_SATOSHI);
     final ObjectProperty<Coin> amountAsCoin = new SimpleObjectProperty<>();
     final ObjectProperty<Coin> minAmountAsCoin = new SimpleObjectProperty<>();
-    // Price is always otherCurrency/BTC, for altcoins we only invert at the display level. 
-    // If we would change the price representation in the domain we would not be backward compatible
+
     final ObjectProperty<Price> price = new SimpleObjectProperty<>();
+    double percentagePrice;
+    final BooleanProperty usePercentagePrice = new SimpleBooleanProperty();
+
     final ObjectProperty<Monetary> volume = new SimpleObjectProperty<>();
     final ObjectProperty<Coin> totalToPayAsCoin = new SimpleObjectProperty<>();
     final ObjectProperty<Coin> missingCoin = new SimpleObjectProperty<>(Coin.ZERO);
@@ -113,7 +115,6 @@ class CreateOfferDataModel extends ActivatableDataModel {
     private Notification walletFundedNotification;
     boolean useSavingsWallet;
     Coin totalAvailableBalance;
-    private double marketPriceMargin = 0;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +146,7 @@ class CreateOfferDataModel extends ActivatableDataModel {
         networkFeeAsCoin = FeePolicy.getFixedTxFeeForTrades();
         securityDepositAsCoin = FeePolicy.getSecurityDeposit();
 
-        useMarketBasedPrice.set(preferences.getUsePercentageBasedPrice());
+        usePercentagePrice.set(preferences.getUsePercentageBasedPrice());
 
         balanceListener = new BalanceListener(getAddressEntry().getAddress()) {
             @Override
@@ -261,8 +262,8 @@ class CreateOfferDataModel extends ActivatableDataModel {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     Offer createAndGetOffer() {
-        long priceAsLong = price.get() != null && !useMarketBasedPrice.get() ? price.get().getPriceAsLong() : 0L;
-        double marketPriceMarginParam = useMarketBasedPrice.get() ? marketPriceMargin : 0;
+        long priceAsLong = price.get() != null && !usePercentagePrice.get() ? price.get().getPriceAsLong() : 0L;
+        double marketPriceMarginParam = usePercentagePrice.get() ? percentagePrice : 0;
         long amount = amountAsCoin.get() != null ? amountAsCoin.get().getValue() : 0L;
         long minAmount = minAmountAsCoin.get() != null ? minAmountAsCoin.get().getValue() : 0L;
 
@@ -295,7 +296,7 @@ class CreateOfferDataModel extends ActivatableDataModel {
                 direction,
                 priceAsLong,
                 marketPriceMarginParam,
-                useMarketBasedPrice.get(),
+                usePercentagePrice.get(),
                 amount,
                 minAmount,
                 tradeCurrencyCode.get(),
@@ -319,6 +320,10 @@ class CreateOfferDataModel extends ActivatableDataModel {
     }
 
     public void onCurrencySelected(TradeCurrency tradeCurrency) {
+        volume.set(null);
+        setPrice(null);
+        setPercentagePrice(0);
+
         if (tradeCurrency != null) {
             this.tradeCurrency = tradeCurrency;
             final String code = tradeCurrency.getCode();
@@ -395,9 +400,9 @@ class CreateOfferDataModel extends ActivatableDataModel {
         return user.getAcceptedArbitrators().size() > 0;
     }
 
-    public void setUseMarketBasedPrice(boolean useMarketBasedPrice) {
-        this.useMarketBasedPrice.set(useMarketBasedPrice);
-        preferences.setUsePercentageBasedPrice(useMarketBasedPrice);
+    public void setUsePercentagePrice(boolean usePercentagePrice) {
+        this.usePercentagePrice.set(usePercentagePrice);
+        preferences.setUsePercentageBasedPrice(usePercentagePrice);
     }
 
     /*boolean isFeeFromFundingTxSufficient() {
@@ -414,9 +419,9 @@ class CreateOfferDataModel extends ActivatableDataModel {
                 amountAsCoin.get() != null &&
                 !amountAsCoin.get().isZero() &&
                 !price.get().isZero()) {
-            volume.set(price.get().getVolume(amountAsCoin.get()));
+            final Monetary volume = price.get().getVolume(amountAsCoin.get());
+            this.volume.set(formatter.getRoundedVolumeWithLimitedDigits(volume, tradeCurrencyCode.get()));
         }
-
         updateBalance();
     }
 
@@ -425,8 +430,8 @@ class CreateOfferDataModel extends ActivatableDataModel {
                 price.get() != null &&
                 volume.get().getValue() != 0 &&
                 !price.get().isZero()) {
-            //TODO
-            // amountAsCoin.set(formatter.reduceTo4Decimals(price.get().fiatToCoin(volumeAsFiat.get())));
+
+            amountAsCoin.set(formatter.getRoundedCoinTo4Digits(price.get().getAmountFromVolume(volume.get())));
             calculateTotalToPay();
         }
     }
@@ -506,11 +511,15 @@ class CreateOfferDataModel extends ActivatableDataModel {
         walletService.swapTradeEntryToAvailableEntry(offerId, AddressEntry.Context.RESERVED_FOR_TRADE);
     }
 
-    double getMarketPriceMargin() {
-        return marketPriceMargin;
+    double getPercentagePrice() {
+        return percentagePrice;
     }
 
-    void setMarketPriceMargin(double marketPriceMargin) {
-        this.marketPriceMargin = marketPriceMargin;
+    void setPercentagePrice(double percentagePrice) {
+        this.percentagePrice = percentagePrice;
+    }
+
+    public void setPrice(Price value) {
+        price.set(value);
     }
 }

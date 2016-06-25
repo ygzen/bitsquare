@@ -18,7 +18,6 @@
 package io.bitsquare.gui.main.offer.createoffer;
 
 import io.bitsquare.app.DevFlags;
-import io.bitsquare.btc.pricefeed.MarketPrice;
 import io.bitsquare.btc.pricefeed.PriceFeed;
 import io.bitsquare.common.Timer;
 import io.bitsquare.common.UserThread;
@@ -39,6 +38,7 @@ import io.bitsquare.p2p.P2PService;
 import io.bitsquare.payment.PaymentAccount;
 import io.bitsquare.trade.Price;
 import io.bitsquare.trade.PriceFactory;
+import io.bitsquare.trade.exceptions.MarketPriceNoAvailableException;
 import io.bitsquare.trade.offer.Offer;
 import io.bitsquare.user.Preferences;
 import javafx.beans.property.*;
@@ -69,23 +69,21 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
     private final String paymentLabel;
     private boolean createOfferRequested;
 
-    final StringProperty amount = new SimpleStringProperty("");
-    final StringProperty minAmount = new SimpleStringProperty("");
+    final StringProperty amount = new SimpleStringProperty();
+    final StringProperty minAmount = new SimpleStringProperty();
 
-    // Price in the viewModel is always dependent on fiat/altcoin: Fiat Fiat/BTC, for altcoins we use inverted price.
-    // The domain (dataModel) uses always the same price model (otherCurrencyBTC)
-    // If we would change the price representation in the domain we would not be backward compatible
-    final StringProperty price = new SimpleStringProperty("");
+    // Price for fiat is: fiat/btc, for altcoin it is inverted (btc/altcoin)
+    final StringProperty price = new SimpleStringProperty();
 
-    // Positive % value means always a better price form the offerers perspective: 
-    // Buyer (with fiat): lower price as market
-    // Buyer (with altcoin): higher (display) price as market (display price is inverted)
-    final StringProperty priceAsPercentage = new SimpleStringProperty("");
+    // Positive % value means always a better price from the offerers perspective: 
+    // Buyer (with fiat): wants a lower price as market -> spend less fiat
+    // Buyer (with altcoin): wants a higher price as market -> spend less altcoin
+    final StringProperty percentagePrice = new SimpleStringProperty();
 
-    final StringProperty volume = new SimpleStringProperty("");
+    final StringProperty volume = new SimpleStringProperty();
     final StringProperty volumeDescriptionLabel = new SimpleStringProperty();
     final StringProperty volumePromptLabel = new SimpleStringProperty();
-    final StringProperty tradeAmount = new SimpleStringProperty("");
+    final StringProperty tradeAmount = new SimpleStringProperty();
     final StringProperty totalToPay = new SimpleStringProperty();
     final StringProperty errorMessage = new SimpleStringProperty();
     final StringProperty btcCode = new SimpleStringProperty();
@@ -114,13 +112,13 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
     final ObjectProperty<Address> address = new SimpleObjectProperty<>();
 
     private ChangeListener<String> amountListener;
-    private ChangeListener<String> minAmountAsStringListener;
-    private ChangeListener<String> priceAsStringListener, marketPriceMarginListener;
-    private ChangeListener<String> volumeAsStringListener;
-    private ChangeListener<Coin> amountAsCoinListener;
-    private ChangeListener<Coin> minAmountAsCoinListener;
-    private ChangeListener<Price> priceListener;
-    private ChangeListener<Monetary> volumeListener;
+    private ChangeListener<String> minAmountListener;
+    private ChangeListener<String> priceListener, marketPriceMarginListener;
+    private ChangeListener<String> volumeListener;
+    private ChangeListener<Coin> amountDataListener;
+    private ChangeListener<Coin> minAmountDataListener;
+    private ChangeListener<Price> priceDataListener;
+    private ChangeListener<Monetary> volumeDataListener;
     private ChangeListener<Boolean> isWalletFundedListener;
     //private ChangeListener<Coin> feeFromFundingTxListener;
     private ChangeListener<String> errorMessageListener;
@@ -235,92 +233,63 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
         volumePromptLabel.unbind();
     }
 
+    //TODO
     private void createListeners() {
         amountListener = (ov, oldValue, newValue) -> {
-            if (isBtcInputValid(newValue).isValid) {
-                setAmountToModel();
-                calculateVolume();
-                dataModel.calculateTotalToPay();
+            if (newValue != null) {
+                if (isBtcInputValid(newValue).isValid) {
+                    setAmountToModel();
+                    calculateVolume();
+                    dataModel.calculateTotalToPay();
+                }
+                updateButtonDisableState();
             }
-            updateButtonDisableState();
         };
-        minAmountAsStringListener = (ov, oldValue, newValue) -> {
-            setMinAmountToModel();
-            updateButtonDisableState();
+        minAmountListener = (ov, oldValue, newValue) -> {
+            if (newValue != null) {
+                setMinAmountToModel();
+                updateButtonDisableState();
+            }
         };
-        priceAsStringListener = (ov, oldValue, newValue) -> {
-            if (isPriceInputValid(newValue).isValid) {
-                setPriceToModel();
-                calculateVolume();
-                dataModel.calculateTotalToPay();
-
-                if (!inputIsMarketBasedPrice) {
-                    MarketPrice marketPrice = priceFeed.getMarketPrice(dataModel.tradeCurrencyCode.get());
-                    if (marketPrice != null) {
-                        double marketPriceAsDouble = marketPrice.getPrice(priceFeedType);
+        priceListener = (ov, oldValue, newValue) -> {
+            if (newValue != null) {
+                if (isPriceInputValid(newValue).isValid) {
+                    setPriceToModel();
+                    calculateVolume();
+                    dataModel.calculateTotalToPay();
+                    if (!inputIsMarketBasedPrice) {
                         try {
-                            double priceAsDouble = formatter.parseNumberStringToDouble(price.get());
-                            double relation = priceAsDouble / marketPriceAsDouble;
-                            double marketPriceMargin = dataModel.getDirection() == Offer.Direction.BUY ? 1 - relation : relation - 1;
-                            priceAsPercentage.set(formatter.formatToPercent(marketPriceMargin));
+                            double percentagePriceAsDouble = Price.getPercentagePriceFromPrice(priceFeed,
+                                    dataModel.tradeCurrencyCode.get(),
+                                    dataModel.getDirection(),
+                                    formatter.parseNumberStringToDouble(price.get()));
+                            percentagePrice.set(formatter.formatToPercent(percentagePriceAsDouble));
+                            dataModel.setPercentagePrice(percentagePriceAsDouble);
+                        } catch (MarketPriceNoAvailableException e) {
+                            UserThread.execute(() -> percentagePrice.set("-"));
+                            log.warn("We don't have a market price. We use the static price instead.");
                         } catch (NumberFormatException t) {
-                            priceAsPercentage.set("");
+                            resetPrice();
                             new Popup().warning("Your input is not a valid number.")
                                     .show();
                         }
-                    } else {
-                        log.warn("We don't have a market price. We use the static price instead.");
+                        isPriceInRange();
                     }
                 }
+                updateButtonDisableState();
             }
-            updateButtonDisableState();
         };
         marketPriceMarginListener = (ov, oldValue, newValue) -> {
-            if (inputIsMarketBasedPrice) {
-                try {
-                    if (!newValue.isEmpty() && !newValue.equals("-")) {
-                        double marketPriceMargin = formatter.parsePercentStringToDouble(newValue);
-                        if (marketPriceMargin >= 1 || marketPriceMargin <= -1) {
-                            dataModel.setMarketPriceMargin(0);
-                            UserThread.execute(() -> priceAsPercentage.set("0"));
-                            new Popup().warning("You cannot set a percentage of 100% or larger. Please enter a percentage number like \"5.4\" for 5.4%")
-                                    .show();
-                        } else {
-                            MarketPrice marketPrice = priceFeed.getMarketPrice(dataModel.tradeCurrencyCode.get());
-                            if (marketPrice != null) {
-                                dataModel.setMarketPriceMargin(marketPriceMargin);
-                                Offer.Direction direction = dataModel.getDirection();
-                                double marketPriceAsDouble = marketPrice.getPrice(priceFeedType);
-                                double factor = direction == Offer.Direction.BUY ? 1 - marketPriceMargin : 1 + marketPriceMargin;
-                                double targetPrice = marketPriceAsDouble * factor;
-                                price.set(formatter.formatDoubleToString(targetPrice, 8));
-                                setPriceToModel();
-                                calculateVolume();
-                                dataModel.calculateTotalToPay();
-                                updateButtonDisableState();
-                            } else {
-                                new Popup().warning("There is no price feed available for that currency. You cannot use percent based price.")
-                                        .show();
-                            }
-                        }
-                    } else {
-                        dataModel.setMarketPriceMargin(0);
-                    }
-                } catch (Throwable t) {
-                    dataModel.setMarketPriceMargin(0);
-                    UserThread.execute(() -> priceAsPercentage.set("0"));
-                    new Popup().warning("Your input is not a valid number. Please enter a percentage number like \"5.4\" for 5.4%")
-                            .show();
-                }
-            }
+            if (newValue != null && inputIsMarketBasedPrice)
+                updateMarketBasedPrice(newValue);
         };
         useMarketBasedPriceListener = (observable, oldValue, newValue) -> {
             if (newValue)
                 priceValidationResult.set(new InputValidator.ValidationResult(true));
         };
 
-        volumeAsStringListener = (ov, oldValue, newValue) -> {
-            if (isVolumeInputValid(newValue).isValid) {
+        volumeListener = (ov, oldValue, newValue) -> {
+            if (newValue != null && isVolumeInputValid(newValue).isValid) {
                 setVolumeToModel();
                 setPriceToModel();
                 dataModel.calculateAmount();
@@ -328,11 +297,21 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
             }
             updateButtonDisableState();
         };
-        amountAsCoinListener = (ov, oldValue, newValue) -> amount.set(formatter.formatCoin(newValue));
-        minAmountAsCoinListener = (ov, oldValue, newValue) -> minAmount.set(formatter.formatCoin(newValue));
-        priceListener = (ov, oldValue, newValue) -> price.set(formatter.formatPrice(newValue));
-        volumeListener = (ov, oldValue, newValue) -> {
-            volume.set(formatter.formatVolume(newValue));
+        amountDataListener = (ov, oldValue, newValue) -> {
+            if (newValue != null)
+                amount.set(formatter.formatCoin(newValue));
+        };
+        minAmountDataListener = (ov, oldValue, newValue) -> {
+            if (newValue != null)
+                minAmount.set(formatter.formatCoin(newValue));
+        };
+        priceDataListener = (ov, oldValue, newValue) -> {
+            if (newValue != null)
+                price.set(formatter.formatPrice(newValue));
+        };
+        volumeDataListener = (ov, oldValue, newValue) -> {
+            if (newValue != null)
+                volume.set(formatter.formatVolume(newValue));
         };
 
         isWalletFundedListener = (ov, oldValue, newValue) -> {
@@ -343,21 +322,74 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
         };*/
     }
 
+    private void updateMarketBasedPrice(String percentagePrice) {
+        try {
+            if (!percentagePrice.isEmpty() && !percentagePrice.equals("-")) {
+                double percentagePriceAsDouble = formatter.parsePercentStringToDouble(percentagePrice);
+                if (Math.abs(percentagePriceAsDouble) > preferences.getMaxPriceDistanceInPercent()) {
+                    dataModel.setPercentagePrice(0);
+                    resetPrice();
+                    new Popup().warning("The percentage you have entered is outside the max. allowed deviation from the market price.\n" +
+                            "The max. allowed deviation is " +
+                            formatter.formatPercentagePrice(preferences.getMaxPriceDistanceInPercent()) +
+                            " and can be adjusted in the preferences.")
+                            .show();
+                    resetPrice();
+                } else {
+                    try {
+                        double priceAsDouble = Price.getPriceFromPercentagePrice(priceFeed,
+                                dataModel.tradeCurrencyCode.get(),
+                                dataModel.getDirection(),
+                                percentagePriceAsDouble);
+                        price.set(formatter.formatDoubleToString(priceAsDouble, 8));
+
+                        dataModel.setPercentagePrice(percentagePriceAsDouble);
+
+                        setPriceToModel();
+                        calculateVolume();
+                        dataModel.calculateTotalToPay();
+                        updateButtonDisableState();
+                    } catch (MarketPriceNoAvailableException e) {
+                        new Popup().warning("There is no price feed available for that currency. You cannot use percent based price.")
+                                .show();
+                    }
+                }
+            } else {
+                resetPrice();
+                dataModel.setPercentagePrice(0);
+            }
+        } catch (Throwable t) {
+            dataModel.setPercentagePrice(0);
+            resetPrice();
+            new Popup().warning("Your input is not a valid number. Please enter a percentage number like \"5.4\" for 5.4%")
+                    .show();
+        }
+    }
+
+    private void resetPrice() {
+        UserThread.execute(() -> {
+            percentagePrice.set("");
+            price.set("");
+            dataModel.setPrice(null);
+            dataModel.setPercentagePrice(0);
+        });
+    }
+
     private void addListeners() {
         // Bidirectional bindings are used for all input fields: amount, price, volume and minAmount
         // We do volume/amount calculation during input, so user has immediate feedback
         amount.addListener(amountListener);
-        minAmount.addListener(minAmountAsStringListener);
-        price.addListener(priceAsStringListener);
-        priceAsPercentage.addListener(marketPriceMarginListener);
-        dataModel.useMarketBasedPrice.addListener(useMarketBasedPriceListener);
-        volume.addListener(volumeAsStringListener);
+        minAmount.addListener(minAmountListener);
+        price.addListener(priceListener);
+        percentagePrice.addListener(marketPriceMarginListener);
+        dataModel.usePercentagePrice.addListener(useMarketBasedPriceListener);
+        volume.addListener(volumeListener);
 
         // Binding with Bindings.createObjectBinding does not work because of bi-directional binding
-        dataModel.amountAsCoin.addListener(amountAsCoinListener);
-        dataModel.minAmountAsCoin.addListener(minAmountAsCoinListener);
-        dataModel.price.addListener(priceListener);
-        dataModel.volume.addListener(volumeListener);
+        dataModel.amountAsCoin.addListener(amountDataListener);
+        dataModel.minAmountAsCoin.addListener(minAmountDataListener);
+        dataModel.price.addListener(priceDataListener);
+        dataModel.volume.addListener(volumeDataListener);
 
         // dataModel.feeFromFundingTxProperty.addListener(feeFromFundingTxListener);
         dataModel.isWalletFunded.addListener(isWalletFundedListener);
@@ -365,17 +397,17 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
 
     private void removeListeners() {
         amount.removeListener(amountListener);
-        minAmount.removeListener(minAmountAsStringListener);
-        price.removeListener(priceAsStringListener);
-        priceAsPercentage.removeListener(marketPriceMarginListener);
-        dataModel.useMarketBasedPrice.removeListener(useMarketBasedPriceListener);
-        volume.removeListener(volumeAsStringListener);
+        minAmount.removeListener(minAmountListener);
+        price.removeListener(priceListener);
+        percentagePrice.removeListener(marketPriceMarginListener);
+        dataModel.usePercentagePrice.removeListener(useMarketBasedPriceListener);
+        volume.removeListener(volumeListener);
 
         // Binding with Bindings.createObjectBinding does not work because of bi-directional binding
-        dataModel.amountAsCoin.removeListener(amountAsCoinListener);
-        dataModel.minAmountAsCoin.removeListener(minAmountAsCoinListener);
-        dataModel.price.removeListener(priceListener);
-        dataModel.volume.removeListener(volumeListener);
+        dataModel.amountAsCoin.removeListener(amountDataListener);
+        dataModel.minAmountAsCoin.removeListener(minAmountDataListener);
+        dataModel.price.removeListener(priceDataListener);
+        dataModel.volume.removeListener(volumeDataListener);
 
         //dataModel.feeFromFundingTxProperty.removeListener(feeFromFundingTxListener);
         dataModel.isWalletFunded.removeListener(isWalletFundedListener);
@@ -460,6 +492,9 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
     }
 
     public void onCurrencySelected(TradeCurrency tradeCurrency) {
+        volume.set("");
+        price.set("");
+        percentagePrice.set("");
         dataModel.onCurrencySelected(tradeCurrency);
     }
 
@@ -499,14 +534,11 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
             amountValidationResult.set(result);
             if (result.isValid) {
                 showWarningInvalidDecimalPlacesAmount.set(!formatter.hasBitcoinValidDecimals(userInput));
-                // only allow max 4 decimal places for btc values
                 setAmountToModel();
-                // reformat input
                 amount.set(formatter.formatCoin(dataModel.amountAsCoin.get()));
 
                 calculateVolume();
 
-                // handle minAmount/amount relationship
                 if (!dataModel.isMinAmountLessOrEqualAmount())
                     minAmount.set(amount.get());
                 else
@@ -557,8 +589,9 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
 
     void onFocusOutPriceAsPercentageTextField(boolean oldValue, boolean newValue, String userInput) {
         inputIsMarketBasedPrice = !oldValue && newValue;
-        if (oldValue && !newValue)
-            priceAsPercentage.set(formatter.formatDoubleToString(dataModel.getMarketPriceMargin() * 100, 2));
+        if (oldValue && !newValue) {
+            percentagePrice.set(formatter.formatToPercent(dataModel.getPercentagePrice()));
+        }
     }
 
     void onFocusOutVolumeTextField(boolean oldValue, boolean newValue, String userInput) {
@@ -587,38 +620,22 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     public boolean isPriceInRange() {
-        MarketPrice marketPrice = priceFeed.getMarketPrice(getTradeCurrency().getCode());
-        if (marketPrice != null) {
-            double marketPriceAsDouble = marketPrice.getPrice(priceFeedType);
-            Price price = dataModel.price.get();
-            
-          /*  long shiftDivisor = checkedPow(10, price.smallestUnitExponent());
-            double offerPrice = ((double) price.longValue()) / ((double) shiftDivisor);
-          */
-            double percentage = Math.abs(1 - (price.getPriceAsDouble() / marketPriceAsDouble));
-            if (marketPriceAsDouble != 0 && percentage > preferences.getMaxPriceDistanceInPercent()) {
-                displayPriceOutOfRangePopup();
-                return false;
-            } else {
-                return true;
-            }
+        if (Math.abs(dataModel.percentagePrice) > preferences.getMaxPriceDistanceInPercent()) {
+            new Popup().warning("The price you have entered is outside the max. allowed deviation from the market price.\n" +
+                    "The max. allowed deviation is " +
+                    formatter.formatPercentagePrice(preferences.getMaxPriceDistanceInPercent()) +
+                    " and can be adjusted in the preferences.")
+                    .actionButtonText("Change price")
+                    .closeButtonText("Go to \"Preferences\"")
+                    .onClose(() -> navigation.navigateTo(MainView.class, SettingsView.class, PreferencesView.class))
+                    .show();
+            resetPrice();
+            return false;
         } else {
             return true;
         }
     }
 
-    private void displayPriceOutOfRangePopup() {
-        Popup popup = new Popup();
-        popup.warning("The price you have entered is outside the max. allowed deviation from the market price.\n" +
-                "The max. allowed deviation is " +
-                formatter.formatPercentagePrice(preferences.getMaxPriceDistanceInPercent()) +
-                " and can be adjusted in the preferences.")
-                .actionButtonText("Change price")
-                .onAction(() -> popup.hide())
-                .closeButtonText("Go to \"Preferences\"")
-                .onClose(() -> navigation.navigateTo(MainView.class, SettingsView.class, PreferencesView.class))
-                .show();
-    }
 
     BSFormatter getFormatter() {
         return formatter;
@@ -714,7 +731,8 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
     }
 
     private void setAmountToModel() {
-        dataModel.amountAsCoin.set(formatter.parseToBitcoinWith4Decimals(amount.get()));
+        final Coin value = formatter.parseToBitcoinWith4Decimals(amount.get());
+        dataModel.amountAsCoin.set(value);
         if (dataModel.minAmountAsCoin.get() == null || dataModel.minAmountAsCoin.get().equals(Coin.ZERO)) {
             minAmount.set(amount.get());
             setMinAmountToModel();
@@ -728,11 +746,12 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
     private void setPriceToModel() {
         final String currencyCode = dataModel.tradeCurrencyCode.get();
         if (price.get() != null && !price.get().isEmpty() && currencyCode != null && !currencyCode.isEmpty())
-            dataModel.price.set(PriceFactory.getPriceFromString(currencyCode, formatter.cleanPriceString(price.get(), currencyCode)));
+            dataModel.setPrice(PriceFactory.getPriceFromString(currencyCode, formatter.cleanPriceString(price.get(), currencyCode)));
     }
 
     private void setVolumeToModel() {
-        dataModel.volume.set(formatter.parseToVolumeWithDecimals(volume.get(), dataModel.tradeCurrencyCode.get()));
+        final Monetary value = formatter.parseToVolumeWithDecimals(volume.get(), dataModel.tradeCurrencyCode.get());
+        dataModel.volume.set(value);
     }
 
     private InputValidator.ValidationResult isBtcInputValid(String input) {

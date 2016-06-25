@@ -139,11 +139,27 @@ public class BSFormatter {
 
     public Coin parseToBitcoinWith4Decimals(String input) {
         try {
-            return Coin.valueOf(new BigDecimal(parseToBitcoin(cleanInput(input)).value).setScale(-scale - 1,
-                    BigDecimal.ROUND_HALF_UP).setScale(scale + 1, BigDecimal.ROUND_HALF_UP).toBigInteger().longValue());
+            return Coin.valueOf(new BigDecimal(parseToBitcoin(cleanInput(input)).value).
+                    setScale(-scale - 1, BigDecimal.ROUND_HALF_UP).
+                    setScale(scale + 1, BigDecimal.ROUND_HALF_UP).
+                    toBigInteger().
+                    longValue());
         } catch (Throwable t) {
             if (input != null && !input.isEmpty())
                 log.warn("Exception at parseToCoinWith4Decimals: " + t.toString());
+            return Coin.ZERO;
+        }
+    }
+
+    public Coin getRoundedCoinTo4Digits(Coin input) {
+        try {
+            return Coin.valueOf(new BigDecimal(input.value).
+                    setScale(-scale - 1, BigDecimal.ROUND_HALF_UP).
+                    setScale(scale + 1, BigDecimal.ROUND_HALF_UP).
+                    toBigInteger().
+                    longValue());
+        } catch (Throwable t) {
+            log.warn("Exception at parseToCoinWith4Decimals: " + t.toString());
             return Coin.ZERO;
         }
     }
@@ -272,6 +288,10 @@ public class BSFormatter {
             return getLimitedDecimals(input, 4);
         else
             return getLimitedDecimals(input, 2);
+    }
+
+    public Monetary getRoundedVolumeWithLimitedDigits(Monetary volume, String currencyCode) {
+        return parseToVolumeWithDecimals(cleanVolumeString(formatVolume(volume), currencyCode), currencyCode);
     }
 
 
