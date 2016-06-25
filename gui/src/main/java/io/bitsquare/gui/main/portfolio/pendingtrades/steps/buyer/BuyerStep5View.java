@@ -192,11 +192,11 @@ public class BuyerStep5View extends TradeStepView {
                         String key = "reviewWithdrawalAtTradeComplete";
                         if (!DevFlags.DEV_MODE && preferences.showAgain(key)) {
                             new Popup().headLine("Confirm withdrawal request")
-                                    .confirmation("Sending: " + formatter.formatCoinWithCode(senderAmount) + "\n" +
+                                    .confirmation("Sending: " + formatter.formatBitcoinWithCode(senderAmount) + "\n" +
                                             "From address: " + fromAddresses + "\n" +
                                             "To receiving address: " + toAddresses + ".\n" +
-                                            "Required transaction fee is: " + formatter.formatCoinWithCode(requiredFee) + "\n\n" +
-                                            "The recipient will receive: " + formatter.formatCoinWithCode(receiverAmount) + "\n\n" +
+                                            "Required transaction fee is: " + formatter.formatBitcoinWithCode(requiredFee) + "\n\n" +
+                                            "The recipient will receive: " + formatter.formatBitcoinWithCode(receiverAmount) + "\n\n" +
                                             "Are you sure you want to proceed with the withdrawal?")
                                     .closeButtonText("Cancel")
                                     .onClose(() -> {

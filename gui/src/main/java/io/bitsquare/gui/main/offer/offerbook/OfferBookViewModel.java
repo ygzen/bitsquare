@@ -49,7 +49,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import org.bitcoinj.utils.Fiat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -286,16 +285,7 @@ class OfferBookViewModel extends ActivatableViewModel {
     }
 
     String getVolume(OfferBookListItem item) {
-        Fiat offerVolume = item.getOffer().getOfferVolume();
-        Fiat minOfferVolume = item.getOffer().getMinOfferVolume();
-        if (offerVolume != null && minOfferVolume != null) {
-            if (showAllTradeCurrenciesProperty.get())
-                return formatter.formatFiatWithCode(offerVolume) + " (" + formatter.formatFiatWithCode(minOfferVolume) + ")";
-            else
-                return formatter.formatFiat(offerVolume) + " (" + formatter.formatFiat(minOfferVolume) + ")";
-        } else {
-            return "N/A";
-        }
+        return formatter.formatVolumeWithMinVolume(item.getOffer(), showAllTradeCurrenciesProperty.get());
     }
 
     String getPaymentMethod(OfferBookListItem item) {

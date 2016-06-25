@@ -19,20 +19,36 @@ package io.bitsquare.gui.util.validation;
 
 import javax.inject.Inject;
 
-public class FiatValidator extends MonetaryValidator {
+public class PercentagePriceValidator extends MonetaryValidator {
 
     @Inject
-    public FiatValidator() {
+    public PercentagePriceValidator() {
     }
 
     @Override
     public double getMinValue() {
-        return 0.01;
+        return -1000;
     }
 
     @Override
     public double getMaxValue() {
-        return 100000000;
+        return 1000;
+    }
+
+    @Override
+    public ValidationResult validate(String input) {
+        ValidationResult result = validateIfNotEmpty(input);
+        if (result.isValid) {
+            input = cleanInput(input);
+            result = validateIfNumber(input);
+        }
+
+        if (result.isValid) {
+            result = validateIfNotExceedsMinFiatValue(input)
+                    .and(validateIfNotExceedsMaxFiatValue(input));
+        }
+
+        return result;
     }
 
 }

@@ -114,7 +114,7 @@ public class EmptyWalletWindow extends Overlay<EmptyWalletWindow> {
 
         Coin totalBalance = walletService.getAvailableBalance();
         balanceTextField = addLabelTextField(gridPane, ++rowIndex, "Your available wallet balance:",
-                formatter.formatCoinWithCode(totalBalance), 10).second;
+                formatter.formatBitcoinWithCode(totalBalance), 10).second;
 
         Tuple2<Label, InputTextField> tuple = addLabelInputTextField(gridPane, ++rowIndex, "Your destination address:");
         addressInputTextField = tuple.second;
@@ -177,7 +177,7 @@ public class EmptyWalletWindow extends Overlay<EmptyWalletWindow> {
                         aesKey,
                         () -> {
                             closeButton.setText("Close");
-                            balanceTextField.setText(formatter.formatCoinWithCode(walletService.getAvailableBalance()));
+                            balanceTextField.setText(formatter.formatBitcoinWithCode(walletService.getAvailableBalance()));
                             emptyWalletButton.setDisable(true);
                             log.debug("wallet empty successful");
                             onClose(() -> UserThread.runAfter(() -> new Popup()

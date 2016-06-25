@@ -61,7 +61,7 @@ public class VerifyAndSignContract extends TradeTask {
             Contract contract = new Contract(
                     processModel.getOffer(),
                     trade.getTradeAmount(),
-                    trade.getTradePrice(),
+                    trade.getFiatTradePrice(),
                     trade.getTakeOfferFeeTxId(),
                     buyerNodeAddress,
                     sellerNodeAddress,

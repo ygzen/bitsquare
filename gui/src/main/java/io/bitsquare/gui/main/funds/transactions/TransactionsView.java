@@ -219,7 +219,7 @@ public class TransactionsView extends ActivatableView<VBox, Void> {
                 StringBuilder stringBuilder = new StringBuilder();
                 map.entrySet().stream().forEach(e -> {
                     stringBuilder.append("Nr. of transactions for amount ").
-                            append(formatter.formatCoinWithCode(Coin.valueOf(e.getKey()))).
+                            append(formatter.formatBitcoinWithCode(Coin.valueOf(e.getKey()))).
                             append(": ").
                             append(e.getValue().size()).
                             append("\n");

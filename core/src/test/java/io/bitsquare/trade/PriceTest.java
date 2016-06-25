@@ -52,14 +52,6 @@ public class PriceTest {
     }
 
     @Test
-    public void testFiatPriceGetVolume() {
-        Coin amount = Coin.parseCoin("0.1");
-        Fiat fiat = Fiat.parseFiat("EUR", "500");
-        FiatPrice fiatPrice = new FiatPrice(fiat);
-        assertEquals(Fiat.parseFiat("EUR", "50"), fiatPrice.getVolume(amount));
-    }
-
-    @Test
     public void testFiatPriceGetPriceAsString() {
         Fiat fiat = Fiat.parseFiat("EUR", "500.1234");
         FiatPrice fiatPrice = new FiatPrice(fiat);
@@ -92,6 +84,33 @@ public class PriceTest {
         log.error(btcPerEth.toFriendlyString());
         assertEquals(50, altcoinPrice.getInvertedPriceAsLong());
     }
+
+    @Test
+    public void testFiatPriceGetVolume() {
+        Coin amount = Coin.parseCoin("0.1");
+        Fiat fiat = Fiat.parseFiat("EUR", "500");
+        FiatPrice fiatPrice = new FiatPrice(fiat);
+        assertEquals(Fiat.parseFiat("EUR", "50"), fiatPrice.getVolume(amount));
+    }
+
+    @Test
+    public void testFiatPriceGetAmountFromVolume() {
+        Coin amount = Coin.parseCoin("0.1");
+        Fiat fiat = Fiat.parseFiat("EUR", "500");
+        FiatPrice fiatPrice = new FiatPrice(fiat);
+        Fiat volume = Fiat.parseFiat("EUR", "50");
+        assertEquals(amount, fiatPrice.getAmountFromVolume(volume));
+    }
+
+    @Test
+    public void testAltcoinPriceGetAmountFromVolume() {
+        Coin btcAmount = Coin.parseCoin("1");
+        Coin btcPerEth = Coin.parseCoin("0.02");
+        AltcoinPrice altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
+        Altcoin volume = Altcoin.parseCoin("ETH", "50");
+        assertEquals(btcAmount, altcoinPrice.getAmountFromVolume(volume));
+    }
+
 
     @Test
     public void testAltcoinPriceGetVolume() {

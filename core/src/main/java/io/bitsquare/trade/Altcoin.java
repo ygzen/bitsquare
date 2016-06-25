@@ -6,13 +6,12 @@ import org.bitcoinj.utils.MonetaryFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
  * Represents an Altcoin value. This class is immutable.
  */
-public class Altcoin implements Monetary, Comparable<Altcoin>, Serializable {
+public class Altcoin implements Monetary, Comparable<Altcoin> {
     private static final Logger log = LoggerFactory.getLogger(Altcoin.class);
 
     public final String currencyCode;
@@ -205,5 +204,9 @@ public class Altcoin implements Monetary, Comparable<Altcoin>, Serializable {
         if (this.value == other.value)
             return 0;
         return this.value > other.value ? 1 : -1;
+    }
+
+    public String getCurrencyCode() {
+        return currencyCode;
     }
 }

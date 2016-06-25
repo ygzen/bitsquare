@@ -55,9 +55,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.bitcoinj.core.Monetary;
 import org.bitcoinj.utils.Fiat;
 
 import javax.inject.Inject;
+import java.util.Comparator;
 
 import static io.bitsquare.gui.util.FormBuilder.*;
 import static javafx.beans.binding.Bindings.createStringBinding;
@@ -179,11 +181,18 @@ public class OfferBookView extends ActivatableViewAndModel<GridPane, OfferBookVi
             return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
         });
         amountColumn.setComparator((o1, o2) -> o1.getOffer().getAmount().compareTo(o2.getOffer().getAmount()));
-        volumeColumn.setComparator((o1, o2) -> {
-            Fiat offerVolume1 = o1.getOffer().getOfferVolume();
-            Fiat offerVolume2 = o2.getOffer().getOfferVolume();
-            return offerVolume1 != null && offerVolume2 != null ? offerVolume1.compareTo(offerVolume2) : 0;
-        });
+        final Comparator<OfferBookListItem> comparator = (o1, o2) -> {
+            Monetary offerVolume1 = o1.getOffer().getOfferVolume();
+            Monetary offerVolume2 = o2.getOffer().getOfferVolume();
+            if (offerVolume1 instanceof Comparable && offerVolume2 instanceof Comparable) {
+                Comparable volume1 = (Comparable) offerVolume1;
+                Comparable volume2 = (Comparable) offerVolume2;
+                return volume1.compareTo(volume2);
+            } else {
+                return 0;
+            }
+        };
+        volumeColumn.setComparator(comparator);
         paymentMethodColumn.setComparator((o1, o2) -> o1.getOffer().getPaymentMethod().compareTo(o2.getOffer().getPaymentMethod()));
         avatarColumn.setComparator((o1, o2) -> o1.getOffer().getOwnerNodeAddress().hostName.compareTo(o2.getOffer().getOwnerNodeAddress().hostName));
 

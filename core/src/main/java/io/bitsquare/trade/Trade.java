@@ -388,8 +388,8 @@ public abstract class Trade implements Tradable, Model {
 
     @Nullable
     public Fiat getTradeVolume() {
-        if (tradeAmount != null && getTradePrice() != null)
-            return new ExchangeRate(getTradePrice()).coinToFiat(tradeAmount);
+        if (tradeAmount != null && getFiatTradePrice() != null)
+            return new ExchangeRate(getFiatTradePrice()).coinToFiat(tradeAmount);
         else
             return null;
     }
@@ -463,8 +463,12 @@ public abstract class Trade implements Tradable, Model {
         this.tradePrice = tradePrice;
     }
 
-    public Fiat getTradePrice() {
+    public Fiat getFiatTradePrice() {
         return Fiat.valueOf(offer.getCurrencyCode(), tradePrice);
+    }
+
+    public Price getTradePrice() {
+        return PriceFactory.getPriceFromLong(offer.getCurrencyCode(), tradePrice);
     }
 
     @Nullable

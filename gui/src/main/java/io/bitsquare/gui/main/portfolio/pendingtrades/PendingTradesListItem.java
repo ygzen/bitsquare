@@ -17,6 +17,7 @@
 
 package io.bitsquare.gui.main.portfolio.pendingtrades;
 
+import io.bitsquare.trade.Price;
 import io.bitsquare.trade.Trade;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import org.bitcoinj.core.Coin;
@@ -45,7 +46,7 @@ public class PendingTradesListItem {
         return trade.tradeVolumeProperty();
     }
 
-    public Fiat getPrice() {
+    public Price getPrice() {
         return trade.getTradePrice();
     }
 

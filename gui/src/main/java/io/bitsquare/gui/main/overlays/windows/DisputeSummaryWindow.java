@@ -242,7 +242,7 @@ public class DisputeSummaryWindow extends Overlay<DisputeSummaryWindow> {
                 role = "Seller/taker";
         }
         addLabelTextField(gridPane, ++rowIndex, "Traders role:", role);
-        addLabelTextField(gridPane, ++rowIndex, "Trade amount:", formatter.formatCoinWithCode(contract.getTradeAmount()));
+        addLabelTextField(gridPane, ++rowIndex, "Trade amount:", formatter.formatBitcoinWithCode(contract.getTradeAmount()));
         addLabelTextField(gridPane, ++rowIndex, "Trade price:", formatter.formatFiatWithCode(contract.getTradePrice()));
         addLabelTextField(gridPane, ++rowIndex, "Trade volume:", formatter.formatFiatWithCode(new ExchangeRate(contract.getTradePrice()).coinToFiat(contract.getTradeAmount())));
     }
@@ -475,9 +475,9 @@ public class DisputeSummaryWindow extends Overlay<DisputeSummaryWindow> {
                             "\n" + role + " delivered tamper proof evidence: " + formatter.booleanToYesNo(disputeResult.tamperProofEvidenceProperty().get()) +
                             "\n" + role + " did ID verification: " + formatter.booleanToYesNo(disputeResult.idVerificationProperty().get()) +
                             "\n" + role + " did screencast or video: " + formatter.booleanToYesNo(disputeResult.screenCastProperty().get()) +
-                            "\nPayout amount for buyer: " + formatter.formatCoinWithCode(disputeResult.getBuyerPayoutAmount()) +
-                            "\nPayout amount for seller: " + formatter.formatCoinWithCode(disputeResult.getSellerPayoutAmount()) +
-                            "\nArbitrators dispute fee: " + formatter.formatCoinWithCode(disputeResult.getArbitratorPayoutAmount()) +
+                            "\nPayout amount for buyer: " + formatter.formatBitcoinWithCode(disputeResult.getBuyerPayoutAmount()) +
+                            "\nPayout amount for seller: " + formatter.formatBitcoinWithCode(disputeResult.getSellerPayoutAmount()) +
+                            "\nArbitrators dispute fee: " + formatter.formatBitcoinWithCode(disputeResult.getArbitratorPayoutAmount()) +
                             "\n\nSummary notes:\n" + disputeResult.summaryNotesProperty().get();
 
                     dispute.setIsClosed(true);

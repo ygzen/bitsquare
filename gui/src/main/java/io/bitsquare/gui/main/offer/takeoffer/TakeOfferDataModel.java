@@ -360,7 +360,7 @@ class TakeOfferDataModel extends ActivatableDataModel {
             walletFundedNotification = new Notification()
                     .headLine("Trading wallet update")
                     .notification("Your trading wallet is sufficiently funded.\n" +
-                            "Amount: " + formatter.formatCoinWithCode(totalToPayAsCoin.get()))
+                            "Amount: " + formatter.formatBitcoinWithCode(totalToPayAsCoin.get()))
                     .autoClose();
 
             walletFundedNotification.show();

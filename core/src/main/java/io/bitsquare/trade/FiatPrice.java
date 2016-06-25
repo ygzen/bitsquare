@@ -1,15 +1,22 @@
 package io.bitsquare.trade;
 
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Monetary;
 import org.bitcoinj.utils.ExchangeRate;
 import org.bitcoinj.utils.Fiat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 // Price in Fiat per BTC 
 public class FiatPrice extends ExchangeRate implements Price {
     private static final Logger log = LoggerFactory.getLogger(FiatPrice.class);
 
+    // One bitcoin is worth this amount of fiat.
+    public FiatPrice(Fiat fiat) {
+        super(fiat);
+    }
 
     @Override
     public String getPriceAsString() {
@@ -28,11 +35,6 @@ public class FiatPrice extends ExchangeRate implements Price {
     }
 
     @Override
-    public Fiat getVolume(Coin amount) {
-        return super.coinToFiat(amount);
-    }
-
-    @Override
     public String getCurrencyCode() {
         return fiat.getCurrencyCode();
     }
@@ -42,10 +44,22 @@ public class FiatPrice extends ExchangeRate implements Price {
         return fiat.currencyCode + "/BTC";
     }
 
-    // One bitcoin is worth this amount of fiat.
-    public FiatPrice(Fiat fiat) {
-        super(fiat);
+    @Override
+    public boolean isZero() {
+        return getPriceAsLong() == 0;
     }
+
+    @Override
+    public Fiat getVolume(Coin amount) {
+        return super.coinToFiat(amount);
+    }
+
+    @Override
+    public Coin getAmountFromVolume(Monetary volume) {
+        checkArgument(volume instanceof Fiat, "Volume need to be instance of Fiat. volume=" + volume);
+        return super.fiatToCoin((Fiat) volume);
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -64,6 +78,15 @@ public class FiatPrice extends ExchangeRate implements Price {
         int result = coin != null ? coin.hashCode() : 0;
         result = 31 * result + (fiat != null ? fiat.hashCode() : 0);
         return result;
+    }
+
+
+    @Override
+    public int compareTo(Object other) {
+        if (other instanceof FiatPrice)
+            return fiat.compareTo(((FiatPrice) other).fiat);
+        else
+            return 0;
     }
 
 

@@ -75,7 +75,7 @@ public class BalanceTextField extends AnchorPane {
 
     private void updateBalance(Coin balance) {
         if (formatter != null)
-            textField.setText(formatter.formatCoinWithCode(balance));
+            textField.setText(formatter.formatBitcoinWithCode(balance));
         if (targetAmount != null) {
             if (balance.compareTo(targetAmount) >= 0)
                 textField.setEffect(fundedEffect);

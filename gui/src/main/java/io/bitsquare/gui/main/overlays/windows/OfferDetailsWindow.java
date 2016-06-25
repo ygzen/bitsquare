@@ -35,6 +35,7 @@ import io.bitsquare.locale.BSResources;
 import io.bitsquare.locale.CountryUtil;
 import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.payment.PaymentMethod;
+import io.bitsquare.trade.Price;
 import io.bitsquare.trade.offer.Offer;
 import io.bitsquare.user.Preferences;
 import io.bitsquare.user.User;
@@ -171,27 +172,27 @@ public class OfferDetailsWindow extends Overlay<OfferDetailsWindow> {
             addLabelTextField(gridPane, rowIndex, "Offer type:", formatter.getDirectionBothSides(direction), Layout.FIRST_ROW_DISTANCE);
         }
         if (takeOfferHandlerOptional.isPresent()) {
-            addLabelTextField(gridPane, ++rowIndex, "Bitcoin amount" + btcDirectionInfo, formatter.formatCoinWithCode(tradeAmount));
-            addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(offer.getCurrencyCode()) + " amount" + fiatDirectionInfo, formatter.formatFiatWithCode(offer.getVolumeByAmount(tradeAmount)));
+            addLabelTextField(gridPane, ++rowIndex, "Bitcoin amount" + btcDirectionInfo, formatter.formatBitcoinWithCode(tradeAmount));
+            addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(offer.getCurrencyCode()) + " amount" + fiatDirectionInfo, formatter.formatVolumeWithCode(offer.getVolumeByAmount(tradeAmount)));
         } else {
-            addLabelTextField(gridPane, ++rowIndex, "Bitcoin amount" + btcDirectionInfo, formatter.formatCoinWithCode(offer.getAmount()));
-            addLabelTextField(gridPane, ++rowIndex, "Min. bitcoin amount:", formatter.formatCoinWithCode(offer.getMinAmount()));
-            String amount = formatter.formatFiatWithCode(offer.getOfferVolume());
+            addLabelTextField(gridPane, ++rowIndex, "Bitcoin amount" + btcDirectionInfo, formatter.formatBitcoinWithCode(offer.getAmount()));
+            addLabelTextField(gridPane, ++rowIndex, "Min. bitcoin amount:", formatter.formatBitcoinWithCode(offer.getMinAmount()));
+            String volume = formatter.formatVolumeWithCode(offer.getOfferVolume());
             String minVolume = "";
             if (!offer.getAmount().equals(offer.getMinAmount()))
-                minVolume = " (min. " + formatter.formatFiatWithCode(offer.getMinOfferVolume()) + ")";
-            addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(offer.getCurrencyCode()) + " amount" + fiatDirectionInfo, amount + minVolume);
+                minVolume = " (min. " + formatter.formatVolumeWithCode(offer.getMinOfferVolume()) + ")";
+            addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(offer.getCurrencyCode()) + " amount" + fiatDirectionInfo, volume + minVolume);
         }
 
         if (takeOfferHandlerOptional.isPresent()) {
             addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatFiat(tradePrice) + " " + offer.getCurrencyCode() + "/" + "BTC");
         } else {
-            Fiat price = offer.getPriceAsFiat();
+            final Price price = offer.getPrice();
             if (offer.getUseMarketBasedPrice()) {
-                addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceAsFiatWithCode(price) +
+                addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceWithCode(price) +
                         " (distance from market price: " + formatter.formatPercentagePrice(offer.getMarketPriceMargin()) + ")");
             } else {
-                addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceAsFiatWithCode(price));
+                addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceWithCode(price));
             }
         }
         if (offer.isMyOffer(keyRing) && user.getPaymentAccount(offer.getOffererPaymentAccountId()) != null)
@@ -238,7 +239,7 @@ public class OfferDetailsWindow extends Overlay<OfferDetailsWindow> {
         addLabelTextField(gridPane, rowIndex, "Offer ID:", offer.getId(), Layout.FIRST_ROW_AND_GROUP_DISTANCE);
         addLabelTextField(gridPane, ++rowIndex, "Offerers onion address:", offer.getOffererNodeAddress().getFullAddress());
         addLabelTextField(gridPane, ++rowIndex, "Creation date:", formatter.formatDateTime(offer.getDate()));
-        addLabelTextField(gridPane, ++rowIndex, "Security deposit:", formatter.formatCoinWithCode(FeePolicy.getSecurityDeposit()));
+        addLabelTextField(gridPane, ++rowIndex, "Security deposit:", formatter.formatBitcoinWithCode(FeePolicy.getSecurityDeposit()));
 
         if (paymentMethodCountryCode != null)
             addLabelTextField(gridPane, ++rowIndex, "Offerers country of bank:",

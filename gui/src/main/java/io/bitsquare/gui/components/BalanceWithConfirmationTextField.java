@@ -142,7 +142,7 @@ public class BalanceWithConfirmationTextField extends AnchorPane {
     }
 
     private void updateBalance(Coin balance) {
-        textField.setText(formatter.formatCoinWithCode(balance));
+        textField.setText(formatter.formatBitcoinWithCode(balance));
         if (balance.isPositive())
             textField.setEffect(fundedEffect);
         else

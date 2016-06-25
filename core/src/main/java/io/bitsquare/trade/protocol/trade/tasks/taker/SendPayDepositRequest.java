@@ -49,7 +49,7 @@ public class SendPayDepositRequest extends TradeTask {
                     processModel.getMyAddress(),
                     processModel.getId(),
                     trade.getTradeAmount().value,
-                    trade.getTradePrice().value,
+                    trade.getFiatTradePrice().value,
                     processModel.getRawTransactionInputs(),
                     processModel.getChangeOutputValue(),
                     processModel.getChangeOutputAddress(),

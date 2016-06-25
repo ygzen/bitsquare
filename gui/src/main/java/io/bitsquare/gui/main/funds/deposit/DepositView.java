@@ -218,7 +218,7 @@ public class DepositView extends ActivatableView<VBox, Void> {
 
         walletService.addBalanceListener(balanceListener);
         amountTextFieldSubscription = EasyBind.subscribe(amountTextField.textProperty(), t -> {
-            addressTextField.setAmountAsCoin(formatter.parseToCoin(t));
+            addressTextField.setAmountAsCoin(formatter.parseToBitcoin(t));
             updateQRCode();
         });
 
@@ -298,7 +298,7 @@ public class DepositView extends ActivatableView<VBox, Void> {
     }
 
     private Coin getAmountAsCoin() {
-        Coin senderAmount = formatter.parseToCoin(amountTextField.getText());
+        Coin senderAmount = formatter.parseToBitcoin(amountTextField.getText());
         if (!Restrictions.isAboveFixedTxFeeForTradesAndDust(senderAmount)) {
             senderAmount = Coin.ZERO;
            /* new Popup()

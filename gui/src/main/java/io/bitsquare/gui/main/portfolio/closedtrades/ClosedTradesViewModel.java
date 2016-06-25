@@ -49,7 +49,7 @@ class ClosedTradesViewModel extends ActivatableWithDataModel<ClosedTradesDataMod
 
     String getAmount(ClosedTradableListItem item) {
         if (item != null && item.getTradable() instanceof Trade)
-            return formatter.formatCoinWithCode(((Trade) item.getTradable()).getTradeAmount());
+            return formatter.formatBitcoinWithCode(((Trade) item.getTradable()).getTradeAmount());
         else if (item != null && item.getTradable() instanceof OpenOffer)
             return "-";
         else
@@ -61,7 +61,7 @@ class ClosedTradesViewModel extends ActivatableWithDataModel<ClosedTradesDataMod
             return "";
         Tradable tradable = item.getTradable();
         if (tradable instanceof Trade)
-            return formatter.formatFiat(((Trade) tradable).getTradePrice());
+            return formatter.formatFiat(((Trade) tradable).getFiatTradePrice());
         else
             return formatter.formatFiat(tradable.getOffer().getPriceAsFiat());
     }

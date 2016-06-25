@@ -34,9 +34,11 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
+import org.bitcoinj.core.Monetary;
 import org.bitcoinj.utils.Fiat;
 
 import javax.inject.Inject;
+import java.util.Comparator;
 
 @FxmlView
 public class OpenOffersView extends ActivatableViewAndModel<VBox, OpenOffersViewModel> {
@@ -78,11 +80,18 @@ public class OpenOffersView extends ActivatableViewAndModel<VBox, OpenOffersView
             Fiat price2 = o2.getOffer().getPriceAsFiat();
             return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
         });
-        volumeColumn.setComparator((o1, o2) -> {
-            Fiat offerVolume1 = o1.getOffer().getOfferVolume();
-            Fiat offerVolume2 = o2.getOffer().getOfferVolume();
-            return offerVolume1 != null && offerVolume2 != null ? offerVolume1.compareTo(offerVolume2) : 0;
-        });
+        final Comparator<OpenOfferListItem> comparator = (o1, o2) -> {
+            Monetary offerVolume1 = o1.getOffer().getOfferVolume();
+            Monetary offerVolume2 = o2.getOffer().getOfferVolume();
+            if (offerVolume1 instanceof Comparable && offerVolume2 instanceof Comparable) {
+                Comparable volume1 = (Comparable) offerVolume1;
+                Comparable volume2 = (Comparable) offerVolume2;
+                return volume1.compareTo(volume2);
+            } else {
+                return 0;
+            }
+        };
+        volumeColumn.setComparator(comparator);
         dateColumn.setComparator((o1, o2) -> o1.getOffer().getDate().compareTo(o2.getOffer().getDate()));
 
         dateColumn.setSortType(TableColumn.SortType.DESCENDING);

@@ -128,7 +128,7 @@ public abstract class PaymentMethodForm {
     protected void addAllowedPeriod() {
         long hours = paymentAccount.getPaymentMethod().getMaxTradePeriod() / 3600_000;
         String displayText = "Max. trade duration: " + getTimeText(hours) + " / Max. trade limit: " +
-                formatter.formatCoinWithCode(paymentAccount.getPaymentMethod().getMaxTradeLimit());
+                formatter.formatBitcoinWithCode(paymentAccount.getPaymentMethod().getMaxTradeLimit());
 
         addLabelTextField(gridPane, ++gridRow, "Limitations:", displayText);
     }

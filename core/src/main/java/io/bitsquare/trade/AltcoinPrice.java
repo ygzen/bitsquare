@@ -1,6 +1,7 @@
 package io.bitsquare.trade;
 
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Monetary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,17 @@ public class AltcoinPrice implements Serializable, Price {
 
     public final Coin coin;
     public final Altcoin altcoin;
+
+    /**
+     * One altcoin is worth this amount of bitcoin.
+     */
+    public AltcoinPrice(String altcoinCurrencyCode, Coin coin) {
+        checkArgument(coin.isPositive());
+        checkArgument(altcoinCurrencyCode != null, "currency code required");
+        this.coin = coin;
+        this.altcoin = Altcoin.valueOf(altcoinCurrencyCode, Altcoin.COIN_VALUE);
+    }
+
 
     @Override
     public String getPriceAsString() {
@@ -46,6 +58,11 @@ public class AltcoinPrice implements Serializable, Price {
     }
 
     @Override
+    public boolean isZero() {
+        return getPriceAsLong() == 0;
+    }
+
+    @Override
     public Altcoin getVolume(Coin amount) {
         // Use BigInteger because it's much easier to maintain full precision without overflowing.
         final BigInteger coinVal = BigInteger.valueOf(coin.value);
@@ -59,14 +76,32 @@ public class AltcoinPrice implements Serializable, Price {
     }
 
     /**
-     * One altcoin is worth this amount of bitcoin.
+     * Convert a altCoin amount to a coin amount using this exchange rate.
+     *
+     * @throws ArithmeticException if the converted coin amount is too high or too low.
      */
-    public AltcoinPrice(String altcoinCurrencyCode, Coin coin) {
-        checkArgument(coin.isPositive());
-        checkArgument(altcoinCurrencyCode != null, "currency code required");
-        this.coin = coin;
-        this.altcoin = Altcoin.valueOf(altcoinCurrencyCode, Altcoin.COIN_VALUE);
+    @Override
+    public Coin getAmountFromVolume(Monetary volume) {
+        checkArgument(volume instanceof Altcoin, "Volume need to be instance of Altcoin. volume=" + volume);
+        Altcoin volumeAsAltcoin = (Altcoin) volume;
+
+        checkArgument(volumeAsAltcoin.currencyCode.equals(altcoin.currencyCode), "Currency mismatch: %s vs %s",
+                volumeAsAltcoin.currencyCode, altcoin.currencyCode);
+        // Use BigInteger because it's much easier to maintain full precision without overflowing.
+        final BigInteger converted = BigInteger.valueOf(volumeAsAltcoin.value)
+                .multiply(BigInteger.valueOf(coin.value))
+                .divide(BigInteger.valueOf(altcoin.value));
+
+        if (converted.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0
+                || converted.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0)
+            throw new ArithmeticException("Overflow");
+        try {
+            return Coin.valueOf(converted.longValue());
+        } catch (IllegalArgumentException x) {
+            throw new ArithmeticException("Overflow: " + x.getMessage());
+        }
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -87,26 +122,13 @@ public class AltcoinPrice implements Serializable, Price {
         return result;
     }
 
-    /**
-     * Convert a altCoin amount to a coin amount using this exchange rate.
-     *
-     * @throws ArithmeticException if the converted coin amount is too high or too low.
-     */
-   /* public Coin fiatToCoin(Altcoin convertFiat) {
-        checkArgument(convertFiat.currencyCode.equals(altcoin.currencyCode), "Currency mismatch: %s vs %s",
-                convertFiat.currencyCode, altcoin.currencyCode);
-        // Use BigInteger because it's much easier to maintain full precision without overflowing.
-        final BigInteger converted = BigInteger.valueOf(convertFiat.value).multiply(BigInteger.valueOf(coin.value))
-                .divide(BigInteger.valueOf(altcoin.value));
-        if (converted.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0
-                || converted.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0)
-            throw new ArithmeticException("Overflow");
-        try {
-            return Coin.valueOf(converted.longValue());
-        } catch (IllegalArgumentException x) {
-            throw new ArithmeticException("Overflow: " + x.getMessage());
-        }
-    }*/
+    @Override
+    public int compareTo(Object other) {
+        if (other instanceof AltcoinPrice)
+            return coin.compareTo(((AltcoinPrice) other).coin);
+        else
+            return 0;
+    }
 
 }
 

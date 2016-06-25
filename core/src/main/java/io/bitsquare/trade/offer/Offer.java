@@ -37,7 +37,7 @@ import io.bitsquare.trade.protocol.availability.OfferAvailabilityModel;
 import io.bitsquare.trade.protocol.availability.OfferAvailabilityProtocol;
 import javafx.beans.property.*;
 import org.bitcoinj.core.Coin;
-import org.bitcoinj.utils.ExchangeRate;
+import org.bitcoinj.core.Monetary;
 import org.bitcoinj.utils.Fiat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -241,11 +241,11 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
     }
 
     @Nullable
-    public Fiat getVolumeByAmount(Coin amount) {
-        Fiat price = getPriceAsFiat();
+    public Monetary getVolumeByAmount(Coin amount) {
+        Price price = getPrice();
         if (price != null && amount != null) {
             try {
-                return new ExchangeRate(price).coinToFiat(amount);
+                return price.getVolume(amount);
             } catch (Throwable t) {
                 log.error("getVolumeByAmount failed. Error=" + t.getMessage());
                 return null;
@@ -256,12 +256,12 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
     }
 
     @Nullable
-    public Fiat getOfferVolume() {
+    public Monetary getOfferVolume() {
         return getVolumeByAmount(getAmount());
     }
 
     @Nullable
-    public Fiat getMinOfferVolume() {
+    public Monetary getMinOfferVolume() {
         return getVolumeByAmount(getMinAmount());
     }
 
@@ -366,11 +366,8 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
                 targetPrice = targetPrice * factor1;
                 long tmp = Math.round(targetPrice);
                 targetPrice = (double) tmp / factor1;
-
-                PriceFactory.getPriceFromString(currencyCode, String.valueOf(targetPrice));
                 try {
                     return PriceFactory.getPriceFromString(currencyCode, String.valueOf(targetPrice));
-                    // return Fiat.parseFiat(currencyCode, String.valueOf(targetPrice));
                 } catch (Exception e) {
                     log.error("Exception at getPrice / parseToFiat: " + e.toString() + "\n" +
                             "That case should never happen.");
@@ -383,7 +380,6 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
             }
         } else {
             return PriceFactory.getPriceFromLong(currencyCode, fiatPrice);
-            //return Fiat.valueOf(currencyCode, fiatPrice);
         }
     }
 

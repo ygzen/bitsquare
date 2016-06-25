@@ -19,20 +19,19 @@ package io.bitsquare.gui.util.validation;
 
 import javax.inject.Inject;
 
-public class FiatValidator extends MonetaryValidator {
+public class PriceValidator extends MonetaryValidator {
 
     @Inject
-    public FiatValidator() {
+    public PriceValidator() {
     }
 
     @Override
     public double getMinValue() {
-        return 0.01;
+        return 0.00000001;
     }
 
     @Override
     public double getMaxValue() {
         return 100000000;
     }
-
 }

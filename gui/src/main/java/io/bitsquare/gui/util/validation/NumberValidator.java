@@ -34,7 +34,7 @@ public abstract class NumberValidator extends InputValidator {
     protected ValidationResult validateIfNumber(String input) {
         try {
             //noinspection ResultOfMethodCallIgnored
-            Double.parseDouble(input);
+            getDoubleFromStringInput(input);
             return new ValidationResult(true);
         } catch (Exception e) {
             return new ValidationResult(false, BSResources.get("validation.NaN"));
@@ -42,14 +42,18 @@ public abstract class NumberValidator extends InputValidator {
     }
 
     protected ValidationResult validateIfNotZero(String input) {
-        if (Double.parseDouble(input) == 0)
+        if (getDoubleFromStringInput(input) == 0)
             return new ValidationResult(false, BSResources.get("validation.zero"));
         else
             return new ValidationResult(true);
     }
 
+    protected double getDoubleFromStringInput(String input) {
+        return Double.parseDouble(input);
+    }
+
     protected ValidationResult validateIfNotNegative(String input) {
-        if (Double.parseDouble(input) < 0)
+        if (getDoubleFromStringInput(input) < 0)
             return new ValidationResult(false, BSResources.get("validation.negative"));
         else
             return new ValidationResult(true);

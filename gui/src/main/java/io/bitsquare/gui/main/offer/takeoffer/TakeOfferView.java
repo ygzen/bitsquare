@@ -378,7 +378,7 @@ public class TakeOfferView extends ActivatableViewAndModel<AnchorPane, TakeOffer
                 walletFundedNotification = new Notification()
                         .headLine("Trading wallet update")
                         .notification("Your trading wallet was already sufficiently funded from an earlier take offer attempt.\n" +
-                                "Amount: " + formatter.formatCoinWithCode(model.dataModel.totalToPayAsCoin.get()))
+                                "Amount: " + formatter.formatBitcoinWithCode(model.dataModel.totalToPayAsCoin.get()))
                         .autoClose();
                 walletFundedNotification.show();
             }

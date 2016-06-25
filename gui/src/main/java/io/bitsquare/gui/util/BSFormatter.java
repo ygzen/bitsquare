@@ -17,16 +17,19 @@
 
 package io.bitsquare.gui.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.bitsquare.btc.BitcoinNetwork;
 import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.locale.LanguageUtil;
 import io.bitsquare.p2p.NodeAddress;
+import io.bitsquare.trade.Altcoin;
 import io.bitsquare.trade.Price;
 import io.bitsquare.trade.offer.Offer;
 import io.bitsquare.user.Preferences;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Monetary;
 import org.bitcoinj.utils.Fiat;
 import org.bitcoinj.utils.MonetaryFormat;
 import org.slf4j.Logger;
@@ -109,7 +112,7 @@ public class BSFormatter {
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
-    // BTC
+    // Bitcoin
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     public String formatCoin(Coin coin) {
@@ -125,7 +128,7 @@ public class BSFormatter {
         }
     }
 
-    public String formatCoinWithCode(Coin coin) {
+    public String formatBitcoinWithCode(Coin coin) {
         if (coin != null) {
             try {
                 // we don't use the code feature from coinFormat as it does automatic switching between mBTC and BTC and
@@ -140,7 +143,7 @@ public class BSFormatter {
         }
     }
 
-    public Coin parseToCoin(String input) {
+    public Coin parseToBitcoin(String input) {
         if (input != null && input.length() > 0) {
             try {
                 return coinFormat.parse(cleanInput(input));
@@ -161,10 +164,9 @@ public class BSFormatter {
      * @param input
      * @return
      */
-
-    public Coin parseToCoinWith4Decimals(String input) {
+    public Coin parseToBitcoinWith4Decimals(String input) {
         try {
-            return Coin.valueOf(new BigDecimal(parseToCoin(cleanInput(input)).value).setScale(-scale - 1,
+            return Coin.valueOf(new BigDecimal(parseToBitcoin(cleanInput(input)).value).setScale(-scale - 1,
                     BigDecimal.ROUND_HALF_UP).setScale(scale + 1).toBigInteger().longValue());
         } catch (Throwable t) {
             if (input != null && input.length() > 0)
@@ -173,23 +175,119 @@ public class BSFormatter {
         }
     }
 
-    public boolean hasBtcValidDecimals(String input) {
-        return parseToCoin(input).equals(parseToCoinWith4Decimals(input));
+    public boolean hasBitcoinValidDecimals(String input) {
+        return parseToBitcoin(input).equals(parseToBitcoinWith4Decimals(input));
     }
-
-    /**
-     * Transform a coin with the properties defined in the format (used to reduce decimal places)
-     *
-     * @param coin The coin which should be transformed
-     * @return The transformed coin
-     */
-    public Coin reduceTo4Decimals(Coin coin) {
-        return parseToCoin(formatCoin(coin));
-    }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////
-    // FIAT
+    // Price
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    public String formatPriceWithCode(Price price) {
+        if (price != null) {
+            return formatPrice(price) + " " + price.getCurrencyCodePair();
+        } else {
+            return "N/A";
+        }
+    }
+
+    public String formatPriceWithCodeAndPercent(Offer offer) {
+        Price price = offer.getPrice();
+        if (price != null) {
+            String postFix = "";
+            if (offer.getUseMarketBasedPrice())
+                postFix = " (" + formatPercentagePrice(offer.getMarketPriceMargin()) + ")";
+            return formatPriceWithCode(price) + postFix;
+        } else {
+            return "N/A";
+        }
+    }
+
+    public String formatPrice(Price price) {
+        if (price != null) {
+            try {
+                return price.getPriceAsString();
+            } catch (Throwable t) {
+                log.warn("Exception at formatFiat: " + t.toString());
+                return "N/A " + price.getCurrencyCodePair();
+            }
+        } else {
+            return "N/A";
+        }
+    }
+
+    public boolean hasPriceValidDecimals(String input, String currencyCode) {
+        if (CurrencyUtil.isCryptoCurrency(currencyCode))
+            return parseToAltcoin(input, currencyCode).equals(parseToAltcoinWithDecimals(input, currencyCode, 8));
+        else
+            return parseToFiat(input, currencyCode).equals(parseToFiatWithDecimals(input, currencyCode, 4));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Volume
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    public String formatVolume(Monetary monetary) {
+        if (monetary instanceof Fiat)
+            return formatFiat((Fiat) monetary);
+        else
+            return formatAltcoin((Altcoin) monetary);
+    }
+
+    public Monetary parseToVolumeWithDecimals(String input, String currencyCode) {
+        if (CurrencyUtil.isCryptoCurrency(currencyCode))
+            return parseToAltcoinWithDecimals(input, currencyCode, 4);
+        else
+            return parseToFiatWithDecimals(input, currencyCode, 2);
+    }
+
+    public boolean hasVolumeValidDecimals(String input, String currencyCode) {
+        if (CurrencyUtil.isCryptoCurrency(currencyCode))
+            return hasAltcoinValidDecimals(input, currencyCode);
+        else
+            return hasFiatValidDecimals(input, currencyCode);
+    }
+
+
+    public String formatVolumeWithMinVolume(Offer offer, boolean includeCode) {
+        if (offer != null) {
+            final Monetary minOfferVolume = offer.getMinOfferVolume();
+            final Monetary offerVolume = offer.getOfferVolume();
+            if (offerVolume != null && minOfferVolume != null) {
+                if (includeCode)
+                    return formatVolumeWithCode(offerVolume) + " (" + formatVolumeWithCode(minOfferVolume) + ")";
+                else
+                    return formatVolume(offerVolume) + " (" + formatVolume(minOfferVolume) + ")";
+            } else {
+                return "N/A";
+            }
+        } else {
+            return "N/A";
+        }
+    }
+
+    public String formatVolumeWithCode(Monetary monetary) {
+        return formatVolume(monetary) + getCurrencyPair(monetary, " ");
+    }
+
+    public String getCurrencyPair(Monetary monetary) {
+        return getCurrencyPair(monetary, "");
+    }
+
+    public String getCurrencyPair(Monetary monetary, String prefix) {
+        String code;
+        if (monetary instanceof Fiat)
+            code = ((Fiat) monetary).getCurrencyCode();
+        else
+            code = ((Altcoin) monetary).getCurrencyCode();
+
+        return prefix + getCurrencyPair(code);
+    }
+
+
+    //TODO fiat and altcoin shoul dbe private and access by price/volume instead
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Fiat
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     public String formatFiat(Fiat fiat) {
@@ -218,34 +316,6 @@ public class BSFormatter {
         }
     }
 
-    public String formatPriceAsFiatWithCode(Fiat fiat) {
-        if (fiat != null) {
-            return formatFiat(fiat) + " " + getCurrencyPair(fiat.getCurrencyCode());
-        } else {
-            return "N/A";
-        }
-    }
-
-    public String formatPriceWithCode(Price price) {
-        if (price != null) {
-            return formatPrice(price) + " " + price.getCurrencyCodePair();
-        } else {
-            return "N/A";
-        }
-    }
-
-    public String formatPrice(Price price) {
-        if (price != null) {
-            try {
-                return price.getPriceAsString();
-            } catch (Throwable t) {
-                log.warn("Exception at formatFiat: " + t.toString());
-                return "N/A " + price.getCurrencyCodePair();
-            }
-        } else {
-            return "N/A";
-        }
-    }
     private Fiat parseToFiat(String input, String currencyCode) {
         if (input != null && input.length() > 0) {
             try {
@@ -260,21 +330,13 @@ public class BSFormatter {
         }
     }
 
-    /**
-     * Converts to a fiat with max. 2 decimal places. Last place gets rounded.
-     * 0.234 -> 0.23
-     * 0.235 -> 0.24
-     *
-     * @param input
-     * @return
-     */
-
-    public Fiat parseToFiatWith2Decimals(String input, String currencyCode) {
+    @VisibleForTesting
+    Fiat parseToFiatWithDecimals(String input, String currencyCode, int decPlaces) {
         if (input != null && input.length() > 0) {
             try {
-                return parseToFiat(new BigDecimal(cleanInput(input)).setScale(2, BigDecimal.ROUND_HALF_UP).toString(), currencyCode);
+                return parseToFiat(new BigDecimal(cleanInput(input)).setScale(decPlaces, BigDecimal.ROUND_HALF_UP).toString(), currencyCode);
             } catch (Throwable t) {
-                log.warn("Exception at parseCoinTo4Decimals: " + t.toString());
+                log.warn("Exception at parseToFiatWithDecimals: " + t.toString());
                 return Fiat.valueOf(currencyCode, 0);
             }
 
@@ -282,9 +344,43 @@ public class BSFormatter {
         return Fiat.valueOf(currencyCode, 0);
     }
 
-    public boolean hasFiatValidDecimals(String input, String currencyCode) {
-        return parseToFiat(input, currencyCode).equals(parseToFiatWith2Decimals(input, currencyCode));
+    @VisibleForTesting
+    boolean hasFiatValidDecimals(String input, String currencyCode) {
+        return parseToFiat(input, currencyCode).equals(parseToFiatWithDecimals(input, currencyCode, 2));
     }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Altcoin
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    public String formatAltcoin(Altcoin altcoin) {
+        if (altcoin != null) {
+            try {
+                return altcoin.toPlainString();
+            } catch (Throwable t) {
+                log.warn("Exception at formatFiat: " + t.toString());
+                return "N/A " + altcoin.currencyCode;
+            }
+        } else {
+            return "N/A";
+        }
+    }
+
+    private Altcoin parseToAltcoin(String input, String currencyCode) {
+        if (input != null && input.length() > 0) {
+            try {
+                return Altcoin.parseCoin(currencyCode, cleanInput(input));
+            } catch (Exception e) {
+                log.warn("Exception at parseToFiat: " + e.toString());
+                return Altcoin.valueOf(currencyCode, 0);
+            }
+
+        } else {
+            return Altcoin.valueOf(currencyCode, 0);
+        }
+    }
+
 
     public String formatMarketPrice(double price, String currencyCode) {
         return formatMarketPrice(price, CurrencyUtil.isCryptoCurrency(currencyCode) ? 8 : 3);
@@ -294,6 +390,23 @@ public class BSFormatter {
         DecimalFormat df = new DecimalFormat("#.#");
         df.setMaximumFractionDigits(decimals);
         return df.format(price);
+    }
+
+    public Altcoin parseToAltcoinWithDecimals(String input, String currencyCode, int decPlaces) {
+        if (input != null && input.length() > 0) {
+            try {
+                return parseToAltcoin(new BigDecimal(cleanInput(input)).setScale(decPlaces, BigDecimal.ROUND_HALF_UP).toString(), currencyCode);
+            } catch (Throwable t) {
+                log.warn("Exception at parseToAltcoinWithDecimals: " + t.toString());
+                return Altcoin.valueOf(currencyCode, 0);
+            }
+
+        }
+        return Altcoin.valueOf(currencyCode, 0);
+    }
+
+    public boolean hasAltcoinValidDecimals(String input, String currencyCode) {
+        return parseToFiat(input, currencyCode).equals(parseToAltcoinWithDecimals(input, currencyCode, 4));
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -315,11 +428,6 @@ public class BSFormatter {
 
     public String formatAmountWithMinAmount(Offer offer) {
         return formatCoin(offer.getAmount()) + " (" + formatCoin(offer.getMinAmount()) + ")";
-    }
-
-    public String formatVolumeWithMinVolumeWithCode(Offer offer) {
-        return formatFiatWithCode(offer.getOfferVolume()) +
-                " (" + formatFiatWithCode(offer.getMinOfferVolume()) + ")";
     }
 
     public String arbitratorAddressesToString(List<NodeAddress> nodeAddresses) {
@@ -366,7 +474,7 @@ public class BSFormatter {
         decimalFormat.setMinimumFractionDigits(digits);
         decimalFormat.setMaximumFractionDigits(digits);
         decimalFormat.setGroupingUsed(false);
-        return decimalFormat.format(value);
+        return decimalFormat.format(value).replace(",", ".");
     }
 
     public double parseNumberStringToDouble(String percentString) throws NumberFormatException {

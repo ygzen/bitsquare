@@ -882,7 +882,7 @@ public class MainViewModel implements ViewModel {
         Coin totalAvailableBalance = Coin.valueOf(tradeManager.getAddressEntriesForAvailableBalanceStream()
                 .mapToLong(addressEntry -> walletService.getBalanceForAddress(addressEntry.getAddress()).getValue())
                 .sum());
-        availableBalance.set(formatter.formatCoinWithCode(totalAvailableBalance));
+        availableBalance.set(formatter.formatBitcoinWithCode(totalAvailableBalance));
     }
 
     private void updateReservedBalance() {
@@ -894,7 +894,7 @@ public class MainViewModel implements ViewModel {
                 .mapToLong(Coin::getValue)
                 .sum());
 
-        reservedBalance.set(formatter.formatCoinWithCode(sum));
+        reservedBalance.set(formatter.formatBitcoinWithCode(sum));
     }
 
     private void updateLockedBalance() {
@@ -904,7 +904,7 @@ public class MainViewModel implements ViewModel {
                     return lockedTradeAmount != null ? lockedTradeAmount.getValue() : 0;
                 })
                 .sum());
-        lockedBalance.set(formatter.formatCoinWithCode(sum));
+        lockedBalance.set(formatter.formatBitcoinWithCode(sum));
     }
 
     private void onDisputesChangeListener(List<? extends Dispute> addedList, @Nullable List<? extends Dispute> removedList) {

@@ -135,7 +135,7 @@ public class WithdrawalView extends ActivatableView<VBox, Void> {
         amountListener = (observable, oldValue, newValue) -> {
             if (amountTextField.focusedProperty().get()) {
                 try {
-                    senderAmountAsCoinProperty.set(formatter.parseToCoin(amountTextField.getText()));
+                    senderAmountAsCoinProperty.set(formatter.parseToBitcoin(amountTextField.getText()));
                 } catch (Throwable t) {
                     log.error("Error at amountTextField input. " + t.toString());
                 }
@@ -216,11 +216,11 @@ public class WithdrawalView extends ActivatableView<VBox, Void> {
                         doWithdraw(receiverAmount, callback);
                     } else {
                         new Popup().headLine("Confirm withdrawal request")
-                                .confirmation("Sending: " + formatter.formatCoinWithCode(senderAmountAsCoinProperty.get()) + "\n" +
+                                .confirmation("Sending: " + formatter.formatBitcoinWithCode(senderAmountAsCoinProperty.get()) + "\n" +
                                         "From address: " + withdrawFromTextField.getText() + "\n" +
                                         "To receiving address: " + withdrawToTextField.getText() + ".\n" +
-                                        "Required transaction fee is: " + formatter.formatCoinWithCode(requiredFee) + "\n\n" +
-                                        "The recipient will receive: " + formatter.formatCoinWithCode(receiverAmount) + "\n\n" +
+                                        "Required transaction fee is: " + formatter.formatBitcoinWithCode(requiredFee) + "\n\n" +
+                                        "The recipient will receive: " + formatter.formatBitcoinWithCode(receiverAmount) + "\n\n" +
                                         "Are you sure you want to withdraw that amount?")
                                 .actionButtonText("Yes")
                                 .onAction(() -> doWithdraw(receiverAmount, callback))

@@ -125,9 +125,9 @@ public class TradeDetailsWindow extends Overlay<TradeDetailsWindow> {
             btcDirectionInfo = " to spend:";
         }
 
-        addLabelTextField(gridPane, ++rowIndex, "Bitcoin amount" + btcDirectionInfo, formatter.formatCoinWithCode(trade.getTradeAmount()));
+        addLabelTextField(gridPane, ++rowIndex, "Bitcoin amount" + btcDirectionInfo, formatter.formatBitcoinWithCode(trade.getTradeAmount()));
         addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(offer.getCurrencyCode()) + " amount" + fiatDirectionInfo, formatter.formatFiatWithCode(trade.getTradeVolume()));
-        addLabelTextField(gridPane, ++rowIndex, "Trade price:", formatter.formatPriceAsFiatWithCode(trade.getTradePrice()));
+        addLabelTextField(gridPane, ++rowIndex, "Trade price:", formatter.formatPriceWithCode(trade.getTradePrice()));
         addLabelTextField(gridPane, ++rowIndex, "Payment method:", BSResources.get(offer.getPaymentMethod().getId()));
 
         // second group
@@ -172,7 +172,7 @@ public class TradeDetailsWindow extends Overlay<TradeDetailsWindow> {
         addTitledGroupBg(gridPane, ++rowIndex, rows, "Details", Layout.GROUP_DISTANCE);
         addLabelTextField(gridPane, rowIndex, "Trade ID:", trade.getId(), Layout.FIRST_ROW_AND_GROUP_DISTANCE);
         addLabelTextField(gridPane, ++rowIndex, "Trade date:", formatter.formatDateTime(trade.getDate()));
-        addLabelTextField(gridPane, ++rowIndex, "Security deposit:", formatter.formatCoinWithCode(FeePolicy.getSecurityDeposit()));
+        addLabelTextField(gridPane, ++rowIndex, "Security deposit:", formatter.formatBitcoinWithCode(FeePolicy.getSecurityDeposit()));
         addLabelTextField(gridPane, ++rowIndex, "Selected arbitrator:", trade.getArbitratorNodeAddress().getFullAddress());
 
         if (trade.getTradingPeerNodeAddress() != null)

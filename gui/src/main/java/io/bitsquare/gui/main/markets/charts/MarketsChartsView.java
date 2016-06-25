@@ -197,7 +197,7 @@ public class MarketsChartsView extends ActivatableViewAndModel<VBox, MarketsChar
                                 @Override
                                 public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                                     if (offer != null && offer.getPriceAsFiat() != null) {
-                                        setText(formatter.formatFiat(offer.getPriceAsFiat()));
+                                        setText(formatter.formatPrice(offer.getPrice()));
                                         model.priceFeed.currenciesUpdateFlagProperty().removeListener(listener);
                                     }
                                 }
@@ -212,7 +212,7 @@ public class MarketsChartsView extends ActivatableViewAndModel<VBox, MarketsChar
                                         model.priceFeed.currenciesUpdateFlagProperty().addListener(listener);
                                         setText("N/A");
                                     } else {
-                                        setText(formatter.formatFiat(offer.getPriceAsFiat()));
+                                        setText(formatter.formatPrice(offer.getPrice()));
                                     }
                                 } else {
                                     if (listener != null)
@@ -268,7 +268,7 @@ public class MarketsChartsView extends ActivatableViewAndModel<VBox, MarketsChar
                                 @Override
                                 public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                                     if (offer != null && offer.getPriceAsFiat() != null) {
-                                        setText(formatter.formatFiat(offer.getOfferVolume()));
+                                        setText(formatter.formatVolume(offer.getOfferVolume()));
                                         model.priceFeed.currenciesUpdateFlagProperty().removeListener(listener);
                                     }
                                 }
@@ -283,7 +283,7 @@ public class MarketsChartsView extends ActivatableViewAndModel<VBox, MarketsChar
                                         model.priceFeed.currenciesUpdateFlagProperty().addListener(listener);
                                         setText("N/A");
                                     } else {
-                                        setText(formatter.formatFiat(offer.getOfferVolume()));
+                                        setText(formatter.formatVolume(offer.getOfferVolume()));
                                     }
                                 } else {
                                     if (listener != null)

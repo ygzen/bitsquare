@@ -112,7 +112,7 @@ public class MarketsStatisticsView extends ActivatableViewAndModel<GridPane, Mar
 
     private void updateHeaders() {
         numberOfOffersColumn.setText("Total offers (" + sortedList.stream().mapToInt(item -> item.numberOfOffers).sum() + ")");
-        totalAmountColumn.setText("Total amount (" + formatter.formatCoinWithCode(Coin.valueOf(sortedList.stream().mapToLong(item -> item.totalAmount.value).sum())) + ")");
+        totalAmountColumn.setText("Total amount (" + formatter.formatBitcoinWithCode(Coin.valueOf(sortedList.stream().mapToLong(item -> item.totalAmount.value).sum())) + ")");
     }
 
 

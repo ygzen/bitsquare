@@ -146,7 +146,7 @@ public class PendingTradesViewModel extends ActivatableWithDataModel<PendingTrad
     }
 
     public String getPayoutAmount() {
-        return dataModel.getTrade() != null ? formatter.formatCoinWithCode(dataModel.getTrade().getPayoutAmount()) : "";
+        return dataModel.getTrade() != null ? formatter.formatBitcoinWithCode(dataModel.getTrade().getPayoutAmount()) : "";
     }
 
     // trade period
@@ -252,7 +252,7 @@ public class PendingTradesViewModel extends ActivatableWithDataModel<PendingTrad
 
     // summary
     public String getTradeVolume() {
-        return dataModel.getTrade() != null ? formatter.formatCoinWithCode(dataModel.getTrade().getTradeAmount()) : "";
+        return dataModel.getTrade() != null ? formatter.formatBitcoinWithCode(dataModel.getTrade().getTradeAmount()) : "";
     }
 
     public String getFiatVolume() {
@@ -260,11 +260,11 @@ public class PendingTradesViewModel extends ActivatableWithDataModel<PendingTrad
     }
 
     public String getTotalFees() {
-        return formatter.formatCoinWithCode(dataModel.getTotalFees());
+        return formatter.formatBitcoinWithCode(dataModel.getTotalFees());
     }
 
     public String getSecurityDeposit() {
-        return formatter.formatCoinWithCode(FeePolicy.getSecurityDeposit());
+        return formatter.formatBitcoinWithCode(FeePolicy.getSecurityDeposit());
     }
 
     public boolean isBlockChainMethod() {

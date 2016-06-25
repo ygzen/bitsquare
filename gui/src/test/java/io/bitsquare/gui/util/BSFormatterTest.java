@@ -30,33 +30,33 @@ public class BSFormatterTest {
     public void testParseToBtc() {
         BSFormatter formatter = new BSFormatter();
         formatter.useMilliBitFormat(false);
-        assertEquals(Coin.ZERO, formatter.parseToCoin("0"));
-        assertEquals(Coin.COIN, formatter.parseToCoin("1"));
-        assertEquals(Coin.SATOSHI, formatter.parseToCoin("0,00000001"));
+        assertEquals(Coin.ZERO, formatter.parseToBitcoin("0"));
+        assertEquals(Coin.COIN, formatter.parseToBitcoin("1"));
+        assertEquals(Coin.SATOSHI, formatter.parseToBitcoin("0,00000001"));
 
-        assertEquals(Coin.parseCoin("-1"), formatter.parseToCoin("-1"));
-        assertEquals(Coin.parseCoin("1.1"), formatter.parseToCoin("1,1"));
-        assertEquals(Coin.parseCoin("1.1"), formatter.parseToCoin("1.1"));
-        assertEquals(Coin.parseCoin("0"), formatter.parseToCoin("1.123,45"));
-        assertEquals(Coin.parseCoin("0"), formatter.parseToCoin("1,123.45"));
+        assertEquals(Coin.parseCoin("-1"), formatter.parseToBitcoin("-1"));
+        assertEquals(Coin.parseCoin("1.1"), formatter.parseToBitcoin("1,1"));
+        assertEquals(Coin.parseCoin("1.1"), formatter.parseToBitcoin("1.1"));
+        assertEquals(Coin.parseCoin("0"), formatter.parseToBitcoin("1.123,45"));
+        assertEquals(Coin.parseCoin("0"), formatter.parseToBitcoin("1,123.45"));
 
-        assertEquals(Coin.parseCoin("1.1234"), formatter.parseToCoinWith4Decimals("1,12342"));
-        assertEquals(Coin.parseCoin("1.1235"), formatter.parseToCoinWith4Decimals("1,12345"));
-        assertEquals(Coin.parseCoin("1.1230"), formatter.parseToCoinWith4Decimals("1,123"));
+        assertEquals(Coin.parseCoin("1.1234"), formatter.parseToBitcoinWith4Decimals("1,12342"));
+        assertEquals(Coin.parseCoin("1.1235"), formatter.parseToBitcoinWith4Decimals("1,12345"));
+        assertEquals(Coin.parseCoin("1.1230"), formatter.parseToBitcoinWith4Decimals("1,123"));
 
         // change to mBTC
         formatter.useMilliBitFormat(true);
-        assertEquals(Coin.parseCoin("1"), formatter.parseToCoin("1000"));
-        assertEquals(Coin.parseCoin("0.123"), formatter.parseToCoin("123"));
-        assertEquals(Coin.parseCoin("0.1234"), formatter.parseToCoin("123.4"));
-        assertEquals(Coin.parseCoin("0.12345"), formatter.parseToCoin("123.45"));
-        assertEquals(Coin.parseCoin("0.123456"), formatter.parseToCoin("123.456"));
-        assertEquals(Coin.parseCoin("0"), formatter.parseToCoin("123,456.7"));
+        assertEquals(Coin.parseCoin("1"), formatter.parseToBitcoin("1000"));
+        assertEquals(Coin.parseCoin("0.123"), formatter.parseToBitcoin("123"));
+        assertEquals(Coin.parseCoin("0.1234"), formatter.parseToBitcoin("123.4"));
+        assertEquals(Coin.parseCoin("0.12345"), formatter.parseToBitcoin("123.45"));
+        assertEquals(Coin.parseCoin("0.123456"), formatter.parseToBitcoin("123.456"));
+        assertEquals(Coin.parseCoin("0"), formatter.parseToBitcoin("123,456.7"));
 
-        assertEquals(Coin.parseCoin("0.001123"), formatter.parseToCoinWith4Decimals("1.123"));
-        assertEquals(Coin.parseCoin("0.0011234"), formatter.parseToCoinWith4Decimals("1.1234"));
-        assertEquals(Coin.parseCoin("0.0011234"), formatter.parseToCoinWith4Decimals("1.12342"));
-        assertEquals(Coin.parseCoin("0.0011235"), formatter.parseToCoinWith4Decimals("1.12345"));
+        assertEquals(Coin.parseCoin("0.001123"), formatter.parseToBitcoinWith4Decimals("1.123"));
+        assertEquals(Coin.parseCoin("0.0011234"), formatter.parseToBitcoinWith4Decimals("1.1234"));
+        assertEquals(Coin.parseCoin("0.0011234"), formatter.parseToBitcoinWith4Decimals("1.12342"));
+        assertEquals(Coin.parseCoin("0.0011235"), formatter.parseToBitcoinWith4Decimals("1.12345"));
     }
 
     @Test
@@ -96,34 +96,34 @@ public class BSFormatterTest {
     public void testFormatCoinWithCode() {
         BSFormatter formatter = new BSFormatter();
         formatter.useMilliBitFormat(false);
-        assertEquals("1.00 BTC", formatter.formatCoinWithCode(Coin.COIN));
-        assertEquals("1.01 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.01")));
-        assertEquals("1.0120 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.012")));
-        assertEquals("1012.30 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1012.3")));
-        assertEquals("1.0120 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.01200")));
-        assertEquals("1.012340 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.01234")));
-        assertEquals("1.012345 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.012345")));
-        assertEquals("1.012345 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.0123454")));
-        assertEquals("1.012346 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.0123455")));
+        assertEquals("1.00 BTC", formatter.formatBitcoinWithCode(Coin.COIN));
+        assertEquals("1.01 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.01")));
+        assertEquals("1.0120 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.012")));
+        assertEquals("1012.30 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1012.3")));
+        assertEquals("1.0120 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.01200")));
+        assertEquals("1.012340 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.01234")));
+        assertEquals("1.012345 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.012345")));
+        assertEquals("1.012345 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.0123454")));
+        assertEquals("1.012346 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.0123455")));
 
-        assertEquals("0.10 BTC", formatter.formatCoinWithCode(Coin.parseCoin("0.1")));
-        assertEquals("0.01 BTC", formatter.formatCoinWithCode(Coin.parseCoin("0.01")));
-        assertEquals("0.0010 BTC", formatter.formatCoinWithCode(Coin.parseCoin("0.001")));
-        assertEquals("0.0001 BTC", formatter.formatCoinWithCode(Coin.parseCoin("0.0001")));
+        assertEquals("0.10 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("0.1")));
+        assertEquals("0.01 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("0.01")));
+        assertEquals("0.0010 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("0.001")));
+        assertEquals("0.0001 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("0.0001")));
 
-        assertEquals("1.2345 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.2345")));
-        assertEquals("1.002346 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.0023456")));
-        assertEquals("1.002346 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.00234567")));
-        assertEquals("1.002345 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1.0023448")));
+        assertEquals("1.2345 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.2345")));
+        assertEquals("1.002346 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.0023456")));
+        assertEquals("1.002346 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.00234567")));
+        assertEquals("1.002345 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1.0023448")));
 
-        assertEquals("1.00 BTC", formatter.formatCoinWithCode(Coin.COIN));
-        assertEquals("1012.30 BTC", formatter.formatCoinWithCode(Coin.parseCoin("1012.3")));
+        assertEquals("1.00 BTC", formatter.formatBitcoinWithCode(Coin.COIN));
+        assertEquals("1012.30 BTC", formatter.formatBitcoinWithCode(Coin.parseCoin("1012.3")));
 
         // change to mBTC
         formatter.useMilliBitFormat(true);
-        assertEquals("1000.00 mBTC", formatter.formatCoinWithCode(Coin.COIN));
-        assertEquals("1.00 mBTC", formatter.formatCoinWithCode(Coin.MILLICOIN));
-        assertEquals("0.0010 mBTC", formatter.formatCoinWithCode(Coin.MICROCOIN));
+        assertEquals("1000.00 mBTC", formatter.formatBitcoinWithCode(Coin.COIN));
+        assertEquals("1.00 mBTC", formatter.formatBitcoinWithCode(Coin.MILLICOIN));
+        assertEquals("0.0010 mBTC", formatter.formatBitcoinWithCode(Coin.MICROCOIN));
     }
 
 
@@ -131,11 +131,11 @@ public class BSFormatterTest {
     public void testParseToBtcWith4Decimals() {
         BSFormatter formatter = new BSFormatter();
         formatter.useMilliBitFormat(false);
-        assertEquals(Coin.parseCoin("0"), formatter.parseToCoinWith4Decimals("0"));
-        assertEquals(Coin.parseCoin("0"), formatter.parseToCoinWith4Decimals(null));
-        assertEquals(Coin.parseCoin("0"), formatter.parseToCoinWith4Decimals("s"));
-        assertEquals(Coin.parseCoin("0.0012"), formatter.parseToCoinWith4Decimals("0,00123"));
-        assertEquals(Coin.parseCoin("0.0013"), formatter.parseToCoinWith4Decimals("0,00125"));
+        assertEquals(Coin.parseCoin("0"), formatter.parseToBitcoinWith4Decimals("0"));
+        assertEquals(Coin.parseCoin("0"), formatter.parseToBitcoinWith4Decimals(null));
+        assertEquals(Coin.parseCoin("0"), formatter.parseToBitcoinWith4Decimals("s"));
+        assertEquals(Coin.parseCoin("0.0012"), formatter.parseToBitcoinWith4Decimals("0,00123"));
+        assertEquals(Coin.parseCoin("0.0013"), formatter.parseToBitcoinWith4Decimals("0,00125"));
     }
 
     @Test
@@ -143,15 +143,15 @@ public class BSFormatterTest {
         BSFormatter formatter = new BSFormatter();
         formatter.useMilliBitFormat(false);
         formatter.setLocale(Locale.GERMAN);
-        assertTrue(formatter.hasBtcValidDecimals(null));
-        assertTrue(formatter.hasBtcValidDecimals("0"));
-        assertTrue(formatter.hasBtcValidDecimals("0,0001"));
-        assertTrue(formatter.hasBtcValidDecimals("0.0001"));
-        assertTrue(formatter.hasBtcValidDecimals("0.0009"));
-        assertTrue(formatter.hasBtcValidDecimals("20000000.0001"));
-        assertFalse(formatter.hasBtcValidDecimals("20000000.000123"));
-        assertFalse(formatter.hasBtcValidDecimals("0.00012"));
-        assertFalse(formatter.hasBtcValidDecimals("0.0001222312312312313"));
+        assertTrue(formatter.hasBitcoinValidDecimals(null));
+        assertTrue(formatter.hasBitcoinValidDecimals("0"));
+        assertTrue(formatter.hasBitcoinValidDecimals("0,0001"));
+        assertTrue(formatter.hasBitcoinValidDecimals("0.0001"));
+        assertTrue(formatter.hasBitcoinValidDecimals("0.0009"));
+        assertTrue(formatter.hasBitcoinValidDecimals("20000000.0001"));
+        assertFalse(formatter.hasBitcoinValidDecimals("20000000.000123"));
+        assertFalse(formatter.hasBitcoinValidDecimals("0.00012"));
+        assertFalse(formatter.hasBitcoinValidDecimals("0.0001222312312312313"));
     }
 
     @Test
@@ -159,12 +159,12 @@ public class BSFormatterTest {
         BSFormatter formatter = new BSFormatter();
         formatter.useMilliBitFormat(false);
         formatter.setLocale(Locale.GERMAN);
-        assertEquals("0", formatter.parseToFiatWith2Decimals("0", "EUR").toPlainString());
-        assertEquals("0", formatter.parseToFiatWith2Decimals(null, "EUR").toPlainString());
-        assertEquals("0", formatter.parseToFiatWith2Decimals("s", "EUR").toPlainString());
-        assertEquals("0.12", formatter.parseToFiatWith2Decimals("0.123", "EUR").toPlainString());
-        assertEquals("0.13", formatter.parseToFiatWith2Decimals("0.125", "EUR").toPlainString());
-        assertEquals("0.13", formatter.parseToFiatWith2Decimals("0,125", "EUR").toPlainString());
+        assertEquals("0", formatter.parseToFiatWithDecimals("0", "EUR", 2).toPlainString());
+        assertEquals("0", formatter.parseToFiatWithDecimals(null, "EUR", 2).toPlainString());
+        assertEquals("0", formatter.parseToFiatWithDecimals("s", "EUR", 2).toPlainString());
+        assertEquals("0.12", formatter.parseToFiatWithDecimals("0.123", "EUR", 2).toPlainString());
+        assertEquals("0.13", formatter.parseToFiatWithDecimals("0.125", "EUR", 2).toPlainString());
+        assertEquals("0.13", formatter.parseToFiatWithDecimals("0,125", "EUR", 2).toPlainString());
     }
 
     @Test

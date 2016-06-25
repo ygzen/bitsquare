@@ -36,7 +36,7 @@ import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.locale.TradeCurrency;
 import io.bitsquare.p2p.P2PService;
 import io.bitsquare.payment.*;
-import io.bitsquare.trade.FiatPrice;
+import io.bitsquare.trade.Price;
 import io.bitsquare.trade.handlers.TransactionResultHandler;
 import io.bitsquare.trade.offer.Offer;
 import io.bitsquare.trade.offer.OpenOfferManager;
@@ -47,9 +47,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.SetChangeListener;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Monetary;
 import org.bitcoinj.core.Transaction;
-import org.bitcoinj.utils.ExchangeRate;
-import org.bitcoinj.utils.Fiat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,8 +100,8 @@ class CreateOfferDataModel extends ActivatableDataModel {
     final ObjectProperty<Coin> minAmountAsCoin = new SimpleObjectProperty<>();
     // Price is always otherCurrency/BTC, for altcoins we only invert at the display level. 
     // If we would change the price representation in the domain we would not be backward compatible
-    final ObjectProperty<Fiat> priceAsFiat = new SimpleObjectProperty<>();
-    final ObjectProperty<Fiat> volumeAsFiat = new SimpleObjectProperty<>();
+    final ObjectProperty<Price> price = new SimpleObjectProperty<>();
+    final ObjectProperty<Monetary> volume = new SimpleObjectProperty<>();
     final ObjectProperty<Coin> totalToPayAsCoin = new SimpleObjectProperty<>();
     final ObjectProperty<Coin> missingCoin = new SimpleObjectProperty<>(Coin.ZERO);
     final ObjectProperty<Coin> balance = new SimpleObjectProperty<>();
@@ -262,7 +261,7 @@ class CreateOfferDataModel extends ActivatableDataModel {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     Offer createAndGetOffer() {
-        long fiatPrice = priceAsFiat.get() != null && !useMarketBasedPrice.get() ? priceAsFiat.get().getValue() : 0L;
+        long priceAsLong = price.get() != null && !useMarketBasedPrice.get() ? price.get().getPriceAsLong() : 0L;
         double marketPriceMarginParam = useMarketBasedPrice.get() ? marketPriceMargin : 0;
         long amount = amountAsCoin.get() != null ? amountAsCoin.get().getValue() : 0L;
         long minAmount = minAmountAsCoin.get() != null ? minAmountAsCoin.get().getValue() : 0L;
@@ -294,7 +293,7 @@ class CreateOfferDataModel extends ActivatableDataModel {
                 p2PService.getAddress(),
                 keyRing.getPubKeyRing(),
                 direction,
-                fiatPrice,
+                priceAsLong,
                 marketPriceMarginParam,
                 useMarketBasedPrice.get(),
                 amount,
@@ -407,27 +406,23 @@ class CreateOfferDataModel extends ActivatableDataModel {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     void calculateVolume() {
-        if (priceAsFiat.get() != null &&
+        if (price.get() != null &&
                 amountAsCoin.get() != null &&
                 !amountAsCoin.get().isZero() &&
-                !priceAsFiat.get().isZero()) {
-            volumeAsFiat.set(new ExchangeRate(priceAsFiat.get()).coinToFiat(amountAsCoin.get()));
+                !price.get().isZero()) {
+            volume.set(price.get().getVolume(amountAsCoin.get()));
         }
 
         updateBalance();
     }
 
     void calculateAmount() {
-        if (volumeAsFiat.get() != null &&
-                priceAsFiat.get() != null &&
-                !volumeAsFiat.get().isZero() &&
-                !priceAsFiat.get().isZero()) {
-            // If we got a btc value with more then 4 decimals we convert it to max 4 decimals
-           /* if (CurrencyUtil.isCryptoCurrency(tradeCurrency.getCode()))
-                amountAsCoin.set(formatter.reduceTo4Decimals(new AltcoinPrice(priceAsFiat.get()).fiatToCoin(volumeAsFiat.get())));
-            else*/
-            amountAsCoin.set(formatter.reduceTo4Decimals(new FiatPrice(priceAsFiat.get()).fiatToCoin(volumeAsFiat.get())));
-            
+        if (volume.get() != null &&
+                price.get() != null &&
+                volume.get().getValue() != 0 &&
+                !price.get().isZero()) {
+            //TODO
+            // amountAsCoin.set(formatter.reduceTo4Decimals(price.get().fiatToCoin(volumeAsFiat.get())));
             calculateTotalToPay();
         }
     }
@@ -471,7 +466,7 @@ class CreateOfferDataModel extends ActivatableDataModel {
             walletFundedNotification = new Notification()
                     .headLine("Trading wallet update")
                     .notification("Your trading wallet is sufficiently funded.\n" +
-                            "Amount: " + formatter.formatCoinWithCode(totalToPayAsCoin.get()))
+                            "Amount: " + formatter.formatBitcoinWithCode(totalToPayAsCoin.get()))
                     .autoClose();
 
             walletFundedNotification.show();
