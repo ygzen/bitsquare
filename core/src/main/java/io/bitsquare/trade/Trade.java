@@ -39,9 +39,9 @@ import io.bitsquare.trade.protocol.trade.TradeProtocol;
 import io.bitsquare.user.User;
 import javafx.beans.property.*;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Monetary;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.TransactionConfidence;
-import org.bitcoinj.utils.ExchangeRate;
 import org.bitcoinj.utils.Fiat;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -168,7 +168,7 @@ public abstract class Trade implements Tradable, Model {
     private String errorMessage;
     transient private StringProperty errorMessageProperty;
     transient private ObjectProperty<Coin> tradeAmountProperty;
-    transient private ObjectProperty<Fiat> tradeVolumeProperty;
+    transient private ObjectProperty<Monetary> tradeVolumeProperty;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -387,9 +387,9 @@ public abstract class Trade implements Tradable, Model {
     }
 
     @Nullable
-    public Fiat getTradeVolume() {
-        if (tradeAmount != null && getFiatTradePrice() != null)
-            return new ExchangeRate(getFiatTradePrice()).coinToFiat(tradeAmount);
+    public Monetary getTradeVolume() {
+        if (tradeAmount != null && getTradePrice() != null)
+            return getTradePrice().getVolume(tradeAmount);
         else
             return null;
     }
@@ -419,7 +419,7 @@ public abstract class Trade implements Tradable, Model {
         return tradeAmountProperty;
     }
 
-    public ReadOnlyObjectProperty<Fiat> tradeVolumeProperty() {
+    public ReadOnlyObjectProperty<Monetary> tradeVolumeProperty() {
         return tradeVolumeProperty;
     }
 

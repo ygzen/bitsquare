@@ -70,7 +70,7 @@ public class SellerStep3View extends TradeStepView {
                 PaymentAccountContractData paymentAccountContractData = model.dataModel.getSellersPaymentAccountContractData();
                 String key = "confirmPayment" + trade.getId();
                 String message;
-                String tradeAmountWithCode = model.formatter.formatFiatWithCode(trade.getTradeVolume());
+                String tradeAmountWithCode = model.formatter.formatVolumeWithCode(trade.getTradeVolume());
                 String currencyName = CurrencyUtil.getNameByCode(trade.getOffer().getCurrencyCode());
                 if (paymentAccountContractData instanceof CryptoCurrencyAccountContractData) {
                     String address = ((CryptoCurrencyAccountContractData) paymentAccountContractData).getAddress();

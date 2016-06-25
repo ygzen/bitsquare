@@ -21,12 +21,15 @@ import com.google.inject.Inject;
 import io.bitsquare.gui.common.model.ActivatableViewModel;
 import io.bitsquare.gui.main.offer.offerbook.OfferBook;
 import io.bitsquare.gui.main.offer.offerbook.OfferBookListItem;
+import io.bitsquare.trade.AltcoinPrice;
+import io.bitsquare.trade.FiatPrice;
+import io.bitsquare.trade.Price;
 import io.bitsquare.trade.offer.Offer;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import org.bitcoinj.core.Coin;
-import org.bitcoinj.utils.Fiat;
+import org.bitcoinj.core.Monetary;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -102,11 +105,21 @@ class MarketsStatisticViewModel extends ActivatableViewModel {
                     })
                     .collect(Collectors.toList());
 
-            Fiat spread = null;
-            Fiat bestSellOfferPrice = sellOffers.isEmpty() ? null : sellOffers.get(0).getPriceAsFiat();
-            Fiat bestBuyOfferPrice = buyOffers.isEmpty() ? null : buyOffers.get(0).getPriceAsFiat();
-            if (bestBuyOfferPrice != null && bestSellOfferPrice != null)
-                spread = bestSellOfferPrice.subtract(bestBuyOfferPrice);
+            //TODO check
+            Monetary spread = null;
+            Price bestSellOfferPrice = sellOffers.isEmpty() ? null : sellOffers.get(0).getPrice();
+            Price bestBuyOfferPrice = buyOffers.isEmpty() ? null : buyOffers.get(0).getPrice();
+            if (bestBuyOfferPrice != null && bestSellOfferPrice != null) {
+                if (bestSellOfferPrice instanceof FiatPrice) {
+                    FiatPrice bestSellOfferFiatPrice = (FiatPrice) bestSellOfferPrice;
+                    FiatPrice bestBuyOfferFiatPrice = (FiatPrice) bestBuyOfferPrice;
+                    spread = bestSellOfferFiatPrice.fiat.subtract(bestBuyOfferFiatPrice.fiat);
+                } else if (bestSellOfferPrice instanceof AltcoinPrice) {
+                    AltcoinPrice bestSellOfferAltcoinPrice = (AltcoinPrice) bestSellOfferPrice;
+                    AltcoinPrice bestBuyOfferAltcoinPrice = (AltcoinPrice) bestBuyOfferPrice;
+                    spread = bestSellOfferAltcoinPrice.coin.subtract(bestBuyOfferAltcoinPrice.coin);
+                }
+            }
 
             Coin totalAmount = Coin.valueOf(offers.stream().mapToLong(offer -> offer.getAmount().getValue()).sum());
             marketStatisticItems.add(new MarketStatisticItem(currencyCode, offers.size(), spread, totalAmount));

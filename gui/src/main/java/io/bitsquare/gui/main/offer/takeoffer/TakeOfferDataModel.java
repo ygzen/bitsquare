@@ -34,6 +34,7 @@ import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.locale.TradeCurrency;
 import io.bitsquare.payment.PaymentAccount;
 import io.bitsquare.payment.PaymentMethod;
+import io.bitsquare.trade.Price;
 import io.bitsquare.trade.TradeManager;
 import io.bitsquare.trade.handlers.TradeResultHandler;
 import io.bitsquare.trade.offer.Offer;
@@ -43,9 +44,8 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Monetary;
 import org.bitcoinj.core.Transaction;
-import org.bitcoinj.utils.ExchangeRate;
-import org.bitcoinj.utils.Fiat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +81,7 @@ class TakeOfferDataModel extends ActivatableDataModel {
     // final BooleanProperty isFeeFromFundingTxSufficient = new SimpleBooleanProperty();
     // final BooleanProperty isMainNet = new SimpleBooleanProperty();
     final ObjectProperty<Coin> amountAsCoin = new SimpleObjectProperty<>();
-    final ObjectProperty<Fiat> volumeAsFiat = new SimpleObjectProperty<>();
+    final ObjectProperty<Monetary> volume = new SimpleObjectProperty<>();
     final ObjectProperty<Coin> totalToPayAsCoin = new SimpleObjectProperty<>();
     final ObjectProperty<Coin> balance = new SimpleObjectProperty<>();
     final ObjectProperty<Coin> missingCoin = new SimpleObjectProperty<>(Coin.ZERO);
@@ -92,7 +92,7 @@ class TakeOfferDataModel extends ActivatableDataModel {
     boolean useSavingsWallet;
     Coin totalAvailableBalance;
     private Notification walletFundedNotification;
-    Fiat tradePrice;
+    Price tradePrice;
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ class TakeOfferDataModel extends ActivatableDataModel {
     // called before activate
     void initWithData(Offer offer) {
         this.offer = offer;
-        tradePrice = offer.getPriceAsFiat();
+        tradePrice = offer.getPrice();
         addressEntry = walletService.getOrCreateAddressEntry(offer.getId(), AddressEntry.Context.OFFER_FUNDING);
         checkNotNull(addressEntry, "addressEntry must not be null");
 
@@ -229,7 +229,7 @@ class TakeOfferDataModel extends ActivatableDataModel {
     // have it persisted as well.
     void onTakeOffer(TradeResultHandler tradeResultHandler) {
         tradeManager.onTakeOffer(amountAsCoin.get(),
-                tradePrice.getValue(),
+                tradePrice.getPriceAsLong(),
                 totalToPayAsCoin.get().subtract(takerFeeAsCoin),
                 offer,
                 paymentAccount.getId(),
@@ -311,7 +311,7 @@ class TakeOfferDataModel extends ActivatableDataModel {
         if (tradePrice != null && offer != null &&
                 amountAsCoin.get() != null &&
                 !amountAsCoin.get().isZero()) {
-            volumeAsFiat.set(new ExchangeRate(tradePrice).coinToFiat(amountAsCoin.get()));
+            volume.set(tradePrice.getVolume(amountAsCoin.get()));
 
             updateBalance();
         }

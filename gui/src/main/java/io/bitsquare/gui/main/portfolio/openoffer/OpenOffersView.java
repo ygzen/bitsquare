@@ -26,6 +26,7 @@ import io.bitsquare.gui.main.funds.FundsView;
 import io.bitsquare.gui.main.funds.withdrawal.WithdrawalView;
 import io.bitsquare.gui.main.overlays.popups.Popup;
 import io.bitsquare.gui.main.overlays.windows.OfferDetailsWindow;
+import io.bitsquare.gui.util.GUIUtil;
 import io.bitsquare.trade.offer.OpenOffer;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.transformation.SortedList;
@@ -34,11 +35,9 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-import org.bitcoinj.core.Monetary;
 import org.bitcoinj.utils.Fiat;
 
 import javax.inject.Inject;
-import java.util.Comparator;
 
 @FxmlView
 public class OpenOffersView extends ActivatableViewAndModel<VBox, OpenOffersViewModel> {
@@ -80,18 +79,7 @@ public class OpenOffersView extends ActivatableViewAndModel<VBox, OpenOffersView
             Fiat price2 = o2.getOffer().getPriceAsFiat();
             return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
         });
-        final Comparator<OpenOfferListItem> comparator = (o1, o2) -> {
-            Monetary offerVolume1 = o1.getOffer().getOfferVolume();
-            Monetary offerVolume2 = o2.getOffer().getOfferVolume();
-            if (offerVolume1 instanceof Comparable && offerVolume2 instanceof Comparable) {
-                Comparable volume1 = (Comparable) offerVolume1;
-                Comparable volume2 = (Comparable) offerVolume2;
-                return volume1.compareTo(volume2);
-            } else {
-                return 0;
-            }
-        };
-        volumeColumn.setComparator(comparator);
+        volumeColumn.setComparator((o1, o2) -> GUIUtil.compareOfferVolumes(o1.getOffer(), o2.getOffer()));
         dateColumn.setComparator((o1, o2) -> o1.getOffer().getDate().compareTo(o2.getOffer().getDate()));
 
         dateColumn.setSortType(TableColumn.SortType.DESCENDING);

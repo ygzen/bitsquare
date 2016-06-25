@@ -24,6 +24,7 @@ import io.bitsquare.gui.components.PeerInfoIcon;
 import io.bitsquare.gui.main.overlays.windows.OfferDetailsWindow;
 import io.bitsquare.gui.main.overlays.windows.TradeDetailsWindow;
 import io.bitsquare.gui.util.BSFormatter;
+import io.bitsquare.gui.util.GUIUtil;
 import io.bitsquare.p2p.NodeAddress;
 import io.bitsquare.trade.Tradable;
 import io.bitsquare.trade.Trade;
@@ -94,9 +95,7 @@ public class ClosedTradesView extends ActivatableViewAndModel<VBox, ClosedTrades
         });
         volumeColumn.setComparator((o1, o2) -> {
             if (o1.getTradable() instanceof Trade && o2.getTradable() instanceof Trade) {
-                Fiat tradeVolume1 = ((Trade) o1.getTradable()).getTradeVolume();
-                Fiat tradeVolume2 = ((Trade) o2.getTradable()).getTradeVolume();
-                return tradeVolume1 != null && tradeVolume2 != null ? tradeVolume1.compareTo(tradeVolume2) : 0;
+                return GUIUtil.compareVolumes(((Trade) o1.getTradable()).getTradeVolume(), ((Trade) o2.getTradable()).getTradeVolume());
             } else
                 return 0;
         });

@@ -88,7 +88,7 @@ public class MarketsStatisticsView extends ActivatableViewAndModel<GridPane, Mar
         currencyColumn.setComparator((o1, o2) -> CurrencyUtil.getNameByCode(o1.currencyCode).compareTo(CurrencyUtil.getNameByCode(o2.currencyCode)));
         numberOfOffersColumn.setComparator((o1, o2) -> Integer.valueOf(o1.numberOfOffers).compareTo(o2.numberOfOffers));
         totalAmountColumn.setComparator((o1, o2) -> o1.totalAmount.compareTo(o2.totalAmount));
-        spreadColumn.setComparator((o1, o2) -> o1.spread != null && o2.spread != null ? formatter.formatFiatWithCode(o1.spread).compareTo(formatter.formatFiatWithCode(o2.spread)) : 0);
+        spreadColumn.setComparator((o1, o2) -> o1.spread != null && o2.spread != null ? formatter.formatVolumeWithCode(o1.spread).compareTo(formatter.formatVolumeWithCode(o2.spread)) : 0);
 
         numberOfOffersColumn.setSortType(TableColumn.SortType.DESCENDING);
         tableView.getSortOrder().add(numberOfOffersColumn);
@@ -223,7 +223,7 @@ public class MarketsStatisticsView extends ActivatableViewAndModel<GridPane, Mar
                                 super.updateItem(item, empty);
                                 if (item != null && !empty) {
                                     if (item.spread != null)
-                                        setText(formatter.formatFiatWithCode(item.spread));
+                                        setText(formatter.formatVolumeWithCode(item.spread));
                                     else
                                         setText("-");
                                 } else {

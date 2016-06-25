@@ -19,10 +19,12 @@ package io.bitsquare.gui.util;
 
 import io.bitsquare.app.DevFlags;
 import io.bitsquare.gui.main.overlays.popups.Popup;
+import io.bitsquare.trade.offer.Offer;
 import io.bitsquare.user.Preferences;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollBar;
+import org.bitcoinj.core.Monetary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +55,20 @@ public class GUIUtil {
                     .show();
         } else {
             runnable.run();
+        }
+    }
+
+    public static int compareOfferVolumes(Offer offer1, Offer offer2) {
+        return compareVolumes(offer1.getOfferVolume(), offer2.getOfferVolume());
+    }
+
+    public static int compareVolumes(Monetary offerVolume1, Monetary offerVolume2) {
+        if (offerVolume1 instanceof Comparable && offerVolume2 instanceof Comparable) {
+            Comparable volume1 = (Comparable) offerVolume1;
+            Comparable volume2 = (Comparable) offerVolume2;
+            return volume1.compareTo(volume2);
+        } else {
+            return 0;
         }
     }
 }

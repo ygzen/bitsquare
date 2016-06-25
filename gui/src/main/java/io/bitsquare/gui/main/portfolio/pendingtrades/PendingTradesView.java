@@ -25,6 +25,7 @@ import io.bitsquare.gui.components.PeerInfoIcon;
 import io.bitsquare.gui.main.overlays.popups.Popup;
 import io.bitsquare.gui.main.overlays.windows.TradeDetailsWindow;
 import io.bitsquare.gui.util.BSFormatter;
+import io.bitsquare.gui.util.GUIUtil;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.transformation.SortedList;
 import javafx.event.EventHandler;
@@ -94,7 +95,7 @@ public class PendingTradesView extends ActivatableViewAndModel<VBox, PendingTrad
 
         idColumn.setComparator((o1, o2) -> o1.getTrade().getId().compareTo(o2.getTrade().getId()));
         dateColumn.setComparator((o1, o2) -> o1.getTrade().getDate().compareTo(o2.getTrade().getDate()));
-        tradeVolumeColumn.setComparator((o1, o2) -> o1.getTrade().getTradeVolume().compareTo(o2.getTrade().getTradeVolume()));
+        tradeVolumeColumn.setComparator((o1, o2) -> GUIUtil.compareVolumes(o1.getTrade().getTradeVolume(), o2.getTrade().getTradeVolume()));
         tradeAmountColumn.setComparator((o1, o2) -> o1.getTrade().getTradeAmount().compareTo(o2.getTrade().getTradeAmount()));
         priceColumn.setComparator((o1, o2) -> o1.getPrice().compareTo(o2.getPrice()));
         paymentMethodColumn.setComparator((o1, o2) -> o1.getTrade().getOffer().getPaymentMethod().getId().compareTo(o2.getTrade().getOffer().getPaymentMethod().getId()));
@@ -381,7 +382,7 @@ public class PendingTradesView extends ActivatableViewAndModel<VBox, PendingTrad
                             public void updateItem(final PendingTradesListItem item, boolean empty) {
                                 super.updateItem(item, empty);
                                 if (item != null && !empty)
-                                    setText(formatter.formatFiatWithCode(item.getTrade().getTradeVolume()));
+                                    setText(formatter.formatVolumeWithCode(item.getTrade().getTradeVolume()));
                                 else
                                     setText(null);
                             }

@@ -34,6 +34,7 @@ import io.bitsquare.gui.main.offer.OfferView;
 import io.bitsquare.gui.main.overlays.popups.Popup;
 import io.bitsquare.gui.main.overlays.windows.OfferDetailsWindow;
 import io.bitsquare.gui.util.BSFormatter;
+import io.bitsquare.gui.util.GUIUtil;
 import io.bitsquare.gui.util.Layout;
 import io.bitsquare.locale.BSResources;
 import io.bitsquare.locale.CryptoCurrency;
@@ -59,7 +60,6 @@ import org.bitcoinj.core.Monetary;
 import org.bitcoinj.utils.Fiat;
 
 import javax.inject.Inject;
-import java.util.Comparator;
 
 import static io.bitsquare.gui.util.FormBuilder.*;
 import static javafx.beans.binding.Bindings.createStringBinding;
@@ -181,18 +181,7 @@ public class OfferBookView extends ActivatableViewAndModel<GridPane, OfferBookVi
             return price1 != null && price2 != null ? price1.compareTo(price2) : 0;
         });
         amountColumn.setComparator((o1, o2) -> o1.getOffer().getAmount().compareTo(o2.getOffer().getAmount()));
-        final Comparator<OfferBookListItem> comparator = (o1, o2) -> {
-            Monetary offerVolume1 = o1.getOffer().getOfferVolume();
-            Monetary offerVolume2 = o2.getOffer().getOfferVolume();
-            if (offerVolume1 instanceof Comparable && offerVolume2 instanceof Comparable) {
-                Comparable volume1 = (Comparable) offerVolume1;
-                Comparable volume2 = (Comparable) offerVolume2;
-                return volume1.compareTo(volume2);
-            } else {
-                return 0;
-            }
-        };
-        volumeColumn.setComparator(comparator);
+        volumeColumn.setComparator((o1, o2) -> GUIUtil.compareOfferVolumes(o1.getOffer(), o2.getOffer()));
         paymentMethodColumn.setComparator((o1, o2) -> o1.getOffer().getPaymentMethod().compareTo(o2.getOffer().getPaymentMethod()));
         avatarColumn.setComparator((o1, o2) -> o1.getOffer().getOwnerNodeAddress().hostName.compareTo(o2.getOffer().getOwnerNodeAddress().hostName));
 
@@ -214,6 +203,17 @@ public class OfferBookView extends ActivatableViewAndModel<GridPane, OfferBookVi
         GridPane.setHalignment(createOfferButton, HPos.RIGHT);
         GridPane.setVgrow(createOfferButton, Priority.NEVER);
         GridPane.setValignment(createOfferButton, VPos.TOP);
+    }
+
+    private int compareVolumes(Monetary offerVolume1, Offer offer2) {
+        Monetary offerVolume2 = offer2.getOfferVolume();
+        if (offerVolume1 instanceof Comparable && offerVolume2 instanceof Comparable) {
+            Comparable volume1 = (Comparable) offerVolume1;
+            Comparable volume2 = (Comparable) offerVolume2;
+            return volume1.compareTo(volume2);
+        } else {
+            return 0;
+        }
     }
 
     @Override

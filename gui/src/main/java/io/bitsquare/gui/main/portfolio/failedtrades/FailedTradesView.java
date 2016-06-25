@@ -21,12 +21,14 @@ import io.bitsquare.gui.common.view.ActivatableViewAndModel;
 import io.bitsquare.gui.common.view.FxmlView;
 import io.bitsquare.gui.components.HyperlinkWithIcon;
 import io.bitsquare.gui.main.overlays.windows.TradeDetailsWindow;
+import io.bitsquare.gui.util.GUIUtil;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
+import org.bitcoinj.core.Coin;
 
 import javax.inject.Inject;
 
@@ -63,13 +65,16 @@ public class FailedTradesView extends ActivatableViewAndModel<VBox, FailedTrades
         tradeIdColumn.setComparator((o1, o2) -> o1.getTrade().getId().compareTo(o2.getTrade().getId()));
         dateColumn.setComparator((o1, o2) -> o1.getTrade().getDate().compareTo(o2.getTrade().getDate()));
         priceColumn.setComparator((o1, o2) -> o1.getTrade().getFiatTradePrice().compareTo(o2.getTrade().getFiatTradePrice()));
-        volumeColumn.setComparator((o1, o2) -> o1.getTrade().getTradeVolume().compareTo(o2.getTrade().getTradeVolume()));
-        amountColumn.setComparator((o1, o2) -> o1.getTrade().getTradeAmount().compareTo(o2.getTrade().getTradeAmount()));
+        volumeColumn.setComparator((o1, o2) -> GUIUtil.compareVolumes(o1.getTrade().getTradeVolume(), o2.getTrade().getTradeVolume()));
+        amountColumn.setComparator((o1, o2) -> {
+            final Coin tradeAmount1 = o1.getTrade().getTradeAmount();
+            final Coin tradeAmount2 = o2.getTrade().getTradeAmount();
+            return tradeAmount1 != null && tradeAmount2 != null ? tradeAmount1.compareTo(tradeAmount2) : 0;
+        });
         stateColumn.setComparator((o1, o2) -> model.getState(o1).compareTo(model.getState(o2)));
 
         dateColumn.setSortType(TableColumn.SortType.DESCENDING);
         tableView.getSortOrder().add(dateColumn);
-
     }
 
     @Override

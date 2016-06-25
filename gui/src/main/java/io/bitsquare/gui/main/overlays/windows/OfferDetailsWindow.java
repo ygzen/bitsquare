@@ -46,7 +46,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import org.bitcoinj.core.Coin;
-import org.bitcoinj.utils.Fiat;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +66,7 @@ public class OfferDetailsWindow extends Overlay<OfferDetailsWindow> {
     private final Navigation navigation;
     private Offer offer;
     private Coin tradeAmount;
-    private Fiat tradePrice;
+    private Price tradePrice;
     private Optional<Runnable> placeOfferHandlerOptional = Optional.empty();
     private Optional<Runnable> takeOfferHandlerOptional = Optional.empty();
     private StaticProgressIndicator spinner;
@@ -87,7 +86,7 @@ public class OfferDetailsWindow extends Overlay<OfferDetailsWindow> {
         type = Type.Confirmation;
     }
 
-    public void show(Offer offer, Coin tradeAmount, Fiat tradePrice) {
+    public void show(Offer offer, Coin tradeAmount, Price tradePrice) {
         this.offer = offer;
         this.tradeAmount = tradeAmount;
         this.tradePrice = tradePrice;
@@ -185,7 +184,7 @@ public class OfferDetailsWindow extends Overlay<OfferDetailsWindow> {
         }
 
         if (takeOfferHandlerOptional.isPresent()) {
-            addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatFiat(tradePrice) + " " + offer.getCurrencyCode() + "/" + "BTC");
+            addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceWithCode(tradePrice));
         } else {
             final Price price = offer.getPrice();
             if (offer.getUseMarketBasedPrice()) {

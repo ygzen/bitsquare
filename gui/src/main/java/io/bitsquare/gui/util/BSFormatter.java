@@ -285,30 +285,16 @@ public class BSFormatter {
     }
 
 
-    //TODO fiat and altcoin shoul dbe private and access by price/volume instead
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Fiat
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    public String formatFiat(Fiat fiat) {
+    private String formatFiat(Fiat fiat) {
         if (fiat != null) {
             try {
                 return fiatFormat.noCode().format(fiat).toString();
             } catch (Throwable t) {
                 log.warn("Exception at formatFiat: " + t.toString());
-                return "N/A " + fiat.getCurrencyCode();
-            }
-        } else {
-            return "N/A";
-        }
-    }
-
-    public String formatFiatWithCode(Fiat fiat) {
-        if (fiat != null) {
-            try {
-                return fiatFormat.noCode().format(fiat).toString() + " " + fiat.getCurrencyCode();
-            } catch (Throwable t) {
-                log.warn("Exception at formatFiatWithCode: " + t.toString());
                 return "N/A " + fiat.getCurrencyCode();
             }
         } else {
@@ -354,7 +340,7 @@ public class BSFormatter {
     // Altcoin
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    public String formatAltcoin(Altcoin altcoin) {
+    private String formatAltcoin(Altcoin altcoin) {
         if (altcoin != null) {
             try {
                 return altcoin.toPlainString();
@@ -381,18 +367,7 @@ public class BSFormatter {
         }
     }
 
-
-    public String formatMarketPrice(double price, String currencyCode) {
-        return formatMarketPrice(price, CurrencyUtil.isCryptoCurrency(currencyCode) ? 8 : 3);
-    }
-
-    public String formatMarketPrice(double price, int decimals) {
-        DecimalFormat df = new DecimalFormat("#.#");
-        df.setMaximumFractionDigits(decimals);
-        return df.format(price);
-    }
-
-    public Altcoin parseToAltcoinWithDecimals(String input, String currencyCode, int decPlaces) {
+    private Altcoin parseToAltcoinWithDecimals(String input, String currencyCode, int decPlaces) {
         if (input != null && input.length() > 0) {
             try {
                 return parseToAltcoin(new BigDecimal(cleanInput(input)).setScale(decPlaces, BigDecimal.ROUND_HALF_UP).toString(), currencyCode);
@@ -405,7 +380,7 @@ public class BSFormatter {
         return Altcoin.valueOf(currencyCode, 0);
     }
 
-    public boolean hasAltcoinValidDecimals(String input, String currencyCode) {
+    private boolean hasAltcoinValidDecimals(String input, String currencyCode) {
         return parseToFiat(input, currencyCode).equals(parseToAltcoinWithDecimals(input, currencyCode, 4));
     }
 
@@ -414,6 +389,17 @@ public class BSFormatter {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
 
+    public String formatMarketPrice(double price, String currencyCode) {
+        return formatMarketPrice(price, CurrencyUtil.isCryptoCurrency(currencyCode) ? 8 : 4);
+    }
+
+    public String formatMarketPrice(double price, int decimals) {
+        DecimalFormat df = new DecimalFormat("#.#");
+        df.setMaximumFractionDigits(decimals);
+        return df.format(price);
+    }
+    
+    
     public String getDirection(Offer.Direction direction) {
         return getDirection(direction, false) + " bitcoin";
     }

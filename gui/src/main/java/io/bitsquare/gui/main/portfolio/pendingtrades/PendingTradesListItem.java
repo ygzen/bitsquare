@@ -21,7 +21,7 @@ import io.bitsquare.trade.Price;
 import io.bitsquare.trade.Trade;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import org.bitcoinj.core.Coin;
-import org.bitcoinj.utils.Fiat;
+import org.bitcoinj.core.Monetary;
 
 /**
  * We could remove that wrapper if it is not needed for additional UI only fields.
@@ -42,7 +42,7 @@ public class PendingTradesListItem {
         return trade.tradeAmountProperty();
     }
 
-    public ReadOnlyObjectProperty<Fiat> tradeVolumeProperty() {
+    public ReadOnlyObjectProperty<Monetary> tradeVolumeProperty() {
         return trade.tradeVolumeProperty();
     }
 

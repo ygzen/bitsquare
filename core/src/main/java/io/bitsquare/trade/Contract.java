@@ -25,6 +25,7 @@ import io.bitsquare.p2p.NodeAddress;
 import io.bitsquare.payment.PaymentAccountContractData;
 import io.bitsquare.trade.offer.Offer;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.core.Monetary;
 import org.bitcoinj.utils.Fiat;
 
 import javax.annotation.concurrent.Immutable;
@@ -158,8 +159,8 @@ public final class Contract implements Payload {
         return Coin.valueOf(tradeAmount);
     }
 
-    public Fiat getTradePrice() {
-        return Fiat.valueOf(offer.getCurrencyCode(), tradePrice);
+    public Price getTradePrice() {
+        return PriceFactory.getPriceFromLong(offer.getCurrencyCode(), tradePrice);
     }
 
     public NodeAddress getBuyerNodeAddress() {
@@ -169,6 +170,10 @@ public final class Contract implements Payload {
 
     public NodeAddress getSellerNodeAddress() {
         return sellerNodeAddress;
+    }
+
+    public Monetary getVolume() {
+        return getTradePrice().getVolume(getTradeAmount());
     }
 
     @Override
