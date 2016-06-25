@@ -113,8 +113,7 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
     private ChangeListener<Boolean> minAmountFocusedListener;
     private ChangeListener<Boolean> priceFocusedListener, priceAsPercentageFocusedListener;
     private ChangeListener<Boolean> volumeFocusedListener;
-    private ChangeListener<Boolean> showWarningInvalidBtcDecimalPlacesListener;
-    private ChangeListener<Boolean> showWarningInvalidFiatDecimalPlacesPlacesListener;
+    private ChangeListener<Boolean> showWarningInvalidDecimalPlacesAmountListener, showWarningInvalidDecimalPlacesPriceListener, showWarningInvalidDecimalPlacesVolumeListener;
     private ChangeListener<Boolean> showWarningAdjustedVolumeListener;
     private ChangeListener<String> errorMessageListener;
     private ChangeListener<Boolean> placeOfferCompletedListener;
@@ -591,18 +590,25 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
             model.onFocusOutVolumeTextField(oldValue, newValue, volumeTextField.getText());
             volumeTextField.setText(model.volume.get());
         };
-        showWarningInvalidBtcDecimalPlacesListener = (o, oldValue, newValue) -> {
+        showWarningInvalidDecimalPlacesAmountListener = (o, oldValue, newValue) -> {
             if (newValue) {
-                new Popup().warning(BSResources.get("createOffer.amountPriceBox.warning.invalidBtcDecimalPlaces")).show();
-                model.showWarningInvalidBtcDecimalPlaces.set(false);
+                new Popup().warning(BSResources.get("createOffer.amountPriceBox.warning.invalidDecimalPlaces", 4)).show();
+                model.showWarningInvalidDecimalPlacesAmount.set(false);
             }
         };
-        showWarningInvalidFiatDecimalPlacesPlacesListener = (o, oldValue, newValue) -> {
+        showWarningInvalidDecimalPlacesPriceListener = (o, oldValue, newValue) -> {
             if (newValue) {
-                new Popup().warning(BSResources.get("createOffer.amountPriceBox.warning.invalidFiatDecimalPlaces")).show();
-                model.showWarningInvalidFiatDecimalPlaces.set(false);
+                new Popup().warning(BSResources.get("createOffer.amountPriceBox.warning.invalidDecimalPlaces", model.dataModel.isAltcoin() ? 8 : 4)).show();
+                model.showWarningInvalidDecimalPlacesPrice.set(false);
             }
         };
+        showWarningInvalidDecimalPlacesVolumeListener = (o, oldValue, newValue) -> {
+            if (newValue) {
+                new Popup().warning(BSResources.get("createOffer.amountPriceBox.warning.invalidDecimalPlaces", model.dataModel.isAltcoin() ? 4 : 2)).show();
+                model.showWarningInvalidDecimalPlacesVolume.set(false);
+            }
+        };
+
         showWarningAdjustedVolumeListener = (o, oldValue, newValue) -> {
             if (newValue) {
                 new Popup().warning(BSResources.get("createOffer.amountPriceBox.warning.adjustedVolume")).show();
@@ -688,8 +694,9 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
         volumeTextField.focusedProperty().addListener(volumeFocusedListener);
 
         // warnings
-        model.showWarningInvalidBtcDecimalPlaces.addListener(showWarningInvalidBtcDecimalPlacesListener);
-        model.showWarningInvalidFiatDecimalPlaces.addListener(showWarningInvalidFiatDecimalPlacesPlacesListener);
+        model.showWarningInvalidDecimalPlacesAmount.addListener(showWarningInvalidDecimalPlacesAmountListener);
+        model.showWarningInvalidDecimalPlacesPrice.addListener(showWarningInvalidDecimalPlacesPriceListener);
+        model.showWarningInvalidDecimalPlacesVolume.addListener(showWarningInvalidDecimalPlacesVolumeListener);
         model.showWarningAdjustedVolume.addListener(showWarningAdjustedVolumeListener);
         model.errorMessage.addListener(errorMessageListener);
         // model.dataModel.feeFromFundingTxProperty.addListener(feeFromFundingTxListener);
@@ -712,8 +719,8 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
         volumeTextField.focusedProperty().removeListener(volumeFocusedListener);
 
         // warnings
-        model.showWarningInvalidBtcDecimalPlaces.removeListener(showWarningInvalidBtcDecimalPlacesListener);
-        model.showWarningInvalidFiatDecimalPlaces.removeListener(showWarningInvalidFiatDecimalPlacesPlacesListener);
+        model.showWarningInvalidDecimalPlacesAmount.removeListener(showWarningInvalidDecimalPlacesAmountListener);
+        model.showWarningInvalidDecimalPlacesPrice.removeListener(showWarningInvalidDecimalPlacesPriceListener);
         model.showWarningAdjustedVolume.removeListener(showWarningAdjustedVolumeListener);
         model.errorMessage.removeListener(errorMessageListener);
         // model.dataModel.feeFromFundingTxProperty.removeListener(feeFromFundingTxListener);

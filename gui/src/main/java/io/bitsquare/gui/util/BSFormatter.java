@@ -60,23 +60,12 @@ public class BSFormatter {
     // no way to remove grouping separator). It seems to be not optimal for user input formatting.
     private MonetaryFormat coinFormat = MonetaryFormat.BTC.minDecimals(2).repeatOptionalDecimals(1, 6);
 
-    //  private String currencyCode = CurrencyUtil.getDefaultFiatCurrencyAsCode();
-
     // format is like: 1,00  never more then 2 decimals
     private final MonetaryFormat fiatFormat = MonetaryFormat.FIAT.repeatOptionalDecimals(0, 0);
 
 
     @Inject
     public BSFormatter() {
-      /*  if (user.tradeCurrencyProperty().get() == null)
-            setFiatCurrencyCode(CurrencyUtil.getDefaultFiatCurrencyAsCode());
-        else if (user.tradeCurrencyProperty().get() != null)
-            setFiatCurrencyCode(user.tradeCurrencyProperty().get().getCode());
-
-        user.tradeCurrencyProperty().addListener((ov, oldValue, newValue) -> {
-            if (newValue != null)
-                setFiatCurrencyCode(newValue.getCode());
-        });*/
     }
 
 
@@ -91,9 +80,6 @@ public class BSFormatter {
         scale = useMilliBit ? 0 : 3;
     }
 
-    /**
-     * Note that setting the locale does not set the currency as it might be independent.
-     */
     public void setLocale(Locale locale) {
         this.locale = locale;
     }
@@ -104,11 +90,6 @@ public class BSFormatter {
         else
             return MonetaryFormat.BTC.minDecimals(2).repeatOptionalDecimals(1, 6);
     }
-
-  /*  public void setFiatCurrencyCode(String currencyCode) {
-        this.currencyCode = currencyCode;
-        fiatFormat.code(0, currencyCode);
-    }*/
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -156,18 +137,10 @@ public class BSFormatter {
         }
     }
 
-    /**
-     * Converts to a coin with max. 4 decimal places. Last place gets rounded.
-     * 0.01234 -> 0.0123
-     * 0.01235 -> 0.0124
-     *
-     * @param input
-     * @return
-     */
     public Coin parseToBitcoinWith4Decimals(String input) {
         try {
             return Coin.valueOf(new BigDecimal(parseToBitcoin(cleanInput(input)).value).setScale(-scale - 1,
-                    BigDecimal.ROUND_HALF_UP).setScale(scale + 1).toBigInteger().longValue());
+                    BigDecimal.ROUND_HALF_UP).setScale(scale + 1, BigDecimal.ROUND_HALF_UP).toBigInteger().longValue());
         } catch (Throwable t) {
             if (input != null && !input.isEmpty())
                 log.warn("Exception at parseToCoinWith4Decimals: " + t.toString());
@@ -178,6 +151,16 @@ public class BSFormatter {
     public boolean hasBitcoinValidDecimals(String input) {
         return parseToBitcoin(input).equals(parseToBitcoinWith4Decimals(input));
     }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Amount
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    public String formatAmountWithMinAmount(Offer offer) {
+        return formatCoin(offer.getAmount()) + " (" + formatCoin(offer.getMinAmount()) + ")";
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Price
@@ -217,10 +200,7 @@ public class BSFormatter {
     }
 
     public boolean hasPriceValidDecimals(String input, String currencyCode) {
-        if (CurrencyUtil.isCryptoCurrency(currencyCode))
-            return parseToAltcoin(input, currencyCode).equals(parseToAltcoinWithDecimals(input, currencyCode, 8));
-        else
-            return parseToFiat(input, currencyCode).equals(parseToFiatWithDecimals(input, currencyCode, 4));
+        return getLimitedDecimals(input, 20).equals(cleanPriceString(input, currencyCode));
     }
 
     public String cleanPriceString(String input, String currencyCode) {
@@ -229,6 +209,16 @@ public class BSFormatter {
         else
             return getLimitedDecimals(input, 4);
     }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // MarketPrice
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    public String formatMarketPrice(double price, String currencyCode) {
+        return formatDoubleToString(price, CurrencyUtil.isCryptoCurrency(currencyCode) ? 8 : 4);
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume
@@ -284,6 +274,7 @@ public class BSFormatter {
             return getLimitedDecimals(input, 2);
     }
 
+
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Fiat
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -316,8 +307,8 @@ public class BSFormatter {
     }
 
     @VisibleForTesting
-    Fiat parseToFiatWithDecimals(String input, String currencyCode, int decPlaces) {
-        return parseToFiat(getLimitedDecimals(input, decPlaces), currencyCode);
+    Fiat parseToFiatWithDecimals(String input, String currencyCode, int digits) {
+        return parseToFiat(getLimitedDecimals(input, digits), currencyCode);
     }
 
     @VisibleForTesting
@@ -357,8 +348,8 @@ public class BSFormatter {
         }
     }
 
-    private Altcoin parseToAltcoinWithDecimals(String input, String currencyCode, int decPlaces) {
-        return parseToAltcoin(getLimitedDecimals(input, decPlaces), currencyCode);
+    private Altcoin parseToAltcoinWithDecimals(String input, String currencyCode, int digits) {
+        return parseToAltcoin(getLimitedDecimals(input, digits), currencyCode);
     }
 
     private boolean hasAltcoinValidDecimals(String input, String currencyCode) {
@@ -367,20 +358,42 @@ public class BSFormatter {
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
-    // Utils
+    // PercentagePrice
     ///////////////////////////////////////////////////////////////////////////////////////////
 
-    private String getLimitedDecimals(String input, int decPlaces) {
-        if (input != null && !input.isEmpty()) {
-            try {
-                return new BigDecimal(cleanInput(input)).setScale(decPlaces, BigDecimal.ROUND_HALF_UP).toString();
-            } catch (Throwable t) {
-                log.warn("Exception at parseToAltcoinWithDecimals: " + t.toString());
-                return "";
-            }
-        }
-        return "";
+    public String formatPercentagePrice(double value) {
+        return formatToPercentWithSymbol(value);
     }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Percentage
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    public String formatToPercent(double value) {
+        return formatDoubleToString(value * 100.0, 2);
+    }
+
+    public String formatToPercentWithSymbol(double value) {
+        return formatToPercent(value) + " %";
+    }
+
+    public double parsePercentStringToDouble(String percentString) throws NumberFormatException {
+        try {
+            String input = percentString.replace("%", "");
+            input = input.replace(",", ".");
+            input = cleanInput(input);
+            double value = Double.parseDouble(input);
+            return value / 100;
+        } catch (NumberFormatException e) {
+            throw e;
+        }
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Utils
+    ///////////////////////////////////////////////////////////////////////////////////////////
 
     public String getCurrencyPair(Monetary monetary) {
         return getCurrencyPair(monetary, "");
@@ -396,22 +409,62 @@ public class BSFormatter {
         return prefix + getCurrencyPair(code);
     }
 
-
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    // Other
-    ///////////////////////////////////////////////////////////////////////////////////////////
-
-
-    public String formatMarketPrice(double price, String currencyCode) {
-        return formatMarketPrice(price, CurrencyUtil.isCryptoCurrency(currencyCode) ? 8 : 4);
+    public String getCurrencyPair(String currencyCode) {
+        if (CurrencyUtil.isCryptoCurrency(currencyCode))
+            return "BTC/" + currencyCode;
+        else
+            return currencyCode + "/BTC";
     }
 
-    public String formatMarketPrice(double price, int decimals) {
-        DecimalFormat df = new DecimalFormat("#.#");
-        df.setMaximumFractionDigits(decimals);
-        return df.format(price);
+    private String getLimitedDecimals(String input, int digits) {
+        if (input != null && !input.isEmpty()) {
+            try {
+                return formatDoubleToString(new BigDecimal(cleanInput(cleanInput(input))).setScale(digits, BigDecimal.ROUND_HALF_UP).doubleValue(), digits);
+            } catch (Throwable t) {
+                log.warn("Exception at parseToAltcoinWithDecimals: " + t.toString());
+                return "";
+            }
+        }
+        return "";
     }
 
+    public String formatDoubleToString(double value, int digits) {
+        DecimalFormat decimalFormat = new DecimalFormat("0.#");
+        decimalFormat.setMaximumFractionDigits(digits);
+        decimalFormat.setGroupingUsed(false);
+        return decimalFormat.format(value).replace(",", ".");
+    }
+
+    public double parseNumberStringToDouble(String input) throws NumberFormatException {
+        try {
+            return Double.parseDouble(cleanInput(input));
+        } catch (NumberFormatException e) {
+            throw e;
+        }
+    }
+
+    public double roundDouble(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
+    }
+
+    private String cleanInput(String input) {
+        input = input.replace(",", ".");
+        input = input.replace(" ", "");
+        // don't use String.valueOf(Double.parseDouble(input)) as return value as it gives scientific
+        // notation (1.0E-6) which screw up coinFormat.parse
+        //noinspection ResultOfMethodCallIgnored
+        Double.parseDouble(input);
+        return input;
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Direction
+    ///////////////////////////////////////////////////////////////////////////////////////////
 
     public String getDirection(Offer.Direction direction) {
         return getDirection(direction, false) + " bitcoin";
@@ -425,17 +478,10 @@ public class BSFormatter {
         return result;
     }
 
-    public String formatAmountWithMinAmount(Offer offer) {
-        return formatCoin(offer.getAmount()) + " (" + formatCoin(offer.getMinAmount()) + ")";
-    }
 
-    public String arbitratorAddressesToString(List<NodeAddress> nodeAddresses) {
-        return nodeAddresses.stream().map(e -> e.getFullAddress()).collect(Collectors.joining(", "));
-    }
-
-    public String languageCodesToString(List<String> languageLocales) {
-        return languageLocales.stream().map(LanguageUtil::getDisplayName).collect(Collectors.joining(", "));
-    }
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Date
+    ///////////////////////////////////////////////////////////////////////////////////////////
 
     public String formatDateTime(Date date) {
         if (date != null) {
@@ -454,73 +500,6 @@ public class BSFormatter {
         } else {
             return "";
         }
-    }
-
-    public String formatToPercent(double value) {
-        return formatToPercent(value, 1);
-    }
-
-    public String formatToPercent(double value, int digits) {
-        DecimalFormat decimalFormat = (DecimalFormat) DecimalFormat.getInstance(locale);
-        decimalFormat.setMinimumFractionDigits(digits);
-        decimalFormat.setMaximumFractionDigits(digits);
-        decimalFormat.setGroupingUsed(false);
-        return decimalFormat.format(value * 100.0);
-    }
-
-    public String formatToNumberString(double value, int digits) {
-        DecimalFormat decimalFormat = (DecimalFormat) DecimalFormat.getInstance(locale);
-        decimalFormat.setMinimumFractionDigits(digits);
-        decimalFormat.setMaximumFractionDigits(digits);
-        decimalFormat.setGroupingUsed(false);
-        return decimalFormat.format(value).replace(",", ".");
-    }
-
-    public double parseNumberStringToDouble(String percentString) throws NumberFormatException {
-        try {
-            String input = percentString.replace(",", ".");
-            input = input.replace(" ", "");
-            return Double.parseDouble(input);
-        } catch (NumberFormatException e) {
-            throw e;
-        }
-    }
-
-    public String formatToPercentWithSymbol(double value) {
-        return formatToPercent(value) + " %";
-    }
-
-    public String formatPercentagePrice(double value) {
-        return formatToPercent(value, 2) + " %";
-    }
-
-    public double parsePercentStringToDouble(String percentString) throws NumberFormatException {
-        try {
-            String input = percentString.replace("%", "");
-            input = input.replace(",", ".");
-            input = input.replace(" ", "");
-            double value = Double.parseDouble(input);
-            return value / 100;
-        } catch (NumberFormatException e) {
-            throw e;
-        }
-    }
-
-    public double roundDouble(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-        long factor = (long) Math.pow(10, places);
-        value = value * factor;
-        long tmp = Math.round(value);
-        return (double) tmp / factor;
-    }
-
-    private String cleanInput(String input) {
-        input = input.replace(",", ".");
-        // don't use String.valueOf(Double.parseDouble(input)) as return value as it gives scientific
-        // notation (1.0E-6) which screw up coinFormat.parse
-        //noinspection ResultOfMethodCallIgnored
-        Double.parseDouble(input);
-        return input;
     }
 
     public String formatDurationAsWords(long durationMillis) {
@@ -578,6 +557,36 @@ public class BSFormatter {
     }
 
 
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Lists
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    public String arbitratorAddressesToString(List<NodeAddress> nodeAddresses) {
+        return nodeAddresses.stream().map(e -> e.getFullAddress()).collect(Collectors.joining(", "));
+    }
+
+    public String languageCodesToString(List<String> languageLocales) {
+        return languageLocales.stream().map(LanguageUtil::getDisplayName).collect(Collectors.joining(", "));
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    // Misc
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    public String formatBytes(long bytes) {
+        double kb = 1024;
+        double mb = kb * kb;
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        if (bytes < kb)
+            return bytes + " bytes";
+        else if (bytes < mb)
+            return decimalFormat.format(bytes / kb) + " KB";
+        else
+            return decimalFormat.format(bytes / mb) + " MB";
+    }
+
+
     public String booleanToYesNo(boolean value) {
         return value ? "Yes" : "No";
     }
@@ -627,22 +636,5 @@ public class BSFormatter {
             return isOfferer ? "Seller (offerer)" : "Buyer (taker)";
     }
 
-    public String formatBytes(long bytes) {
-        double kb = 1024;
-        double mb = kb * kb;
-        DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        if (bytes < kb)
-            return bytes + " bytes";
-        else if (bytes < mb)
-            return decimalFormat.format(bytes / kb) + " KB";
-        else
-            return decimalFormat.format(bytes / mb) + " MB";
-    }
 
-    public String getCurrencyPair(String currencyCode) {
-        if (CurrencyUtil.isCryptoCurrency(currencyCode))
-            return "BTC/" + currencyCode;
-        else
-            return currencyCode + "/BTC";
-    }
 }

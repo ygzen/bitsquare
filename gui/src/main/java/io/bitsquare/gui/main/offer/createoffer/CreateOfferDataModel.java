@@ -332,7 +332,7 @@ class CreateOfferDataModel extends ActivatableDataModel {
 
             Optional<TradeCurrency> tradeCurrencyOptional = preferences.getTradeCurrenciesAsObservable().stream().filter(e -> e.getCode().equals(code)).findAny();
             if (!tradeCurrencyOptional.isPresent()) {
-                if (CurrencyUtil.isCryptoCurrency(code)) {
+                if (isAltcoin()) {
                     CurrencyUtil.getCryptoCurrency(code).ifPresent(cryptoCurrency -> {
                         preferences.addCryptoCurrency(cryptoCurrency);
                     });
@@ -343,6 +343,10 @@ class CreateOfferDataModel extends ActivatableDataModel {
                 }
             }
         }
+    }
+
+    boolean isAltcoin() {
+        return CurrencyUtil.isCryptoCurrency(tradeCurrencyCode.get());
     }
 
     void fundFromSavingsWallet() {

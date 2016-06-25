@@ -34,7 +34,6 @@ import io.bitsquare.gui.main.settings.preferences.PreferencesView;
 import io.bitsquare.gui.util.BSFormatter;
 import io.bitsquare.gui.util.validation.*;
 import io.bitsquare.locale.BSResources;
-import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.locale.TradeCurrency;
 import io.bitsquare.p2p.P2PService;
 import io.bitsquare.payment.PaymentAccount;
@@ -97,8 +96,9 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
     final BooleanProperty cancelButtonDisabled = new SimpleBooleanProperty();
     final BooleanProperty isNextButtonDisabled = new SimpleBooleanProperty(true);
     final BooleanProperty showWarningAdjustedVolume = new SimpleBooleanProperty();
-    final BooleanProperty showWarningInvalidFiatDecimalPlaces = new SimpleBooleanProperty();
-    final BooleanProperty showWarningInvalidBtcDecimalPlaces = new SimpleBooleanProperty();
+    final BooleanProperty showWarningInvalidDecimalPlacesPrice = new SimpleBooleanProperty();
+    final BooleanProperty showWarningInvalidDecimalPlacesVolume = new SimpleBooleanProperty();
+    final BooleanProperty showWarningInvalidDecimalPlacesAmount = new SimpleBooleanProperty();
     final BooleanProperty placeOfferCompleted = new SimpleBooleanProperty();
     final BooleanProperty showPayFundsScreenDisplayed = new SimpleBooleanProperty();
     final BooleanProperty showTransactionPublishedScreen = new SimpleBooleanProperty();
@@ -262,7 +262,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
                             double priceAsDouble = formatter.parseNumberStringToDouble(price.get());
                             double relation = priceAsDouble / marketPriceAsDouble;
                             double marketPriceMargin = dataModel.getDirection() == Offer.Direction.BUY ? 1 - relation : relation - 1;
-                            priceAsPercentage.set(formatter.formatToPercent(marketPriceMargin, 2));
+                            priceAsPercentage.set(formatter.formatToPercent(marketPriceMargin));
                         } catch (NumberFormatException t) {
                             priceAsPercentage.set("");
                             new Popup().warning("Your input is not a valid number.")
@@ -293,7 +293,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
                                 double marketPriceAsDouble = marketPrice.getPrice(priceFeedType);
                                 double factor = direction == Offer.Direction.BUY ? 1 - marketPriceMargin : 1 + marketPriceMargin;
                                 double targetPrice = marketPriceAsDouble * factor;
-                                price.set(formatter.formatToNumberString(targetPrice, 8));
+                                price.set(formatter.formatDoubleToString(targetPrice, 8));
                                 setPriceToModel();
                                 calculateVolume();
                                 dataModel.calculateTotalToPay();
@@ -498,7 +498,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
             InputValidator.ValidationResult result = isBtcInputValid(amount.get());
             amountValidationResult.set(result);
             if (result.isValid) {
-                showWarningInvalidBtcDecimalPlaces.set(!formatter.hasBitcoinValidDecimals(userInput));
+                showWarningInvalidDecimalPlacesAmount.set(!formatter.hasBitcoinValidDecimals(userInput));
                 // only allow max 4 decimal places for btc values
                 setAmountToModel();
                 // reformat input
@@ -523,7 +523,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
             InputValidator.ValidationResult result = isBtcInputValid(minAmount.get());
             minAmountValidationResult.set(result);
             if (result.isValid) {
-                showWarningInvalidBtcDecimalPlaces.set(!formatter.hasBitcoinValidDecimals(userInput));
+                showWarningInvalidDecimalPlacesAmount.set(!formatter.hasBitcoinValidDecimals(userInput));
                 setMinAmountToModel();
                 minAmount.set(formatter.formatCoin(dataModel.minAmountAsCoin.get()));
 
@@ -546,7 +546,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
             boolean isValid = result.isValid;
             priceValidationResult.set(result);
             if (isValid) {
-                showWarningInvalidFiatDecimalPlaces.set(!formatter.hasPriceValidDecimals(userInput, dataModel.tradeCurrencyCode.get()));
+                showWarningInvalidDecimalPlacesPrice.set(!formatter.hasPriceValidDecimals(userInput, dataModel.tradeCurrencyCode.get()));
                 setPriceToModel();
                 price.set(formatter.formatPrice(dataModel.price.get()));
 
@@ -558,7 +558,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
     void onFocusOutPriceAsPercentageTextField(boolean oldValue, boolean newValue, String userInput) {
         inputIsMarketBasedPrice = !oldValue && newValue;
         if (oldValue && !newValue)
-            priceAsPercentage.set(formatter.formatToNumberString(dataModel.getMarketPriceMargin() * 100, 2));
+            priceAsPercentage.set(formatter.formatDoubleToString(dataModel.getMarketPriceMargin() * 100, 2));
     }
 
     void onFocusOutVolumeTextField(boolean oldValue, boolean newValue, String userInput) {
@@ -567,7 +567,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
             volumeValidationResult.set(result);
             if (result.isValid) {
                 final String currencyCode = dataModel.tradeCurrencyCode.get();
-                showWarningInvalidFiatDecimalPlaces.set(!formatter.hasVolumeValidDecimals(userInput, currencyCode));
+                showWarningInvalidDecimalPlacesVolume.set(!formatter.hasVolumeValidDecimals(userInput, currencyCode));
                 setVolumeToModel();
                 volume.set(formatter.formatVolume(dataModel.volume.get()));
 
@@ -740,7 +740,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
     }
 
     private InputValidator.ValidationResult isVolumeInputValid(String input) {
-        if (CurrencyUtil.isCryptoCurrency(tradeCurrencyCode.get()))
+        if (dataModel.isAltcoin())
             return altcoinValidator.validate(input);
         else
             return fiatValidator.validate(input);
