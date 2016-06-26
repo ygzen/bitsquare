@@ -39,10 +39,6 @@ public class AltcoinPrice implements Serializable, Price {
         return numeratorAsBitcoin.value;
     }
 
-    public long getInvertedPriceAsLong() {
-        return Coin.COIN.divide(numeratorAsBitcoin) * 10000;
-    }
-
     @Override
     public double getPriceAsDouble() {
         return (double) numeratorAsBitcoin.value / LongMath.pow(10, numeratorAsBitcoin.smallestUnitExponent());

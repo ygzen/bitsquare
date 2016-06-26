@@ -77,12 +77,6 @@ public class PriceTest {
         Coin btcPerEth = Coin.parseCoin("10.12345678");
         AltcoinPrice altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
         assertEquals(1012345678, altcoinPrice.getPriceAsLong());
-
-        btcPerEth = Coin.parseCoin("0.02");
-        altcoinPrice = new AltcoinPrice("ETH", btcPerEth);
-        log.error(btcPerEth.toPlainString());
-        log.error(btcPerEth.toFriendlyString());
-        assertEquals(50, altcoinPrice.getInvertedPriceAsLong());
     }
 
     @Test

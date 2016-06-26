@@ -37,7 +37,6 @@ import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.locale.TradeCurrency;
 import io.bitsquare.p2p.P2PService;
 import io.bitsquare.payment.*;
-import io.bitsquare.trade.AltcoinPrice;
 import io.bitsquare.trade.Price;
 import io.bitsquare.trade.handlers.TransactionResultHandler;
 import io.bitsquare.trade.offer.Offer;
@@ -265,11 +264,6 @@ class CreateOfferDataModel extends ActivatableDataModel {
     Offer createAndGetOffer() {
         final Price price = priceProperty.get();
         long priceAsLong = price != null && !usePercentagePrice.get() ? price.getPriceAsLong() : 0L;
-        log.error("priceAsLong 1 " + priceAsLong);
-        if (price instanceof AltcoinPrice)
-            priceAsLong = usePercentagePrice.get() ? 0 : ((AltcoinPrice) price).getInvertedPriceAsLong();
-
-        log.error("priceAsLong 2 " + priceAsLong);
         double marketPriceMarginParam = usePercentagePrice.get() ? percentagePrice : 0;
         long amount = this.amount.get() != null ? this.amount.get().getValue() : 0L;
         long minAmount = this.minAmount.get() != null ? this.minAmount.get().getValue() : 0L;
