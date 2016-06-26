@@ -170,17 +170,20 @@ public class OfferDetailsWindow extends Overlay<OfferDetailsWindow> {
         } else {
             addLabelTextField(gridPane, rowIndex, "Offer type:", formatter.getDirectionBothSides(direction), Layout.FIRST_ROW_DISTANCE);
         }
+        final String currencyCode = offer.getCurrencyCode();
         if (takeOfferHandlerOptional.isPresent()) {
             addLabelTextField(gridPane, ++rowIndex, "Bitcoin amount" + btcDirectionInfo, formatter.formatBitcoinWithCode(tradeAmount));
-            addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(offer.getCurrencyCode()) + " amount" + fiatDirectionInfo, formatter.formatVolumeWithCode(offer.getVolumeByAmount(tradeAmount)));
+            addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(currencyCode) + " amount" + fiatDirectionInfo,
+                    formatter.formatVolumeWithCodeAndLimitedDigits(offer.getVolumeByAmount(tradeAmount), currencyCode));
         } else {
             addLabelTextField(gridPane, ++rowIndex, "Bitcoin amount" + btcDirectionInfo, formatter.formatBitcoinWithCode(offer.getAmount()));
             addLabelTextField(gridPane, ++rowIndex, "Min. bitcoin amount:", formatter.formatBitcoinWithCode(offer.getMinAmount()));
-            String volume = formatter.formatVolumeWithCode(offer.getOfferVolume());
+
+            String volume = formatter.formatVolumeWithCodeAndLimitedDigits(offer.getOfferVolume(), currencyCode);
             String minVolume = "";
             if (!offer.getAmount().equals(offer.getMinAmount()))
-                minVolume = " (min. " + formatter.formatVolumeWithCode(offer.getMinOfferVolume()) + ")";
-            addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(offer.getCurrencyCode()) + " amount" + fiatDirectionInfo, volume + minVolume);
+                minVolume = " (min. " + formatter.formatVolumeWithCodeAndLimitedDigits(offer.getMinOfferVolume(), currencyCode) + ")";
+            addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(currencyCode) + " amount" + fiatDirectionInfo, volume + minVolume);
         }
 
         if (takeOfferHandlerOptional.isPresent()) {

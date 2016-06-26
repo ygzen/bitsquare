@@ -63,9 +63,11 @@ public class BSFormatter {
     // format is like: 1,00  never more then 2 decimals
     private final MonetaryFormat fiatFormat = MonetaryFormat.FIAT.repeatOptionalDecimals(0, 0);
 
+    public static BSFormatter INSTANCE;
 
     @Inject
     public BSFormatter() {
+        INSTANCE = this;
     }
 
 
@@ -283,7 +285,7 @@ public class BSFormatter {
         return formatVolume(monetary) + getCurrencyPair(monetary, " ");
     }
 
-    public String cleanVolumeString(String input, String currencyCode) {
+    private String cleanVolumeString(String input, String currencyCode) {
         if (CurrencyUtil.isCryptoCurrency(currencyCode))
             return getLimitedDecimals(input, 4);
         else
@@ -292,6 +294,10 @@ public class BSFormatter {
 
     public Monetary getRoundedVolumeWithLimitedDigits(Monetary volume, String currencyCode) {
         return parseToVolumeWithDecimals(cleanVolumeString(formatVolume(volume), currencyCode), currencyCode);
+    }
+
+    public String formatVolumeWithCodeAndLimitedDigits(Monetary volume, String currencyCode) {
+        return formatVolumeWithCode(getRoundedVolumeWithLimitedDigits(volume, currencyCode));
     }
 
 

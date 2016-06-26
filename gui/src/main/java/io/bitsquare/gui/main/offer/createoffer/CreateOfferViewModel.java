@@ -273,7 +273,6 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
                             new Popup().warning("Your input is not a valid number.")
                                     .show();
                         }
-                        isPriceInRange();
                     }
                 }
                 updateButtonDisableState();
@@ -326,7 +325,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
         try {
             if (!percentagePrice.isEmpty() && !percentagePrice.equals("-")) {
                 double percentagePriceAsDouble = formatter.parsePercentStringToDouble(percentagePrice);
-                if (Math.abs(percentagePriceAsDouble) > preferences.getMaxPriceDistanceInPercent()) {
+               /* if (Math.abs(percentagePriceAsDouble) > preferences.getMaxPriceDistanceInPercent()) {
                     dataModel.setPercentagePrice(0);
                     resetPrice();
                     new Popup().warning("The percentage you have entered is outside the max. allowed deviation from the market price.\n" +
@@ -335,25 +334,25 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
                             " and can be adjusted in the preferences.")
                             .show();
                     resetPrice();
-                } else {
-                    try {
-                        double priceAsDouble = Price.getPriceFromPercentagePrice(priceFeed,
-                                dataModel.tradeCurrencyCode.get(),
-                                dataModel.getDirection(),
-                                percentagePriceAsDouble);
-                        price.set(formatter.formatDoubleToString(priceAsDouble, 8));
+                } else {*/
+                try {
+                    double priceAsDouble = Price.getPriceFromPercentagePrice(priceFeed,
+                            dataModel.tradeCurrencyCode.get(),
+                            dataModel.getDirection(),
+                            percentagePriceAsDouble);
+                    price.set(formatter.formatDoubleToString(priceAsDouble, 8));
 
-                        dataModel.setPercentagePrice(percentagePriceAsDouble);
+                    dataModel.setPercentagePrice(percentagePriceAsDouble);
 
-                        setPriceToModel();
-                        calculateVolume();
-                        dataModel.calculateTotalToPay();
-                        updateButtonDisableState();
-                    } catch (MarketPriceNoAvailableException e) {
-                        new Popup().warning("There is no price feed available for that currency. You cannot use percent based price.")
-                                .show();
-                    }
+                    setPriceToModel();
+                    calculateVolume();
+                    dataModel.calculateTotalToPay();
+                    updateButtonDisableState();
+                } catch (MarketPriceNoAvailableException e) {
+                    new Popup().warning("There is no price feed available for that currency. You cannot use percent based price.")
+                            .show();
                 }
+                //}
             } else {
                 resetPrice();
                 dataModel.setPercentagePrice(0);
@@ -372,6 +371,8 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
             price.set("");
             dataModel.setPrice(null);
             dataModel.setPercentagePrice(0);
+            volume.set("");
+            dataModel.volume.set(null);
         });
     }
 
@@ -584,6 +585,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
 
                 calculateVolume();
             }
+            isPriceInRange();
         }
     }
 
@@ -591,6 +593,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
         inputIsMarketBasedPrice = !oldValue && newValue;
         if (oldValue && !newValue) {
             percentagePrice.set(formatter.formatToPercent(dataModel.getPercentagePrice()));
+            isPriceInRange();
         }
     }
 

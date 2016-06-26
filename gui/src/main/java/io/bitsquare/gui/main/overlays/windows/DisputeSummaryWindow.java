@@ -243,7 +243,7 @@ public class DisputeSummaryWindow extends Overlay<DisputeSummaryWindow> {
         addLabelTextField(gridPane, ++rowIndex, "Traders role:", role);
         addLabelTextField(gridPane, ++rowIndex, "Trade amount:", formatter.formatBitcoinWithCode(contract.getTradeAmount()));
         addLabelTextField(gridPane, ++rowIndex, "Trade price:", formatter.formatPriceWithCode(contract.getTradePrice()));
-        addLabelTextField(gridPane, ++rowIndex, "Trade volume:", formatter.formatVolumeWithCode(contract.getVolume()));
+        addLabelTextField(gridPane, ++rowIndex, "Trade volume:", formatter.formatVolumeWithCodeAndLimitedDigits(contract.getVolume(), contract.getTradePrice().getCurrencyCode()));
     }
 
     private void addCheckboxes() {

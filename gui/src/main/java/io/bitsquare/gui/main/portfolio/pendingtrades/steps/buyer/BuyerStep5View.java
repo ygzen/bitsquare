@@ -113,10 +113,10 @@ public class BuyerStep5View extends TradeStepView {
     @Override
     protected void addContent() {
         addTitledGroupBg(gridPane, gridRow, 4, "Summary of completed trade ", 0);
-        Tuple2<Label, TextField> btcTradeAmountPair = addLabelTextField(gridPane, gridRow, getBtcTradeAmountLabel(), model.getTradeVolume(), Layout.FIRST_ROW_DISTANCE);
+        Tuple2<Label, TextField> btcTradeAmountPair = addLabelTextField(gridPane, gridRow, getBtcTradeAmountLabel(), model.getTradeAmount(), Layout.FIRST_ROW_DISTANCE);
         btcTradeAmountLabel = btcTradeAmountPair.first;
 
-        Tuple2<Label, TextField> fiatTradeAmountPair = addLabelTextField(gridPane, ++gridRow, getFiatTradeAmountLabel(), model.getFiatVolume());
+        Tuple2<Label, TextField> fiatTradeAmountPair = addLabelTextField(gridPane, ++gridRow, getFiatTradeAmountLabel(), model.getVolume());
         fiatTradeAmountLabel = fiatTradeAmountPair.first;
 
         addLabelTextField(gridPane, ++gridRow, "Total fees paid:", model.getTotalFees());

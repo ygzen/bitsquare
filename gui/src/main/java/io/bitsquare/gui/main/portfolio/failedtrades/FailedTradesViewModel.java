@@ -56,7 +56,7 @@ class FailedTradesViewModel extends ActivatableWithDataModel<FailedTradesDataMod
 
     String getVolume(FailedTradesListItem item) {
         if (item != null && item.getTrade() != null)
-            return formatter.formatVolumeWithCode(item.getTrade().getTradeVolume());
+            return formatter.formatVolumeWithCodeAndLimitedDigits(item.getTrade().getTradeVolume(), item.getTrade().getOffer().getCurrencyCode());
         else
             return "";
     }

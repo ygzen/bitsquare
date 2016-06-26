@@ -67,8 +67,10 @@ class ClosedTradesViewModel extends ActivatableWithDataModel<ClosedTradesDataMod
     }
 
     String getVolume(ClosedTradableListItem item) {
-        if (item != null && item.getTradable() instanceof Trade)
-            return formatter.formatVolumeWithCode(((Trade) item.getTradable()).getTradeVolume());
+        if (item != null && item.getTradable() instanceof Trade) {
+            final Trade trade = (Trade) item.getTradable();
+            return formatter.formatVolumeWithCodeAndLimitedDigits(trade.getTradeVolume(), trade.getOffer().getCurrencyCode());
+        }
         else if (item != null && item.getTradable() instanceof OpenOffer)
             return "-";
         else

@@ -126,7 +126,9 @@ public class TradeDetailsWindow extends Overlay<TradeDetailsWindow> {
         }
 
         addLabelTextField(gridPane, ++rowIndex, "Bitcoin amount" + btcDirectionInfo, formatter.formatBitcoinWithCode(trade.getTradeAmount()));
-        addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(offer.getCurrencyCode()) + " amount" + fiatDirectionInfo, formatter.formatVolumeWithCode(trade.getTradeVolume()));
+        final String currencyCode = offer.getCurrencyCode();
+        addLabelTextField(gridPane, ++rowIndex, CurrencyUtil.getNameByCode(currencyCode) + " amount" + fiatDirectionInfo,
+                formatter.formatVolumeWithCodeAndLimitedDigits(trade.getTradeVolume(), currencyCode));
         addLabelTextField(gridPane, ++rowIndex, "Trade price:", formatter.formatPriceWithCode(trade.getTradePrice()));
         addLabelTextField(gridPane, ++rowIndex, "Payment method:", BSResources.get(offer.getPaymentMethod().getId()));
 

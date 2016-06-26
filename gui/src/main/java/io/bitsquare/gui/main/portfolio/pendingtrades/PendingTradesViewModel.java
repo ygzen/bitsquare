@@ -246,17 +246,13 @@ public class PendingTradesViewModel extends ActivatableWithDataModel<PendingTrad
             return "";
     }
 
-    public String getFiatAmount() {
-        return dataModel.getTrade() != null ? formatter.formatVolumeWithCode(dataModel.getTrade().getTradeVolume()) : "";
-    }
-
     // summary
-    public String getTradeVolume() {
+    public String getTradeAmount() {
         return dataModel.getTrade() != null ? formatter.formatBitcoinWithCode(dataModel.getTrade().getTradeAmount()) : "";
     }
 
-    public String getFiatVolume() {
-        return dataModel.getTrade() != null ? formatter.formatVolumeWithCode(dataModel.getTrade().getTradeVolume()) : "";
+    public String getVolume() {
+        return dataModel.getTrade() != null ? formatter.formatVolumeWithCodeAndLimitedDigits(dataModel.getTrade().getTradeVolume(), dataModel.getCurrencyCode()) : "";
     }
 
     public String getTotalFees() {

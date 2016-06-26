@@ -2,6 +2,7 @@ package io.bitsquare.trade;
 
 import io.bitsquare.btc.pricefeed.MarketPrice;
 import io.bitsquare.btc.pricefeed.PriceFeed;
+import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.trade.exceptions.MarketPriceNoAvailableException;
 import io.bitsquare.trade.offer.Offer;
 import org.bitcoinj.core.Coin;
@@ -33,7 +34,10 @@ public interface Price extends Comparable {
         if (marketPrice != null) {
             double marketPriceAsDouble = marketPrice.getPrice(direction == Offer.Direction.BUY ? PriceFeed.Type.ASK : PriceFeed.Type.BID);
             double relation = price / marketPriceAsDouble;
-            return direction == Offer.Direction.BUY ? 1 - relation : relation - 1;
+            if (CurrencyUtil.isCryptoCurrency(currencyCode))
+                return direction == Offer.Direction.BUY ? relation - 1 : 1 - relation;
+            else
+                return direction == Offer.Direction.BUY ? 1 - relation : relation - 1;
         } else {
             throw new MarketPriceNoAvailableException();
         }
@@ -43,7 +47,12 @@ public interface Price extends Comparable {
         MarketPrice marketPrice = priceFeed.getMarketPrice(currencyCode);
         if (marketPrice != null) {
             double marketPriceAsDouble = marketPrice.getPrice(direction == Offer.Direction.BUY ? PriceFeed.Type.ASK : PriceFeed.Type.BID);
-            double factor = direction == Offer.Direction.BUY ? 1 - percentagePrice : 1 + percentagePrice;
+            double factor;
+            if (CurrencyUtil.isCryptoCurrency(currencyCode))
+                factor = direction == Offer.Direction.BUY ? 1 + percentagePrice : 1 - percentagePrice;
+            else
+                factor = direction == Offer.Direction.BUY ? 1 - percentagePrice : 1 + percentagePrice;
+            
             double targetPrice = marketPriceAsDouble * factor;
 
             // round

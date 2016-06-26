@@ -431,6 +431,9 @@ public abstract class Trade implements Tradable, Model {
         return tradePeriodStateProperty;
     }
 
+    public String getCurrencyCode() {
+        return offer.getCurrencyCode();
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Getter/Setter for Mutable objects
