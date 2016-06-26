@@ -26,6 +26,8 @@ import io.bitsquare.payment.PaymentAccountContractData;
 import io.bitsquare.trade.offer.Offer;
 import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Monetary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
@@ -35,6 +37,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 @SuppressWarnings("WeakerAccess")
 @Immutable
 public final class Contract implements Payload {
+    private static final Logger log = LoggerFactory.getLogger(Contract.class);
+
     // That object is sent over the wire, so we need to take care of version compatibility.
     @JsonExclude
     public static final long serialVersionUID = Version.P2P_NETWORK_VERSION;

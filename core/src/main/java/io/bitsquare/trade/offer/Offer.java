@@ -25,13 +25,10 @@ import io.bitsquare.common.crypto.KeyRing;
 import io.bitsquare.common.crypto.PubKeyRing;
 import io.bitsquare.common.handlers.ResultHandler;
 import io.bitsquare.common.util.JsonExclude;
-import io.bitsquare.common.util.UID;
-import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.p2p.NodeAddress;
 import io.bitsquare.p2p.storage.payload.RequiresOwnerIsOnlinePayload;
 import io.bitsquare.p2p.storage.payload.StoragePayload;
 import io.bitsquare.payment.PaymentMethod;
-import io.bitsquare.trade.AltcoinPrice;
 import io.bitsquare.trade.Price;
 import io.bitsquare.trade.PriceFactory;
 import io.bitsquare.trade.exceptions.MarketPriceNoAvailableException;
@@ -119,17 +116,9 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
     private final boolean useMarketBasedPrice;
     // fiatPrice if fixed price is used (usePercentageBasedPrice = false), otherwise 0
 
-    private final long fiatPrice;
-    // At v0.4.9 we introduce priceAsLong to replace fiatPrice. For backwards compatibility we need to support both.
-    // The fiatPrice was handling altcoin prices in the inverted version (
-    // e.g. in case of: 50 ETH/BTC = 0.02 BTC/ETH 0> fiatPrice=500000 / priceAsLong= 2000000
-    // stores price like it is displayed from v 0.4.9 on. Fiat in Fiat/BTC rate, altcoin in BTC/Altcoin rate
-    // Versions prior to 0.4.9 will have that field set to 0
-    // private long priceAsLong;
-
-    // At v0.4.9 we introduce the version field with version=1. Earlier versions will get a 0 if it is requested
-    //private int version;
-
+    // At v0.4.9 we introduce representation of price in the native way for altcoins (BTC/altcoin instead of altcoin/BTC).
+    // We break backwards compatibility as it would inroduce too much headache to support the old version as well.
+    private final long priceAsLong;
 
     // Distance form market price if percentage based price is used (usePercentageBasedPrice = true), otherwise 0. 
     // E.g. 0.1 -> 10%. Can be negative as well. Depending on direction the marketPriceMargin is above or below the market price.
@@ -170,7 +159,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
                  NodeAddress offererNodeAddress,
                  PubKeyRing pubKeyRing,
                  Direction direction,
-                 long fiatPrice,
+                 long priceAsLong,
                  double marketPriceMargin,
                  boolean useMarketBasedPrice,
                  long amount,
@@ -188,7 +177,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
         this.offererNodeAddress = offererNodeAddress;
         this.pubKeyRing = pubKeyRing;
         this.direction = direction;
-        this.fiatPrice = fiatPrice;
+        this.priceAsLong = priceAsLong;
         this.marketPriceMargin = marketPriceMargin;
         this.useMarketBasedPrice = useMarketBasedPrice;
         this.amount = amount;
@@ -386,26 +375,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
                 return null;
             }
         } else {
-
-
-            return PriceFactory.getPriceFromLong(currencyCode, getPriceAsLong());
-        }
-    }
-
-    private long getPriceAsLong() {
-        if (UID.uuidContainsOfferVersion(id)) {
-            log.error("We got a offer crated with v.04.9 or later " + id);
-            if (CurrencyUtil.isCryptoCurrency(currencyCode) && !useMarketBasedPrice) {
-                log.error("We have a altcoin without fixed price.");
-                log.error("fiatPrice=" + fiatPrice);
-                final long invertedPriceAsLong = ((AltcoinPrice) PriceFactory.getPriceFromLong(currencyCode, fiatPrice)).getInvertedPriceAsLong();
-                log.error("invertedPriceAsLong=" + invertedPriceAsLong);
-                return invertedPriceAsLong;
-            } else {
-                return fiatPrice;
-            }
-        } else {
-            return fiatPrice;
+            return PriceFactory.getPriceFromLong(currencyCode, priceAsLong);
         }
     }
 
@@ -512,7 +482,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
         if (!(o instanceof Offer)) return false;
         Offer offer = (Offer) o;
         if (date != offer.date) return false;
-        if (fiatPrice != offer.fiatPrice) return false;
+        if (priceAsLong != offer.priceAsLong) return false;
         if (Double.compare(offer.marketPriceMargin, marketPriceMargin) != 0) return false;
         if (useMarketBasedPrice != offer.useMarketBasedPrice) return false;
         if (amount != offer.amount) return false;
@@ -545,7 +515,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
         result = 31 * result + (direction != null ? direction.hashCode() : 0);
         result = 31 * result + (currencyCode != null ? currencyCode.hashCode() : 0);
         result = 31 * result + (int) (date ^ (date >>> 32));
-        result = 31 * result + (int) (fiatPrice ^ (fiatPrice >>> 32));
+        result = 31 * result + (int) (priceAsLong ^ (priceAsLong >>> 32));
         long temp = Double.doubleToLongBits(marketPriceMargin);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (useMarketBasedPrice ? 1 : 0);
@@ -571,7 +541,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
                 "\n\tdirection=" + direction +
                 "\n\tcurrencyCode='" + currencyCode + '\'' +
                 "\n\tdate=" + date +
-                "\n\tfiatPrice=" + fiatPrice +
+                "\n\tfiatPrice=" + priceAsLong +
                 "\n\tmarketPriceMargin=" + marketPriceMargin +
                 "\n\tuseMarketBasedPrice=" + useMarketBasedPrice +
                 "\n\tamount=" + amount +

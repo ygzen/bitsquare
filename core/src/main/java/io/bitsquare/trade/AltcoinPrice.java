@@ -40,15 +40,6 @@ public class AltcoinPrice implements Serializable, Price {
     }
 
     public long getInvertedPriceAsLong() {
-        log.error(denominatorAsAltcoin.toFriendlyString());
-        log.error(Coin.COIN.toFriendlyString());
-        log.error(numeratorAsBitcoin.toFriendlyString());
-        log.error("COIN " + Coin.COIN.value);
-        log.error("coin " + numeratorAsBitcoin.value);
-        log.error("altcoin " + denominatorAsAltcoin.value);
-        log.error("" + Coin.COIN.value / numeratorAsBitcoin.value);
-        log.error("" + Coin.COIN.divide(numeratorAsBitcoin) * 10000);
-
         return Coin.COIN.divide(numeratorAsBitcoin) * 10000;
     }
 
