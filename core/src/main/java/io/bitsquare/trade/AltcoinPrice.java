@@ -15,75 +15,84 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class AltcoinPrice implements Serializable, Price {
     private static final Logger log = LoggerFactory.getLogger(AltcoinPrice.class);
 
-    public final Coin coin;
-    public final Altcoin altcoin;
+    public final Coin numeratorAsBitcoin; //numerator
+    public final Altcoin denominatorAsAltcoin; //denominator
 
     /**
      * One altcoin is worth this amount of bitcoin.
      */
-    public AltcoinPrice(String altcoinCurrencyCode, Coin coin) {
-        checkArgument(coin.isPositive());
+    public AltcoinPrice(String altcoinCurrencyCode, Coin numeratorAsBitcoin) {
+        checkArgument(numeratorAsBitcoin.isPositive());
         checkArgument(altcoinCurrencyCode != null, "currency code required");
-        this.coin = coin;
-        this.altcoin = Altcoin.valueOf(altcoinCurrencyCode, Altcoin.COIN_VALUE);
+        this.numeratorAsBitcoin = numeratorAsBitcoin;
+        this.denominatorAsAltcoin = Altcoin.valueOf(altcoinCurrencyCode, Altcoin.COIN_VALUE);
     }
 
 
     @Override
     public String getPriceAsString() {
-        return coin.toPlainString();
+        return numeratorAsBitcoin.toPlainString();
     }
 
     @Override
     public long getPriceAsLong() {
-        return coin.value;
+        return numeratorAsBitcoin.value;
     }
 
     public long getInvertedPriceAsLong() {
-        return Coin.COIN.divide(coin);
+        log.error(denominatorAsAltcoin.toFriendlyString());
+        log.error(Coin.COIN.toFriendlyString());
+        log.error(numeratorAsBitcoin.toFriendlyString());
+        log.error("COIN " + Coin.COIN.value);
+        log.error("coin " + numeratorAsBitcoin.value);
+        log.error("altcoin " + denominatorAsAltcoin.value);
+        log.error("" + Coin.COIN.value / numeratorAsBitcoin.value);
+        log.error("" + Coin.COIN.divide(numeratorAsBitcoin) * 10000);
+
+        return Coin.COIN.divide(numeratorAsBitcoin) * 10000;
     }
 
     @Override
     public double getPriceAsDouble() {
-        return (double) coin.value / LongMath.pow(10, coin.smallestUnitExponent());
+        return (double) numeratorAsBitcoin.value / LongMath.pow(10, numeratorAsBitcoin.smallestUnitExponent());
     }
 
     @Override
     public String getCurrencyCode() {
-        return altcoin.currencyCode;
+        return denominatorAsAltcoin.currencyCode;
     }
 
     @Override
     public String getCurrencyCodePair() {
-        return "BTC/" + altcoin.currencyCode;
+        return "BTC/" + denominatorAsAltcoin.currencyCode;
     }
 
     @Override
     public boolean isZero() {
-        return coin.isZero();
+        return numeratorAsBitcoin.isZero();
     }
 
     @Override
     public boolean isPositive() {
-        return coin.isPositive();
+        return numeratorAsBitcoin.isPositive();
     }
 
     @Override
     public String toFriendlyString() {
-        return coin.toFriendlyString();
+        return numeratorAsBitcoin.toFriendlyString();
     }
 
     @Override
     public Altcoin getVolume(Coin amount) {
         // Use BigInteger because it's much easier to maintain full precision without overflowing.
-        final BigInteger coinVal = BigInteger.valueOf(coin.value);
+        final BigInteger coinVal = BigInteger.valueOf(numeratorAsBitcoin.value);
         if (coinVal.compareTo(BigInteger.ZERO) == 0)
-            return Altcoin.valueOf(altcoin.currencyCode, 0);
-        BigInteger converted = BigInteger.valueOf(amount.value).multiply(BigInteger.valueOf(altcoin.value)).divide(coinVal);
+            return Altcoin.valueOf(denominatorAsAltcoin.currencyCode, 0);
+        BigInteger converted = BigInteger.valueOf(amount.value).multiply(BigInteger.valueOf(denominatorAsAltcoin.value)).divide(coinVal);
         if (converted.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0
                 || converted.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0)
             throw new ArithmeticException("Overflow");
-        return Altcoin.valueOf(altcoin.currencyCode, converted.longValue());
+        return Altcoin.valueOf(denominatorAsAltcoin.currencyCode, converted.longValue());
     }
 
     /**
@@ -96,12 +105,12 @@ public class AltcoinPrice implements Serializable, Price {
         checkArgument(volume instanceof Altcoin, "Volume need to be instance of Altcoin. volume=" + volume);
         Altcoin volumeAsAltcoin = (Altcoin) volume;
 
-        checkArgument(volumeAsAltcoin.currencyCode.equals(altcoin.currencyCode), "Currency mismatch: %s vs %s",
-                volumeAsAltcoin.currencyCode, altcoin.currencyCode);
+        checkArgument(volumeAsAltcoin.currencyCode.equals(denominatorAsAltcoin.currencyCode), "Currency mismatch: %s vs %s",
+                volumeAsAltcoin.currencyCode, denominatorAsAltcoin.currencyCode);
         // Use BigInteger because it's much easier to maintain full precision without overflowing.
         final BigInteger converted = BigInteger.valueOf(volumeAsAltcoin.value)
-                .multiply(BigInteger.valueOf(coin.value))
-                .divide(BigInteger.valueOf(altcoin.value));
+                .multiply(BigInteger.valueOf(numeratorAsBitcoin.value))
+                .divide(BigInteger.valueOf(denominatorAsAltcoin.value));
 
         if (converted.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0
                 || converted.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) < 0)
@@ -121,22 +130,23 @@ public class AltcoinPrice implements Serializable, Price {
 
         AltcoinPrice that = (AltcoinPrice) o;
 
-        if (coin != null ? !coin.equals(that.coin) : that.coin != null) return false;
-        return !(altcoin != null ? !altcoin.equals(that.altcoin) : that.altcoin != null);
+        if (numeratorAsBitcoin != null ? !numeratorAsBitcoin.equals(that.numeratorAsBitcoin) : that.numeratorAsBitcoin != null)
+            return false;
+        return !(denominatorAsAltcoin != null ? !denominatorAsAltcoin.equals(that.denominatorAsAltcoin) : that.denominatorAsAltcoin != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = coin != null ? coin.hashCode() : 0;
-        result = 31 * result + (altcoin != null ? altcoin.hashCode() : 0);
+        int result = numeratorAsBitcoin != null ? numeratorAsBitcoin.hashCode() : 0;
+        result = 31 * result + (denominatorAsAltcoin != null ? denominatorAsAltcoin.hashCode() : 0);
         return result;
     }
 
     @Override
     public int compareTo(Object other) {
         if (other instanceof AltcoinPrice)
-            return coin.compareTo(((AltcoinPrice) other).coin);
+            return numeratorAsBitcoin.compareTo(((AltcoinPrice) other).numeratorAsBitcoin);
         else
             return 0;
     }
@@ -144,8 +154,8 @@ public class AltcoinPrice implements Serializable, Price {
     @Override
     public String toString() {
         return "AltcoinPrice{" +
-                "coin=" + coin +
-                ", altcoin=" + altcoin +
+                "coin=" + numeratorAsBitcoin +
+                ", altcoin=" + denominatorAsAltcoin +
                 '}';
     }
 }

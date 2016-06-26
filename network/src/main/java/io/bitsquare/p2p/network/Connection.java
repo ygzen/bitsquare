@@ -8,6 +8,7 @@ import io.bitsquare.app.Version;
 import io.bitsquare.common.ByteArrayUtils;
 import io.bitsquare.common.UserThread;
 import io.bitsquare.common.util.Tuple2;
+import io.bitsquare.common.util.UID;
 import io.bitsquare.p2p.Message;
 import io.bitsquare.p2p.NodeAddress;
 import io.bitsquare.p2p.messaging.PrefixedSealedAndSignedMessage;
@@ -33,7 +34,6 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -115,7 +115,7 @@ public class Connection implements MessageListener {
                @Nullable NodeAddress peersNodeAddress) {
         this.socket = socket;
         this.connectionListener = connectionListener;
-        uid = UUID.randomUUID().toString();
+        uid = UID.getUUID();
         statistic = new Statistic();
 
         addMessageListener(messageListener);

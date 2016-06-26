@@ -28,6 +28,7 @@ import io.bitsquare.btc.blockchain.BlockchainService;
 import io.bitsquare.btc.listeners.BalanceListener;
 import io.bitsquare.btc.pricefeed.PriceFeed;
 import io.bitsquare.common.crypto.KeyRing;
+import io.bitsquare.common.util.UID;
 import io.bitsquare.gui.Navigation;
 import io.bitsquare.gui.common.model.ActivatableDataModel;
 import io.bitsquare.gui.main.overlays.notifications.Notification;
@@ -36,6 +37,7 @@ import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.locale.TradeCurrency;
 import io.bitsquare.p2p.P2PService;
 import io.bitsquare.payment.*;
+import io.bitsquare.trade.AltcoinPrice;
 import io.bitsquare.trade.Price;
 import io.bitsquare.trade.handlers.TransactionResultHandler;
 import io.bitsquare.trade.offer.Offer;
@@ -53,7 +55,6 @@ import org.bitcoinj.core.Transaction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -99,7 +100,7 @@ class CreateOfferDataModel extends ActivatableDataModel {
     final ObjectProperty<Coin> amount = new SimpleObjectProperty<>();
     final ObjectProperty<Coin> minAmount = new SimpleObjectProperty<>();
 
-    final ObjectProperty<Price> price = new SimpleObjectProperty<>();
+    final ObjectProperty<Price> priceProperty = new SimpleObjectProperty<>();
     double percentagePrice;
     final BooleanProperty usePercentagePrice = new SimpleBooleanProperty();
 
@@ -139,7 +140,7 @@ class CreateOfferDataModel extends ActivatableDataModel {
 
         // isMainNet.set(preferences.getBitcoinNetwork() == BitcoinNetwork.MAINNET);
 
-        offerId = UUID.randomUUID().toString();
+        offerId = UID.getUUID();
         shortOfferId = offerId.substring(0, Math.min(8, offerId.length()));
         addressEntry = walletService.getOrCreateAddressEntry(offerId, AddressEntry.Context.OFFER_FUNDING);
         offerFeeAsCoin = FeePolicy.getCreateOfferFee();
@@ -262,7 +263,13 @@ class CreateOfferDataModel extends ActivatableDataModel {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     Offer createAndGetOffer() {
-        long priceAsLong = price.get() != null && !usePercentagePrice.get() ? price.get().getPriceAsLong() : 0L;
+        final Price price = priceProperty.get();
+        long priceAsLong = price != null && !usePercentagePrice.get() ? price.getPriceAsLong() : 0L;
+        log.error("priceAsLong 1 " + priceAsLong);
+        if (price instanceof AltcoinPrice)
+            priceAsLong = usePercentagePrice.get() ? 0 : ((AltcoinPrice) price).getInvertedPriceAsLong();
+
+        log.error("priceAsLong 2 " + priceAsLong);
         double marketPriceMarginParam = usePercentagePrice.get() ? percentagePrice : 0;
         long amount = this.amount.get() != null ? this.amount.get().getValue() : 0L;
         long minAmount = this.minAmount.get() != null ? this.minAmount.get().getValue() : 0L;
@@ -415,11 +422,11 @@ class CreateOfferDataModel extends ActivatableDataModel {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     void calculateVolume() {
-        if (price.get() != null &&
+        if (priceProperty.get() != null &&
                 amount.get() != null &&
                 !amount.get().isZero() &&
-                !price.get().isZero()) {
-            final Monetary volume = price.get().getVolume(amount.get());
+                !priceProperty.get().isZero()) {
+            final Monetary volume = priceProperty.get().getVolume(amount.get());
             this.volume.set(formatter.getRoundedVolumeWithLimitedDigits(volume, tradeCurrencyCode.get()));
         }
         updateBalance();
@@ -427,11 +434,11 @@ class CreateOfferDataModel extends ActivatableDataModel {
 
     void calculateAmount() {
         if (volume.get() != null &&
-                price.get() != null &&
+                priceProperty.get() != null &&
                 volume.get().getValue() != 0 &&
-                !price.get().isZero()) {
+                !priceProperty.get().isZero()) {
 
-            amount.set(formatter.getRoundedCoinTo4Digits(price.get().getAmountFromVolume(volume.get())));
+            amount.set(formatter.getRoundedCoinTo4Digits(priceProperty.get().getAmountFromVolume(volume.get())));
             calculateTotalToPay();
         }
     }
@@ -516,7 +523,7 @@ class CreateOfferDataModel extends ActivatableDataModel {
     }
 
     public void setPrice(Price value) {
-        price.set(value);
+        priceProperty.set(value);
     }
 
     public void setAmount(Coin value) {

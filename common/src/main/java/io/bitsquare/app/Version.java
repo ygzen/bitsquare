@@ -41,11 +41,21 @@ public class Version {
     // VERSION = 0.4.2 -> LOCAL_DB_VERSION = 4
     public static final int LOCAL_DB_VERSION = 4;
 
+
     // The version nr. of the current protocol. The offer holds that version. 
     // A taker will check the version of the offers to see if his version is compatible.
     public static final int TRADE_PROTOCOL_VERSION = 1;
+
+    // Introduced with v0.4.9
+    // VERSION = 0.4.9 -> OFFER_VERSION = 1
+    public static final int OFFER_VERSION = 1;
+
     private static int p2pMessageVersion;
 
+    public static String getFullVersion() {
+        return VERSION + "." + P2P_NETWORK_VERSION + "." + p2pMessageVersion + "." + LOCAL_DB_VERSION + "." +
+                TRADE_PROTOCOL_VERSION + "." + OFFER_VERSION;
+    }
 
     public static int getP2PMessageVersion() {
         // TODO investigate why a changed NETWORK_PROTOCOL_VERSION for the serialized objects does not trigger 

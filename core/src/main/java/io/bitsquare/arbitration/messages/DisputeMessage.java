@@ -18,13 +18,12 @@
 package io.bitsquare.arbitration.messages;
 
 import io.bitsquare.app.Version;
+import io.bitsquare.common.util.UID;
 import io.bitsquare.p2p.messaging.MailboxMessage;
-
-import java.util.UUID;
 
 public abstract class DisputeMessage implements MailboxMessage {
     private final int messageVersion = Version.getP2PMessageVersion();
-    private final String uid = UUID.randomUUID().toString();
+    private final String uid = UID.getUUID();
 
     @Override
     public int getMessageVersion() {

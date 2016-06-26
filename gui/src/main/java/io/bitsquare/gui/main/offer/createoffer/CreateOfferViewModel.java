@@ -380,7 +380,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
         // Binding with Bindings.createObjectBinding does not work because of bi-directional binding
         dataModel.amount.addListener(amountDataListener);
         dataModel.minAmount.addListener(minAmountDataListener);
-        dataModel.price.addListener(priceDataListener);
+        dataModel.priceProperty.addListener(priceDataListener);
         dataModel.volume.addListener(volumeDataListener);
 
         // dataModel.feeFromFundingTxProperty.addListener(feeFromFundingTxListener);
@@ -398,7 +398,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
         // Binding with Bindings.createObjectBinding does not work because of bi-directional binding
         dataModel.amount.removeListener(amountDataListener);
         dataModel.minAmount.removeListener(minAmountDataListener);
-        dataModel.price.removeListener(priceDataListener);
+        dataModel.priceProperty.removeListener(priceDataListener);
         dataModel.volume.removeListener(volumeDataListener);
 
         //dataModel.feeFromFundingTxProperty.removeListener(feeFromFundingTxListener);
@@ -572,7 +572,7 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
             if (isValid) {
                 showWarningInvalidDecimalPlacesPrice.set(!formatter.hasPriceValidDecimals(userInput, dataModel.tradeCurrencyCode.get()));
                 setPriceToModel();
-                price.set(formatter.formatPrice(dataModel.price.get()));
+                price.set(formatter.formatPrice(dataModel.priceProperty.get()));
                 calculateVolume();
             }
             isPriceInRange();
@@ -786,8 +786,8 @@ class CreateOfferViewModel extends ActivatableWithDataModel<CreateOfferDataModel
         boolean inputDataValid = isBtcInputValid(amount.get()).isValid &&
                 isBtcInputValid(minAmount.get()).isValid &&
                 isPriceInputValid(price.get()).isValid &&
-                dataModel.price.get() != null &&
-                dataModel.price.get().getPriceAsDouble() != 0 &&
+                dataModel.priceProperty.get() != null &&
+                dataModel.priceProperty.get().getPriceAsDouble() != 0 &&
                 isVolumeInputValid(volume.get()).isValid &&
                 dataModel.isMinAmountLessOrEqualAmount();
 

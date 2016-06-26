@@ -18,12 +18,12 @@
 package io.bitsquare.trade.protocol.trade.messages;
 
 import io.bitsquare.app.Version;
+import io.bitsquare.common.util.UID;
 import io.bitsquare.p2p.NodeAddress;
 import io.bitsquare.p2p.messaging.MailboxMessage;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
-import java.util.UUID;
 
 @Immutable
 public final class FinalizePayoutTxRequest extends TradeMessage implements MailboxMessage {
@@ -46,7 +46,7 @@ public final class FinalizePayoutTxRequest extends TradeMessage implements Mailb
         this.sellerPayoutAddress = sellerPayoutAddress;
         this.lockTimeAsBlockHeight = lockTimeAsBlockHeight;
         this.senderNodeAddress = senderNodeAddress;
-        uid = UUID.randomUUID().toString();
+        uid = UID.getUUID();
     }
 
     @Override

@@ -19,6 +19,7 @@ package io.bitsquare.payment;
 
 import io.bitsquare.app.Version;
 import io.bitsquare.common.persistance.Persistable;
+import io.bitsquare.common.util.UID;
 import io.bitsquare.locale.TradeCurrency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 public abstract class PaymentAccount implements Persistable {
     // That object is saved to disc. We need to take care of changes to not break deserialization.
@@ -50,7 +50,7 @@ public abstract class PaymentAccount implements Persistable {
 
     protected PaymentAccount(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
-        id = UUID.randomUUID().toString();
+        id = UID.getUUID();
         creationDate = new Date();
         contractData = setContractData();
     }

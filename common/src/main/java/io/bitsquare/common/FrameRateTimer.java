@@ -1,10 +1,10 @@
 package io.bitsquare.common;
 
+import io.bitsquare.common.util.UID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.UUID;
 
 /**
  * We simulate a global frame rate timer similar to FXTimer to avoid creation of threads for each timer call.
@@ -17,7 +17,7 @@ public class FrameRateTimer implements Timer, Runnable {
     private Runnable runnable;
     private long startTs;
     private boolean isPeriodically;
-    private String uid = UUID.randomUUID().toString();
+    private String uid = UID.getUUID();
     private volatile boolean stopped;
 
     public FrameRateTimer() {

@@ -7,6 +7,7 @@ import io.bitsquare.common.crypto.KeyRing;
 import io.bitsquare.common.crypto.KeyStorage;
 import io.bitsquare.common.crypto.PubKeyRing;
 import io.bitsquare.common.util.Tuple3;
+import io.bitsquare.common.util.UID;
 import io.bitsquare.crypto.DecryptedMsgWithPubKey;
 import io.bitsquare.crypto.EncryptionService;
 import io.bitsquare.p2p.NodeAddress;
@@ -852,7 +853,7 @@ final class StressTestMailboxMessage implements MailboxMessage {
     private static final long serialVersionUID = Version.P2P_NETWORK_VERSION;
     private final int messageVersion = Version.getP2PMessageVersion();
 
-    private final String uid = UUID.randomUUID().toString();
+    private final String uid = UID.getUUID();
     private NodeAddress senderNodeAddress;
     private String data;
 

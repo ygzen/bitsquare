@@ -20,6 +20,7 @@ package io.bitsquare.trade.protocol.trade.messages;
 import io.bitsquare.app.Version;
 import io.bitsquare.btc.data.RawTransactionInput;
 import io.bitsquare.common.crypto.PubKeyRing;
+import io.bitsquare.common.util.UID;
 import io.bitsquare.p2p.NodeAddress;
 import io.bitsquare.p2p.messaging.MailboxMessage;
 import io.bitsquare.payment.PaymentAccountContractData;
@@ -27,7 +28,6 @@ import io.bitsquare.payment.PaymentAccountContractData;
 import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.UUID;
 
 @Immutable
 public final class PayDepositRequest extends TradeMessage implements MailboxMessage {
@@ -80,7 +80,7 @@ public final class PayDepositRequest extends TradeMessage implements MailboxMess
         this.takeOfferFeeTxId = takeOfferFeeTxId;
         this.acceptedArbitratorNodeAddresses = acceptedArbitratorNodeAddresses;
         this.arbitratorNodeAddress = arbitratorNodeAddress;
-        uid = UUID.randomUUID().toString();
+        uid = UID.getUUID();
     }
 
     @Override

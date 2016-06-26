@@ -25,10 +25,13 @@ import io.bitsquare.common.crypto.KeyRing;
 import io.bitsquare.common.crypto.PubKeyRing;
 import io.bitsquare.common.handlers.ResultHandler;
 import io.bitsquare.common.util.JsonExclude;
+import io.bitsquare.common.util.UID;
+import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.p2p.NodeAddress;
 import io.bitsquare.p2p.storage.payload.RequiresOwnerIsOnlinePayload;
 import io.bitsquare.p2p.storage.payload.StoragePayload;
 import io.bitsquare.payment.PaymentMethod;
+import io.bitsquare.trade.AltcoinPrice;
 import io.bitsquare.trade.Price;
 import io.bitsquare.trade.PriceFactory;
 import io.bitsquare.trade.exceptions.MarketPriceNoAvailableException;
@@ -53,6 +56,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload {
+
     ///////////////////////////////////////////////////////////////////////////////////////////
     // Static
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +118,18 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
     // We use 2 type of prices: fixed price or price based on distance from market price
     private final boolean useMarketBasedPrice;
     // fiatPrice if fixed price is used (usePercentageBasedPrice = false), otherwise 0
+
     private final long fiatPrice;
+    // At v0.4.9 we introduce priceAsLong to replace fiatPrice. For backwards compatibility we need to support both.
+    // The fiatPrice was handling altcoin prices in the inverted version (
+    // e.g. in case of: 50 ETH/BTC = 0.02 BTC/ETH 0> fiatPrice=500000 / priceAsLong= 2000000
+    // stores price like it is displayed from v 0.4.9 on. Fiat in Fiat/BTC rate, altcoin in BTC/Altcoin rate
+    // Versions prior to 0.4.9 will have that field set to 0
+    // private long priceAsLong;
+
+    // At v0.4.9 we introduce the version field with version=1. Earlier versions will get a 0 if it is requested
+    //private int version;
+
 
     // Distance form market price if percentage based price is used (usePercentageBasedPrice = true), otherwise 0. 
     // E.g. 0.1 -> 10%. Can be negative as well. Depending on direction the marketPriceMargin is above or below the market price.
@@ -371,7 +386,26 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
                 return null;
             }
         } else {
-            return PriceFactory.getPriceFromLong(currencyCode, fiatPrice);
+
+
+            return PriceFactory.getPriceFromLong(currencyCode, getPriceAsLong());
+        }
+    }
+
+    private long getPriceAsLong() {
+        if (UID.uuidContainsOfferVersion(id)) {
+            log.error("We got a offer crated with v.04.9 or later " + id);
+            if (CurrencyUtil.isCryptoCurrency(currencyCode) && !useMarketBasedPrice) {
+                log.error("We have a altcoin without fixed price.");
+                log.error("fiatPrice=" + fiatPrice);
+                final long invertedPriceAsLong = ((AltcoinPrice) PriceFactory.getPriceFromLong(currencyCode, fiatPrice)).getInvertedPriceAsLong();
+                log.error("invertedPriceAsLong=" + invertedPriceAsLong);
+                return invertedPriceAsLong;
+            } else {
+                return fiatPrice;
+            }
+        } else {
+            return fiatPrice;
         }
     }
 

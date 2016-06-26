@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import static com.google.common.base.Preconditions.checkArgument;
 
 // Price in Fiat per BTC 
+// fiat is numerator
+// coin is denominator
 public class FiatPrice extends ExchangeRate implements Price {
     private static final Logger log = LoggerFactory.getLogger(FiatPrice.class);
 

@@ -20,6 +20,7 @@ package io.bitsquare.crypto;
 
 import io.bitsquare.app.Version;
 import io.bitsquare.common.crypto.*;
+import io.bitsquare.common.util.UID;
 import io.bitsquare.p2p.NodeAddress;
 import io.bitsquare.p2p.messaging.MailboxMessage;
 import io.bitsquare.p2p.messaging.PrefixedSealedAndSignedMessage;
@@ -39,7 +40,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.security.cert.CertificateException;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
@@ -89,7 +89,7 @@ final class TestMessage implements MailboxMessage {
 
     public TestMessage(String data) {
         this.data = data;
-        uid = UUID.randomUUID().toString();
+        uid = UID.getUUID();
     }
 
     @Override

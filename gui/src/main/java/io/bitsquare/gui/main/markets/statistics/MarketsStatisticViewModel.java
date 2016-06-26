@@ -117,7 +117,7 @@ class MarketsStatisticViewModel extends ActivatableViewModel {
                 } else if (bestSellOfferPrice instanceof AltcoinPrice) {
                     AltcoinPrice bestSellOfferAltcoinPrice = (AltcoinPrice) bestSellOfferPrice;
                     AltcoinPrice bestBuyOfferAltcoinPrice = (AltcoinPrice) bestBuyOfferPrice;
-                    spread = bestSellOfferAltcoinPrice.coin.subtract(bestBuyOfferAltcoinPrice.coin);
+                    spread = bestSellOfferAltcoinPrice.numeratorAsBitcoin.subtract(bestBuyOfferAltcoinPrice.numeratorAsBitcoin);
                 }
             }
 
