@@ -42,10 +42,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.*;
 
-
-/**
- * General utilities
- */
 public class Utilities {
     private static final Logger log = LoggerFactory.getLogger(Utilities.class);
     private static long lastTimeStamp = System.currentTimeMillis();

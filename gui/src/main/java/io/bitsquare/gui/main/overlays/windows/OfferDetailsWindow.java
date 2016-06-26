@@ -191,10 +191,10 @@ public class OfferDetailsWindow extends Overlay<OfferDetailsWindow> {
         } else {
             final Price price = offer.getPrice();
             if (offer.getUseMarketBasedPrice()) {
-                addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceWithCode(price) +
-                        " (distance from market price: " + formatter.formatPercentagePrice(offer.getMarketPriceMargin()) + ")");
+                addLabelTextField(gridPane, ++rowIndex, "Margin price:", formatter.formatPercentagePrice(offer.getMarketPriceMargin()) +
+                        " (Calculated price from current market price: " + formatter.formatPriceWithCode(price) + ")");
             } else {
-                addLabelTextField(gridPane, ++rowIndex, "Price:", formatter.formatPriceWithCode(price));
+                addLabelTextField(gridPane, ++rowIndex, "Fixed price:", formatter.formatPriceWithCode(price));
             }
         }
         if (offer.isMyOffer(keyRing) && user.getPaymentAccount(offer.getOffererPaymentAccountId()) != null)

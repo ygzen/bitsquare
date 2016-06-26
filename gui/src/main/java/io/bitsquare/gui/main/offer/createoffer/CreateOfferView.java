@@ -570,16 +570,22 @@ public class CreateOfferView extends ActivatableViewAndModel<AnchorPane, CreateO
     private void createListeners() {
         amountFocusedListener = (o, oldValue, newValue) -> {
             model.onFocusOutAmountTextField(oldValue, newValue, amountTextField.getText());
+            amountTextField.setText(model.amount.get());
         };
 
         minAmountFocusedListener = (o, oldValue, newValue) -> {
             model.onFocusOutMinAmountTextField(oldValue, newValue, minAmountTextField.getText());
+            minAmountTextField.setText(model.minAmount.get());
         };
         priceFocusedListener = (o, oldValue, newValue) -> {
             model.onFocusOutPriceTextField(oldValue, newValue, fixedPriceTextField.getText());
+            // needed to get updated after focus out
+            fixedPriceTextField.setText(model.price.get());
         };
         priceAsPercentageFocusedListener = (o, oldValue, newValue) -> {
             model.onFocusOutPriceAsPercentageTextField(oldValue, newValue, marketBasedPriceTextField.getText());
+            // causes error in some cases
+            // marketBasedPriceTextField.setText(model.percentagePrice.get());
         };
         volumeFocusedListener = (o, oldValue, newValue) -> {
             model.onFocusOutVolumeTextField(oldValue, newValue, volumeTextField.getText());

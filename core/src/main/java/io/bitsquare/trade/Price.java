@@ -2,6 +2,7 @@ package io.bitsquare.trade;
 
 import io.bitsquare.btc.pricefeed.MarketPrice;
 import io.bitsquare.btc.pricefeed.PriceFeed;
+import io.bitsquare.common.util.MathUtils;
 import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.trade.exceptions.MarketPriceNoAvailableException;
 import io.bitsquare.trade.offer.Offer;
@@ -34,10 +35,13 @@ public interface Price extends Comparable {
         if (marketPrice != null) {
             double marketPriceAsDouble = marketPrice.getPrice(direction == Offer.Direction.BUY ? PriceFeed.Type.ASK : PriceFeed.Type.BID);
             double relation = price / marketPriceAsDouble;
-            if (CurrencyUtil.isCryptoCurrency(currencyCode))
-                return direction == Offer.Direction.BUY ? relation - 1 : 1 - relation;
-            else
-                return direction == Offer.Direction.BUY ? 1 - relation : relation - 1;
+            double result;
+            if (CurrencyUtil.isCryptoCurrency(currencyCode)) {
+                result = direction == Offer.Direction.BUY ? relation - 1 : 1 - relation;
+            } else
+                result = direction == Offer.Direction.BUY ? 1 - relation : relation - 1;
+
+            return MathUtils.roundDouble(result, 4);
         } else {
             throw new MarketPriceNoAvailableException();
         }
@@ -52,16 +56,9 @@ public interface Price extends Comparable {
                 factor = direction == Offer.Direction.BUY ? 1 + percentagePrice : 1 - percentagePrice;
             else
                 factor = direction == Offer.Direction.BUY ? 1 - percentagePrice : 1 + percentagePrice;
-            
+
             double targetPrice = marketPriceAsDouble * factor;
-
-            // round
-            long factor1 = (long) Math.pow(10, 8);
-            targetPrice = targetPrice * factor1;
-            long tmp = Math.round(targetPrice);
-            targetPrice = (double) tmp / factor1;
-
-            return targetPrice;
+            return MathUtils.roundDouble(targetPrice, CurrencyUtil.isCryptoCurrency(currencyCode) ? 8 : 4);
         } else {
             throw new MarketPriceNoAvailableException();
         }

@@ -96,8 +96,8 @@ class CreateOfferDataModel extends ActivatableDataModel {
     //final BooleanProperty isFeeFromFundingTxSufficient = new SimpleBooleanProperty();
 
     // final ObjectProperty<Coin> feeFromFundingTxProperty = new SimpleObjectProperty(Coin.NEGATIVE_SATOSHI);
-    final ObjectProperty<Coin> amountAsCoin = new SimpleObjectProperty<>();
-    final ObjectProperty<Coin> minAmountAsCoin = new SimpleObjectProperty<>();
+    final ObjectProperty<Coin> amount = new SimpleObjectProperty<>();
+    final ObjectProperty<Coin> minAmount = new SimpleObjectProperty<>();
 
     final ObjectProperty<Price> price = new SimpleObjectProperty<>();
     double percentagePrice;
@@ -264,8 +264,8 @@ class CreateOfferDataModel extends ActivatableDataModel {
     Offer createAndGetOffer() {
         long priceAsLong = price.get() != null && !usePercentagePrice.get() ? price.get().getPriceAsLong() : 0L;
         double marketPriceMarginParam = usePercentagePrice.get() ? percentagePrice : 0;
-        long amount = amountAsCoin.get() != null ? amountAsCoin.get().getValue() : 0L;
-        long minAmount = minAmountAsCoin.get() != null ? minAmountAsCoin.get().getValue() : 0L;
+        long amount = this.amount.get() != null ? this.amount.get().getValue() : 0L;
+        long minAmount = this.minAmount.get() != null ? this.minAmount.get().getValue() : 0L;
 
         ArrayList<String> acceptedCountryCodes = null;
         if (paymentAccount instanceof SepaAccount) {
@@ -371,8 +371,8 @@ class CreateOfferDataModel extends ActivatableDataModel {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean isMinAmountLessOrEqualAmount() {
         //noinspection SimplifiableIfStatement
-        if (minAmountAsCoin.get() != null && amountAsCoin.get() != null)
-            return !minAmountAsCoin.get().isGreaterThan(amountAsCoin.get());
+        if (minAmount.get() != null && amount.get() != null)
+            return !minAmount.get().isGreaterThan(amount.get());
         return true;
     }
 
@@ -416,10 +416,10 @@ class CreateOfferDataModel extends ActivatableDataModel {
 
     void calculateVolume() {
         if (price.get() != null &&
-                amountAsCoin.get() != null &&
-                !amountAsCoin.get().isZero() &&
+                amount.get() != null &&
+                !amount.get().isZero() &&
                 !price.get().isZero()) {
-            final Monetary volume = price.get().getVolume(amountAsCoin.get());
+            final Monetary volume = price.get().getVolume(amount.get());
             this.volume.set(formatter.getRoundedVolumeWithLimitedDigits(volume, tradeCurrencyCode.get()));
         }
         updateBalance();
@@ -431,15 +431,15 @@ class CreateOfferDataModel extends ActivatableDataModel {
                 volume.get().getValue() != 0 &&
                 !price.get().isZero()) {
 
-            amountAsCoin.set(formatter.getRoundedCoinTo4Digits(price.get().getAmountFromVolume(volume.get())));
+            amount.set(formatter.getRoundedCoinTo4Digits(price.get().getAmountFromVolume(volume.get())));
             calculateTotalToPay();
         }
     }
 
     void calculateTotalToPay() {
-        if (direction != null && amountAsCoin.get() != null) {
+        if (direction != null && amount.get() != null) {
             Coin feeAndSecDeposit = offerFeeAsCoin.add(networkFeeAsCoin).add(securityDepositAsCoin);
-            Coin feeAndSecDepositAndAmount = feeAndSecDeposit.add(amountAsCoin.get());
+            Coin feeAndSecDepositAndAmount = feeAndSecDeposit.add(amount.get());
             Coin required = direction == Offer.Direction.BUY ? feeAndSecDeposit : feeAndSecDepositAndAmount;
             totalToPayAsCoin.set(required);
             log.debug("totalToPayAsCoin " + totalToPayAsCoin.get().toFriendlyString());
@@ -516,10 +516,27 @@ class CreateOfferDataModel extends ActivatableDataModel {
     }
 
     void setPercentagePrice(double percentagePrice) {
+        log.error("setPercentagePrice " + percentagePrice);
         this.percentagePrice = percentagePrice;
     }
 
     public void setPrice(Price value) {
+        if (value != null) log.error("setPrice " + value.toFriendlyString());
         price.set(value);
+    }
+
+    public void setAmount(Coin value) {
+        if (value != null) log.error("setAmount " + value.toFriendlyString());
+        this.amount.set(value);
+    }
+
+    public void setVolume(Monetary value) {
+        if (value != null) log.error("setVolume " + value.toString());
+        this.volume.set(value);
+    }
+
+    public void setMinAmount(Coin value) {
+        if (value != null) log.error("setMinAmount " + value.toFriendlyString());
+        minAmount.set(value);
     }
 }

@@ -19,6 +19,7 @@ package io.bitsquare.gui.util;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.bitsquare.btc.BitcoinNetwork;
+import io.bitsquare.common.util.MathUtils;
 import io.bitsquare.locale.CurrencyUtil;
 import io.bitsquare.locale.LanguageUtil;
 import io.bitsquare.p2p.NodeAddress;
@@ -141,7 +142,7 @@ public class BSFormatter {
 
     public Coin parseToBitcoinWith4Decimals(String input) {
         try {
-            return Coin.valueOf(new BigDecimal(parseToBitcoin(cleanInput(input)).value).
+            return Coin.valueOf(BigDecimal.valueOf(parseToBitcoin(cleanInput(input)).value).
                     setScale(-scale - 1, BigDecimal.ROUND_HALF_UP).
                     setScale(scale + 1, BigDecimal.ROUND_HALF_UP).
                     toBigInteger().
@@ -155,7 +156,7 @@ public class BSFormatter {
 
     public Coin getRoundedCoinTo4Digits(Coin input) {
         try {
-            return Coin.valueOf(new BigDecimal(input.value).
+            return Coin.valueOf(BigDecimal.valueOf(input.value).
                     setScale(-scale - 1, BigDecimal.ROUND_HALF_UP).
                     setScale(scale + 1, BigDecimal.ROUND_HALF_UP).
                     toBigInteger().
@@ -397,7 +398,7 @@ public class BSFormatter {
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     public String formatToPercent(double value) {
-        return formatDoubleToString(value * 100.0, 2);
+        return formatDoubleToString(MathUtils.exactMultiply(value, 100), 2);
     }
 
     public String formatToPercentWithSymbol(double value) {
@@ -407,8 +408,14 @@ public class BSFormatter {
     public double parsePercentStringToDouble(String percentString) throws NumberFormatException {
         try {
             String input = percentString.replace("%", "");
+            input = input.replace(" ", "");
             input = input.replace(",", ".");
-            input = cleanInput(input);
+            if (input.equals("-"))
+                input = "-0";
+            if (input.equals("."))
+                input = "0.";
+            if (input.equals("-."))
+                input = "-0.";
             double value = Double.parseDouble(input);
             return value / 100;
         } catch (NumberFormatException e) {
@@ -467,14 +474,6 @@ public class BSFormatter {
         } catch (NumberFormatException e) {
             throw e;
         }
-    }
-
-    public double roundDouble(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-        long factor = (long) Math.pow(10, places);
-        value = value * factor;
-        long tmp = Math.round(value);
-        return (double) tmp / factor;
     }
 
     private String cleanInput(String input) {

@@ -210,6 +210,6 @@ public class Altcoin implements Monetary, Comparable<Altcoin> {
         return "Altcoin{" +
                 "currencyCode='" + currencyCode + '\'' +
                 ", value=" + value +
-                '}';
+                '}' + toFriendlyString();
     }
 }
