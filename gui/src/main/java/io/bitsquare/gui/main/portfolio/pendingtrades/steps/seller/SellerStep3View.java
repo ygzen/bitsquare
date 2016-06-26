@@ -251,19 +251,25 @@ public class SellerStep3View extends TradeStepView {
             String key = "confirmPaymentReceived";
             if (!DevFlags.DEV_MODE && preferences.showAgain(key)) {
                 String message = "Have you received the " + CurrencyUtil.getNameByCode(model.dataModel.getCurrencyCode()) +
-                        " payment from your trading partner?\n\n" +
-                        "The trade ID (\"reason for payment\" text) of the transaction is: \"" + trade.getShortId() + "\"\n\n";
+                        " payment from your trading partner?\n\n";
 
-                Optional<String> optionalHolderName = getOptionalHolderName();
-                if (optionalHolderName.isPresent()) {
-                    message = message +
-                            "Please also verify that the senders name in your bank statement matches that one from the trade contract:\n" +
-                            "Senders name: " + optionalHolderName.get() + "\n\n" +
-                            "If the name is not the same as the one displayed here, please don't confirm but open a " +
-                            "dispute by entering \"cmd + o\" or \"ctrl + o\".\n\n";
+                if (!model.isBlockChainMethod()) {
+                    message = message + "The trade ID (\"reason for payment\" text) of the transaction is: \"" +
+                            trade.getShortId() + "\"\n\n";
+
+                    Optional<String> optionalHolderName = getOptionalHolderName();
+                    if (optionalHolderName.isPresent()) {
+                        message = message +
+                                "Please also verify that the senders name in your bank statement matches that one from the trade contract:\n" +
+                                "Senders name: " + optionalHolderName.get() + "\n\n" +
+                                "If the name is not the same as the one displayed here, please don't confirm but open a " +
+                                "dispute by entering \"cmd + o\" or \"ctrl + o\".\n\n";
+                    }
                 }
+
                 message = message + "Please note, that as soon you have confirmed the receipt, the locked trade amount will be released " +
                         "to the bitcoin buyer and the security deposit will be refunded.";
+
                 new Popup()
                         .headLine("Confirm that you have received the payment")
                         .confirmation(message)

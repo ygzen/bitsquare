@@ -115,6 +115,7 @@ public final class Offer implements StoragePayload, RequiresOwnerIsOnlinePayload
     private final boolean useMarketBasedPrice;
     // fiatPrice if fixed price is used (usePercentageBasedPrice = false), otherwise 0
     private final long fiatPrice;
+
     // Distance form market price if percentage based price is used (usePercentageBasedPrice = true), otherwise 0. 
     // E.g. 0.1 -> 10%. Can be negative as well. Depending on direction the marketPriceMargin is above or below the market price.
     // Positive values is always the usual case where you want a better price as the market. 

@@ -511,32 +511,23 @@ class CreateOfferDataModel extends ActivatableDataModel {
         walletService.swapTradeEntryToAvailableEntry(offerId, AddressEntry.Context.RESERVED_FOR_TRADE);
     }
 
-    double getPercentagePrice() {
-        return percentagePrice;
-    }
-
     void setPercentagePrice(double percentagePrice) {
-        log.error("setPercentagePrice " + percentagePrice);
         this.percentagePrice = percentagePrice;
     }
 
     public void setPrice(Price value) {
-        if (value != null) log.error("setPrice " + value.toFriendlyString());
         price.set(value);
     }
 
     public void setAmount(Coin value) {
-        if (value != null) log.error("setAmount " + value.toFriendlyString());
         this.amount.set(value);
     }
 
     public void setVolume(Monetary value) {
-        if (value != null) log.error("setVolume " + value.toString());
         this.volume.set(value);
     }
 
     public void setMinAmount(Coin value) {
-        if (value != null) log.error("setMinAmount " + value.toFriendlyString());
         minAmount.set(value);
     }
 }

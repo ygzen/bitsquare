@@ -283,7 +283,7 @@ public class BSFormatter {
     }
 
     public String formatVolumeWithCode(Monetary monetary) {
-        return formatVolume(monetary) + getCurrencyPair(monetary, " ");
+        return formatVolume(monetary) + getCurrency(monetary, " ");
     }
 
     private String cleanVolumeString(String input, String currencyCode) {
@@ -351,7 +351,7 @@ public class BSFormatter {
     private String formatAltcoin(Altcoin altcoin) {
         if (altcoin != null) {
             try {
-                return altcoin.toPlainString();
+                return getLimitedDecimals(altcoin.toPlainString(), 4);
             } catch (Throwable t) {
                 log.warn("Exception at formatFiat: " + t.toString());
                 return "N/A " + altcoin.currencyCode;
@@ -441,6 +441,18 @@ public class BSFormatter {
 
         return prefix + getCurrencyPair(code);
     }
+
+
+    public String getCurrency(Monetary monetary, String prefix) {
+        String code;
+        if (monetary instanceof Fiat)
+            code = ((Fiat) monetary).getCurrencyCode();
+        else
+            code = ((Altcoin) monetary).getCurrencyCode();
+
+        return prefix + code;
+    }
+
 
     public String getCurrencyPair(String currencyCode) {
         if (CurrencyUtil.isCryptoCurrency(currencyCode))

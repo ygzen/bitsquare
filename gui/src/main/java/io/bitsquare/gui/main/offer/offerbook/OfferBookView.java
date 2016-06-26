@@ -36,10 +36,7 @@ import io.bitsquare.gui.main.overlays.windows.OfferDetailsWindow;
 import io.bitsquare.gui.util.BSFormatter;
 import io.bitsquare.gui.util.GUIUtil;
 import io.bitsquare.gui.util.Layout;
-import io.bitsquare.locale.BSResources;
-import io.bitsquare.locale.CryptoCurrency;
-import io.bitsquare.locale.FiatCurrency;
-import io.bitsquare.locale.TradeCurrency;
+import io.bitsquare.locale.*;
 import io.bitsquare.payment.PaymentMethod;
 import io.bitsquare.trade.offer.Offer;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -215,7 +212,10 @@ public class OfferBookView extends ActivatableViewAndModel<GridPane, OfferBookVi
     protected void activate() {
         currencyComboBox.setItems(model.getTradeCurrencies());
         currencyComboBox.setVisibleRowCount(Math.min(currencyComboBox.getItems().size(), 25));
-        currencyComboBox.setOnAction(e -> model.onSetTradeCurrency(currencyComboBox.getSelectionModel().getSelectedItem()));
+        currencyComboBox.setOnAction(e -> {
+            model.onSetTradeCurrency(currencyComboBox.getSelectionModel().getSelectedItem());
+            updateSorting();
+        });
 
         if (model.showAllTradeCurrenciesProperty.get())
             currencyComboBox.getSelectionModel().select(0);
@@ -252,11 +252,18 @@ public class OfferBookView extends ActivatableViewAndModel<GridPane, OfferBookVi
         model.getOfferList().comparatorProperty().bind(tableView.comparatorProperty());
 
         tableView.setItems(model.getOfferList());
-        priceColumn.setSortType((model.getDirection() == Offer.Direction.BUY) ? TableColumn.SortType.ASCENDING : TableColumn.SortType.DESCENDING);
+        updateSorting();
 
         offerListListener = c -> nrOfOffersLabel.setText("Nr. of offers: " + model.getOfferList().size());
         model.getOfferList().addListener(offerListListener);
         nrOfOffersLabel.setText("Nr. of offers: " + model.getOfferList().size());
+    }
+
+    private void updateSorting() {
+        if (CurrencyUtil.isCryptoCurrency(model.tradeCurrencyCode.get()))
+            priceColumn.setSortType((model.getDirection() == Offer.Direction.BUY) ? TableColumn.SortType.DESCENDING : TableColumn.SortType.ASCENDING);
+        else
+            priceColumn.setSortType((model.getDirection() == Offer.Direction.BUY) ? TableColumn.SortType.ASCENDING : TableColumn.SortType.DESCENDING);
     }
 
     @Override
