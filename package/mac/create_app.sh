@@ -7,7 +7,7 @@ set -e
 
 fullVersion="0.4.9"
 
-mvn clean package -DskipTests -Dmaven.javadoc.skip=true
+#mvn clean package -DskipTests -Dmaven.javadoc.skip=true
 
 cp gui/target/shaded.jar "gui/deploy/Bitsquare-$fullVersion.jar"
 cp gui/target/shaded.jar "/Users/mk/vm_shared_ubuntu/Bitsquare-$fullVersion.jar"
@@ -20,7 +20,7 @@ cp seednode/target/SeedNode.jar "gui/deploy/SeedNode.jar"
 echo "Using $JAVA_HOME"
 $JAVA_HOME/bin/javapackager \
     -deploy \
-    -BjvmOptions=-Xbootclasspath/a:"jdkfix-$fullVersion.jar":"$JAVA_HOME/jre/lib/ext/jfxrt.jar" \
+    -BjvmOptions=-Xbootclasspath/a:"jdkfix-$fullVersion.jar":"../PlugIns/Java.runtime/Contents/Home/jre/lib/ext/jfxrt.jar" \
     -BappVersion=$fullVersion \
     -Bmac.CFBundleIdentifier=io.bitsquare \
     -Bmac.CFBundleName=Bitsquare \
@@ -43,5 +43,7 @@ mv "gui/deploy/bundles/Bitsquare-$fullVersion.dmg" "gui/deploy/Bitsquare-$fullVe
 rm -r "gui/deploy/bundles"
 
 mv "gui/deploy/SeedNode.jar" "gui/deploy/SeedNode-$fullVersion.jar"
+
+open "gui/deploy/Bitsquare-$fullVersion.dmg"
 
 cd package/mac
