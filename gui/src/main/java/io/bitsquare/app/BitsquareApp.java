@@ -48,6 +48,8 @@ import io.bitsquare.storage.Storage;
 import io.bitsquare.trade.offer.OpenOfferManager;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.transformation.SortedList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -112,6 +114,8 @@ public class BitsquareApp extends Application {
 
         UserThread.setExecutor(Platform::runLater);
         UserThread.setTimerClass(UITimer.class);
+
+        log.error("####### " + new SortedList<>(FXCollections.observableArrayList()).size());
 
         // setup UncaughtExceptionHandler
         Thread.UncaughtExceptionHandler handler = (thread, throwable) -> {
