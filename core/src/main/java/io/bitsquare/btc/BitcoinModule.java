@@ -23,6 +23,7 @@ import io.bitsquare.btc.blockchain.BlockchainService;
 import io.bitsquare.btc.blockchain.providers.BlockTrailProvider;
 import io.bitsquare.btc.blockchain.providers.BlockrIOProvider;
 import io.bitsquare.btc.blockchain.providers.TradeBlockProvider;
+import io.bitsquare.btc.multisigwallet.MultiSigWalletService;
 import io.bitsquare.btc.pricefeed.PriceFeedService;
 import io.bitsquare.btc.pricefeed.providers.BitcoinAveragePriceProvider;
 import io.bitsquare.btc.pricefeed.providers.PoloniexPriceProvider;
@@ -60,6 +61,7 @@ public class BitcoinModule extends AppModule {
         bind(TradeWalletService.class).in(Singleton.class);
         bind(WalletService.class).in(Singleton.class);
         bind(BlockchainService.class).in(Singleton.class);
+        bind(MultiSigWalletService.class).in(Singleton.class);
 
         bind(PriceFeedService.class).in(Singleton.class);
         bind(BitcoinAveragePriceProvider.class).in(Singleton.class);

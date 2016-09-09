@@ -284,6 +284,36 @@ public class FormBuilder {
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////
+    // Label  + InputTextField +  Label  + InputTextField
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+
+    public static Tuple4<Label, InputTextField, Label, InputTextField> addLabelInputTextFieldLabelInputTextField(GridPane gridPane, int rowIndex, String title1, String title2, double top) {
+        Label label1 = addLabel(gridPane, rowIndex, title1, top);
+
+        InputTextField inputTextField1 = new InputTextField();
+        GridPane.setRowIndex(inputTextField1, rowIndex);
+        GridPane.setColumnIndex(inputTextField1, 1);
+        GridPane.setMargin(inputTextField1, new Insets(top, 0, 0, 0));
+        gridPane.getChildren().add(inputTextField1);
+
+        Label label2 = new Label(title2);
+        GridPane.setRowIndex(label2, rowIndex);
+        GridPane.setColumnIndex(label2, 2);
+        GridPane.setMargin(label2, new Insets(top, 0, 0, 10));
+        gridPane.getChildren().add(label2);
+
+        InputTextField inputTextField2 = new InputTextField();
+        GridPane.setRowIndex(inputTextField2, rowIndex);
+        GridPane.setColumnIndex(inputTextField2, 3);
+        GridPane.setMargin(inputTextField2, new Insets(top, 0, 0, 0));
+        gridPane.getChildren().add(inputTextField2);
+
+        return new Tuple4<>(label1, inputTextField1, label2, inputTextField2);
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
     // Label  + PasswordField
     ///////////////////////////////////////////////////////////////////////////////////////////
 

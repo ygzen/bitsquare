@@ -51,6 +51,8 @@ public final class AddressEntry implements Persistable {
 
         AVAILABLE,
 
+        NON_TRADE_MULTI_SIG,
+
         OFFER_FUNDING,
         RESERVED_FOR_TRADE, //reserved
         MULTI_SIG, //locked
